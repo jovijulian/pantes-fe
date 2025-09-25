@@ -5,7 +5,7 @@ import DetailPage from "./detail"
 import React from "react";
 
 export const metadata: Metadata = {
-    title: "Detail Master | CRM Pantes Gold",
+    title: "Detail Customer  | CRM Pantes Gold",
 };
 
 export default function FormElements() {

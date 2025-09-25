@@ -254,8 +254,6 @@ export default function SalesPage() {
                 setCheckedData={setSelectedRows}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
-                onRowClick={(rowData) => router.push(`/sales-accounts/${rowData.id}`)}
-
             />
 
             <DeactiveModal

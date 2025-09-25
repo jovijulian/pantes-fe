@@ -84,8 +84,7 @@ export default function CustomerPage() {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setSelectedData(row);
-                                    setIsEditOpen(true);
+                                    router.push(`/customers/edit/${row.id}`);
                                 }}
                                 title="Edit"
                                 className="px-3 py-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
@@ -122,53 +121,6 @@ export default function CustomerPage() {
                 header: "Phone Number",
                 accessorKey: "phone",
                 cell: ({ row }: any) => <span>{row.phone}</span>,
-            },
-            {
-                id: "email",
-                header: "Email",
-                accessorKey: "email",
-                cell: ({ row }: any) => <span>{row.email}</span>,
-            },
-            {
-                id: "role_id",
-                header: "Role",
-                accessorKey: "role_id",
-                cell: ({ row }: any) => {
-                    const roleId = row.role_id;
-
-                    let roleText = '';
-                    let className = '';
-
-                    if (roleId == 2) {
-                        roleText = 'Sales';
-                        className = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-                    } else if (roleId == 1) {
-                        roleText = 'Admin';
-                        className = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-                    } else {
-                        roleText = `Unknown Role (${roleId})`;
-                        className = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
-                    }
-                    return (
-                        <span
-                            className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${className}`}
-                        >
-                            {roleText}
-                        </span>
-                    );
-                },
-            },
-            {
-                id: "status",
-                header: "Status",
-                accessorKey: "status",
-                accessorFn: (row: any) => {
-                    const status = row.status;
-                    if (status == 1) return "Active";
-                    if (status == 2) return "Inactive";
-                    return "Unknown";
-                },
-                cell: ({ row }: any) => <span>{statusText(row.status)}</span>,
             },
             {
                 id: "created_at",
@@ -232,7 +184,7 @@ export default function CustomerPage() {
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
                     <button
-                        onClick={() => router.push("/customer/create")}
+                        onClick={() => router.push("/customers/create")}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
                         <span className="text-lg font-bold">+</span>

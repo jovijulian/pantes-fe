@@ -19,6 +19,8 @@ const rolePermissions: Record<string, string[]> = {
     ],
     '2': [
        '/',
+       '/customers',
+       '/transactions',
     ],
 };
 
