@@ -1,7 +1,7 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 
 import { Metadata } from "next";
-import CreatePage from "./create-simple"
+// import CreatePage from "./create-simple"
 import React from "react";
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export default function FormElements() {
             <PageBreadcrumb pageTitle="Transaction page" />
             <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-6">
-                    <CreatePage />
+                    {/* <CreatePage /> */}
                 </div>
             </div>
         </div>
