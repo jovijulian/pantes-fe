@@ -46,7 +46,7 @@ export async function middleware(request: NextRequest) {
     }
 
     const allowedRoutes = rolePermissions[role] || [];
-    const isAuthorized = allowedRoutes.some(route => pathname.startsWith(route));
+    const isAuthorized = allowedRoutes.includes(pathname);
 
     if (isAuthorized) {
         return NextResponse.next();
