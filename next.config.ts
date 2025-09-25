@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   env: {
-    BASE_URL: "https://api.bacipmoto.com/api/",
+    BASE_URL: "https://api-pantes.padmanagara.my.id/api/",
   },
   experimental: {
     optimizePackageImports: [

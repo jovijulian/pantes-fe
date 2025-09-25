@@ -155,7 +155,7 @@ interface Data {
 
 
 export const metadata: Metadata = {
-    title: "Dashboard | Bacip Moto",
+    title: "Dashboard | CRM Pantes Gold",
 };
 
 export default function Dashboard() {
@@ -226,34 +226,7 @@ export default function Dashboard() {
                     initialEndDate={searchParams.get("end_date") || moment().endOf('month').format("YYYY-MM-DD")}
                 />
             </div>
-            {/* <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 
-            </div> */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div className="lg:col-span-8">
-                    <TransactionTrendChart
-                        data={dashboardData?.grafik.transaction || []}
-                        startDate={currentStartDate}
-                        endDate={currentEndDate}
-                    />
-                </div>
-                <div className="lg:col-span-4">
-                    <PopularServicesChart data={dashboardData?.feature.list || []} />
-                </div>
-            </div>
-            {/* <hr /> */}
-            <SummaryCards
-                totalTransactions={dashboardData?.transaction.count_all || 0}
-                completedTransactions={dashboardData?.transaction.completed || 0}
-                pendingTransactions={dashboardData?.transaction.on_progress || 0}
-                newCustomers={dashboardData?.customer.count_new_this_month || 0}
-                totalCustomers={dashboardData?.customer.count_all || 0}
-                totalMechanics={dashboardData?.mechanic.count_all || 0}
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <CustomerLeaderboard data={dashboardData?.customer.leaderboard || []} />
-                <MechanicLeaderboard data={dashboardData?.mechanic.leaderboard || []} />
-            </div>
         </div>
     );
 }
