@@ -50,12 +50,22 @@ const SignIn: React.FC = () => {
       localStorage.setItem("token", token);
       setCookie("cookieKey", token, {});
       getMe();
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      if (error.response.status === 401) {
+        setAlert({
+          variant: "error",
+          title: "Fail to Login",
+          message: "Email or Password is incorrect.",
+          showLink: false,
+          linkHref: "",
+          linkText: "",
+        });
+        return;
+      }
       setAlert({
         variant: "error",
-        title: "Login Gagal",
-        message: "Username atau password salah.",
+        title: "Fail to Login",
+        message: "Internal Server Error.",
         showLink: false,
         linkHref: "",
         linkText: "",

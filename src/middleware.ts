@@ -15,12 +15,14 @@ const rolePermissions: Record<string, string[]> = {
         '/sales-accounts',
         '/customers',
         '/transactions',
-        '/master-data'
+        '/master-data',
+        '/profile'
     ],
     '2': [
        '/',
        '/customers',
        '/transactions',
+       '/profile'
     ],
 };
 
