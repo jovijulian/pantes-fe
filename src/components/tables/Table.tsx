@@ -18,6 +18,7 @@ interface Column {
   sortable?: boolean;
   width?: string;
   accessorFn?: (row: any) => any;
+
 }
 
 interface CustomTableProps {
@@ -33,6 +34,7 @@ interface CustomTableProps {
   // Optional callbacks for parent notifications
   onPageChange?: (page: number) => void;
   onPerPageChange?: (perPage: number) => void;
+  onRowClick?: (rowData: any) => void;
 }
 
 export default function CustomTable({
@@ -47,6 +49,7 @@ export default function CustomTable({
   setCheckedData,
   onPageChange,
   onPerPageChange,
+  onRowClick,
 }: CustomTableProps) {
   // Internal pagination state
   const [page, setPage] = useState(1);
@@ -258,31 +261,35 @@ export default function CustomTable({
                   </TableCell>
                 </TableRow>
               ) : (
-                data.map((row, index) => (
-                  <TableRow key={row.id || index}>
-                    {selection && (
-                      <TableCell className="px-5 py-4">
-                        <input
-                          type="checkbox"
-                          checked={checkedData.some(
-                            (item) => item.id == row.id
-                          )}
-                          onChange={(e) =>
-                            handleRowSelect(row, e.target.checked)
-                          }
-                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                        />
-                      </TableCell>
-                    )}
-                    {columns.map((column) => (
-                      <TableCell key={column.id} className="px-5 py-4 text-start">
-                        <div className="text-gray-800 text-theme-sm dark:text-white/90">
-                          {renderCellContent(column, row)}
-                        </div>
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
+                data.map((row, index) => {
+                  const isClickable = !!onRowClick;
+
+                  return (
+                    <TableRow key={row.id || index} onClick={() => isClickable && onRowClick(row)} className={isClickable ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" : ""}>
+                      {selection && (
+                        <TableCell className="px-5 py-4">
+                          <input
+                            type="checkbox"
+                            checked={checkedData.some(
+                              (item) => item.id == row.id
+                            )}
+                            onChange={(e) =>
+                              handleRowSelect(row, e.target.checked)
+                            }
+                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                          />
+                        </TableCell>
+                      )}
+                      {columns.map((column) => (
+                        <TableCell key={column.id} className="px-5 py-4 text-start">
+                          <div className="text-gray-800 text-theme-sm dark:text-white/90">
+                            {renderCellContent(column, row)}
+                          </div>
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

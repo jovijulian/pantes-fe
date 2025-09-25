@@ -25,7 +25,7 @@ interface TableDataItem {
     updated_at: string;
 }
 
-export default function SalesPage() {
+export default function MasterPage() {
     const searchParams = useSearchParams();
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
@@ -95,7 +95,7 @@ export default function SalesPage() {
 
                             {/* Delete */}
                             <button
-                                onClick={(e) => {
+                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedData(row);
                                     setIsDeleteModalOpen(true);
@@ -108,67 +108,39 @@ export default function SalesPage() {
                         </div>
                     );
                 },
-                minWidth: 160, // lebih lebar
+                minWidth: 160, 
                 maxWidth: 220,
             },
             {
-                id: "name",
-                header: "Name",
-                accessorKey: "name",
-                cell: ({ row }: any) => <span>{row.name}</span>,
-            },
-            {
-                id: "phone",
-                header: "Phone Number",
-                accessorKey: "phone",
-                cell: ({ row }: any) => <span>{row.phone}</span>,
-            },
-            {
-                id: "email",
-                header: "Email",
-                accessorKey: "email",
-                cell: ({ row }: any) => <span>{row.email}</span>,
-            },
-            {
-                id: "role_id",
-                header: "Role",
-                accessorKey: "role_id",
+                id: "label",
+                header: "Label",
+                accessorKey: "label",
                 cell: ({ row }: any) => {
-                    const roleId = row.role_id;
+                    const data = row;
 
-                    let roleText = '';
-                    let className = '';
-
-                    if (roleId == 2) {
-                        roleText = 'Sales';
-                        className = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-                    } else if (roleId == 1) {
-                        roleText = 'Admin';
-                        className = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-                    } else {
-                        roleText = `Unknown Role (${roleId})`;
-                        className = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
-                    }
                     return (
-                        <span
-                            className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${className}`}
+                        <button
+                            className="text-blue-600 hover:underline"
+                            onClick={() => {
+                                router.push(`/master-data/${data.id}`);
+                            }}
                         >
-                            {roleText}
-                        </span>
+                            {data.label}
+                        </button>
                     );
-                },
+                }
             },
             {
-                id: "status",
-                header: "Status",
-                accessorKey: "status",
-                accessorFn: (row: any) => {
-                    const status = row.status;
-                    if (status == 1) return "Active";
-                    if (status == 2) return "Inactive";
-                    return "Unknown";
-                },
-                cell: ({ row }: any) => <span>{statusText(row.status)}</span>,
+                id: "step_name",
+                header: "Step Name",
+                accessorKey: "step_name",
+                cell: ({ row }: any) => <span>{row.step_name}</span>,
+            },
+            {
+                id: "step",
+                header: "Step Order",
+                accessorKey: "step",
+                cell: ({ row }: any) => <span>{row.step}</span>,
             },
             {
                 id: "created_at",
@@ -200,7 +172,7 @@ export default function SalesPage() {
 
         try {
             const response = await httpGet(
-                endpointUrl("/sales"),
+                endpointUrl("/master/field"),
                 true,
                 params
             );
@@ -232,11 +204,11 @@ export default function SalesPage() {
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
                     <button
-                        onClick={() => router.push("/sales-accounts/create")}
+                        onClick={() => router.push("/master-data/create")}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
                         <span className="text-lg font-bold">+</span>
-                        Add Sales Account
+                        Add Field
                     </button>
                 </div>
             </div>
@@ -254,7 +226,7 @@ export default function SalesPage() {
                 setCheckedData={setSelectedRows}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
-                onRowClick={(rowData) => router.push(`/sales-accounts/${rowData.id}`)}
+                onRowClick={(rowData) => router.push(`/master-data/${rowData.id}`)}
 
             />
 
@@ -264,11 +236,11 @@ export default function SalesPage() {
                     setIsDeleteModalOpen(false);
                     setSelectedData(null);
                 }}
-                url={`sales/${selectedData?.id}/deactive`}
-                itemName={selectedData?.name || ""}
+                url={`master/field/${selectedData?.id}/deactive`}
+                itemName={selectedData?.label || ""}
                 selectedData={selectedData}
                 onSuccess={getData}
-                message="Sales deleted successfully!"
+                message="Master Field deleted successfully!"
             />
 
             <EditUserModal

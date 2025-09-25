@@ -25,7 +25,7 @@ interface TableDataItem {
     updated_at: string;
 }
 
-export default function SalesPage() {
+export default function CustomerPage() {
     const searchParams = useSearchParams();
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
@@ -200,7 +200,7 @@ export default function SalesPage() {
 
         try {
             const response = await httpGet(
-                endpointUrl("/sales"),
+                endpointUrl("/customer"),
                 true,
                 params
             );
@@ -232,11 +232,11 @@ export default function SalesPage() {
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
                     <button
-                        onClick={() => router.push("/sales-accounts/create")}
+                        onClick={() => router.push("/customer/create")}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
                         <span className="text-lg font-bold">+</span>
-                        Add Sales Account
+                        Add Customer
                     </button>
                 </div>
             </div>
@@ -254,7 +254,7 @@ export default function SalesPage() {
                 setCheckedData={setSelectedRows}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
-                onRowClick={(rowData) => router.push(`/sales-accounts/${rowData.id}`)}
+                onRowClick={(rowData) => router.push(`/customers/${rowData.id}`)}
 
             />
 
@@ -264,11 +264,11 @@ export default function SalesPage() {
                     setIsDeleteModalOpen(false);
                     setSelectedData(null);
                 }}
-                url={`sales/${selectedData?.id}/deactive`}
+                url={`customer/${selectedData?.id}/deactive`}
                 itemName={selectedData?.name || ""}
                 selectedData={selectedData}
                 onSuccess={getData}
-                message="Sales deleted successfully!"
+                message="Customer deleted successfully!"
             />
 
             <EditUserModal

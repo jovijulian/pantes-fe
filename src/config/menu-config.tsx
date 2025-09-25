@@ -16,7 +16,9 @@ import {
   Pin,
   Calendar,
   Database,
-  Receipt
+  Receipt,
+  CircleUserRound,
+  ShieldUser
 } from 'lucide-react';
 
 export type NavItem = {
@@ -42,8 +44,14 @@ export const menuConfig: Record<string, NavItem[]> = {
       roles: [1, 2],
     },
     {
-      name: 'Sales Accounts',
+      name: 'Customers',
       icon: <Users />,
+      path: '/customers',
+      roles: [1, 2],
+    },
+    {
+      name: 'Sales Accounts',
+      icon: <ShieldUser />,
       path: '/sales-accounts',
       roles: [1],
     },
