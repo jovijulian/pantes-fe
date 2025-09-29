@@ -4,12 +4,12 @@ import { Plus, Trash2, User, ShoppingCart, Calculator, ChevronDown, ChevronUp, C
 import moment from "moment";
 
 import Input from "@/components/form/input/InputField";
-import Select from "@/components/form/Select-custom";
-import MultiSelect from "@/components/form/MultiSelect-custom";
 import SingleDatePicker from '@/components/common/SingleDatePicker';
 import { endpointUrl, httpGet, httpPost } from '../../../../../helpers';
 import CreatableSelect from "@/components/form/CreatableSelect";
 import ConfirmationModal from "@/components/modal/ConfirmationModal";
+import toast from 'react-hot-toast';
+import { useRouter } from "next/navigation";
 
 interface FieldValue {
     id: number;
@@ -35,6 +35,7 @@ interface FormField {
 interface FormStep {
     step: string;
     step_name: string;
+    is_default: number;
     details: FormField[];
 }
 
@@ -78,6 +79,9 @@ export default function DynamicCreateTransactionPage() {
         message: '',
         onConfirm: () => { },
     });
+    const [foundCustomerId, setFoundCustomerId] = useState<number | null>(null);
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         fetchFormTemplate();
@@ -157,19 +161,97 @@ export default function DynamicCreateTransactionPage() {
         setOpenItemId(prevId => (prevId === itemId ? null : itemId));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (transactionData.items.length === 0) {
-            alert('Please add at least one item');
-            return;
+
+        const buildPayload = () => {
+            const details: any[] = [];
+            const customerInfoStepKey = generateKey('Customer Information');
+            const customerInfoData = transactionData[customerInfoStepKey] || {};
+    
+            formTemplate.forEach(step => {
+                if (step.step_name === 'Items') {
+                    transactionData.items.forEach(item => {
+                        step.details.forEach(field => {
+                            processField(field, step, item, details);
+                        });
+                    });
+                } else {
+                    const stepData = transactionData[generateKey(step.step_name)] || {};
+                    step.details.forEach(field => {
+                        processField(field, step, stepData, details);
+                    });
+                }
+            });
+    
+            const finalPayload = {
+                customer_id: foundCustomerId,
+                date: customerInfoData[generateKey('Transaction Date')] || moment().format('YYYY-MM-DD'),
+                name_purchase: customerInfoData[generateKey('Name Purchase')] || '',
+                description: customerInfoData[generateKey('Notes')] || '',
+                detail: details,
+            };
+    
+            return finalPayload;
+        };
+    
+        const processField = (field: FormField, step: FormStep, dataObject: any, details: any[]) => {
+            const fieldKey = generateKey(field.label);
+            const valueFromState = dataObject[fieldKey];
+    
+            if (valueFromState === undefined || valueFromState === null || valueFromState === '' || (Array.isArray(valueFromState) && valueFromState.length === 0)) {
+                return; 
+            }
+    
+            const valueArray: { field_value_id: number; value: any }[] = [];
+    
+            if (field.value_type === 3 && Array.isArray(valueFromState)) {
+                valueFromState.forEach(selectedValue => {
+                    const selectedOption = field.field_value.find(opt => opt.value === selectedValue);
+                    valueArray.push({
+                        field_value_id: selectedOption ? selectedOption.id : 0,
+                        value: selectedValue,
+                    });
+                });
+            } else {
+                let fieldValueId = 0;
+                if (field.value_type === 3 && valueFromState) {
+                    const selectedOption = field.field_value.find(opt => opt.value === valueFromState);
+                    if (selectedOption) fieldValueId = selectedOption.id;
+                }
+                valueArray.push({
+                    field_value_id: fieldValueId,
+                    value: valueFromState,
+                });
+            }
+    
+            if (valueArray.length > 0) {
+                details.push({
+                    step: parseInt(step.step, 10),
+                    step_name: step.step_name,
+                    field_id: field.id,
+                    label: field.label,
+                    value: valueArray,
+                });
+            }
+        };
+
+        const finalPayload = buildPayload();
+
+        try {
+            await httpPost(
+                endpointUrl("/sales/transaction"),
+                finalPayload,
+                true,
+            );
+            toast.success("Transaction added successfully!");
+            router.push("/transactions");
+        } catch (error: any) {
+            toast.error(error?.response?.data?.errors?.type || "Failed to add Transaction");
+        } finally {
+            setLoading(false);
         }
-
-        console.log('Final Transaction Data:', transactionData);
-
-        // const submitData = await httpPost(endpointUrl('transactions'), transactionData);
-
-        alert('Transaction created successfully! Check the console log for data.');
     };
 
     const handlePhoneSearch = (phone: string) => {
@@ -183,7 +265,7 @@ export default function DynamicCreateTransactionPage() {
         }
 
         debounceTimeout.current = setTimeout(async () => {
-            if (phone.length < 7) {
+            if (phone.length < 10) {
                 setCustomerFoundStatus('idle');
                 return;
             }
@@ -197,7 +279,7 @@ export default function DynamicCreateTransactionPage() {
                 if (response.data && response.data.data) {
                     const customerData = response.data.data;
                     const customerStepKey = generateKey('Customer Information');
-
+                    setFoundCustomerId(customerData.id);
                     const autofillData = {
                         [generateKey('Customer Name')]: customerData.name,
                         [generateKey('Customer Phone Number')]: customerData.phone,
@@ -217,9 +299,11 @@ export default function DynamicCreateTransactionPage() {
                     setCustomerFoundStatus('found');
 
                 } else {
+                    setFoundCustomerId(0);
                     setCustomerFoundStatus('not_found');
                 }
             } catch (error) {
+                setFoundCustomerId(0);
                 setCustomerFoundStatus('not_found');
                 console.error("Customer search error:", error);
             } finally {
@@ -291,19 +375,34 @@ export default function DynamicCreateTransactionPage() {
                 );
 
             case 2:
+                const formatNumber = (numStr: string | number) => {
+                    if (!numStr) return '';
+                    const rawValue = String(numStr).replace(/[^0-9]/g, '');
+                    return new Intl.NumberFormat('id-ID').format(Number(rawValue));
+                };
+
+                const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                    onChange(rawValue);
+                };
+
                 return (
                     <Input
-                        type="number"
-                        value={value || ''}
-                        onChange={(e) => onChange(e.target.value)}
+                        type="text"
+                        value={formatNumber(value || '')}
+                        onChange={handleNumberChange}
                         {...commonProps}
                         disabled={disabled}
                     />
                 );
 
             case 3:
+                if (!field.field_value || field.field_value.length === 0) {
+                    return <div className="text-red-500 text-sm">No options available</div>;
+                }
+
                 const options = field.field_value.map((opt: any) => ({
-                    value: opt.value,
+                    value: opt.value.toString(),
                     label: opt.value
                 }));
 
@@ -315,20 +414,30 @@ export default function DynamicCreateTransactionPage() {
                         onConfirm: async () => {
                             const newOption = await handleCreateOption(field.id, inputValue);
                             if (newOption) {
-                                onChange(newOption.value);
+                                onChange(newOption);
                             }
                         },
                     });
                 };
 
-                const singleValue = options.find(opt => opt.value === value) || null;
+                const handleSelectChange = (selection: any) => {
+                    if (Array.isArray(selection)) {
+                        const values = selection.map(opt => opt.value);
+                        onChange(values);
+                        return;
+                    }
+
+                    onChange(selection ? selection.value : null);
+                };
+
+                const currentValue = value ? options.find(opt => opt.value === value.toString()) : null;
 
                 return (
                     <CreatableSelect
                         placeholder={`Select or type ${field.label}`}
                         options={options}
-                        value={singleValue}
-                        onChange={(opt: any) => onChange(opt?.value || null)}
+                        value={currentValue}
+                        onChange={handleSelectChange}
                         onCreateOption={onCreate}
                     />
                 );
@@ -415,9 +524,22 @@ export default function DynamicCreateTransactionPage() {
                                 const customerStep = findStep('Customer Information')!;
                                 const customerStepKey = generateKey(customerStep.step_name);
                                 const phoneField = customerStep.details.find(f => f.label.toLowerCase().includes('phone'));
-                                const otherFields = customerStep.details.filter(f => !f.label.toLowerCase().includes('phone'));
+                                const otherFields = customerStep.details.filter(f => !f.label.toLowerCase().includes('phone') && f.label !== 'Name Purchase' && f.label !== 'Transaction Date' && f.label !== 'Notes');
                                 const isFormDisabled = customerFoundStatus === 'found';
+                                const renderCustomerField = (label: string, fullWidth: boolean = false) => {
+                                    const field = customerStep.details.find(f => f.label === label);
+                                    if (!field) return null;
 
+                                    return (
+                                        <div key={field.id} className={fullWidth ? 'md:col-span-2' : ''}>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                                {field.label}
+                                                {field.is_default === 1 && <span className="text-red-500 ml-1">*</span>}
+                                            </label>
+                                            {renderField(field, customerStepKey)}
+                                        </div>
+                                    );
+                                };
                                 return (
                                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
                                         <div className="flex items-center mb-6">
@@ -425,7 +547,7 @@ export default function DynamicCreateTransactionPage() {
                                                 <User className="h-6 w-6 text-white" />
                                             </div>
                                             <h2 className="text-xl font-bold text-gray-900">
-                                                Customer Information
+                                                Customer Transaction Information
                                             </h2>
                                         </div>
 
@@ -479,6 +601,10 @@ export default function DynamicCreateTransactionPage() {
                                                 </div>
                                             ))}
                                         </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t">
+                                            {renderCustomerField('Name Purchase')}
+                                            {renderCustomerField('Transaction Date')}
+                                        </div>
                                     </div>
                                 );
                             })()}
@@ -505,9 +631,6 @@ export default function DynamicCreateTransactionPage() {
                                     <div className="space-y-6">
                                         {transactionData.items.map((item, index) => {
                                             const itemStep = findStep('Items');
-                                            const privilegeStep = findStep('Privilege & Awards');
-                                            const contentStep = findStep('Content & Programs');
-                                            const offerStep = findStep('Offer');
 
                                             const isOpen = openItemId === item._id;
 
@@ -538,16 +661,11 @@ export default function DynamicCreateTransactionPage() {
                                                                     <Trash2 className="h-4 w-4" />
                                                                 </button>
                                                             )}
-                                                            {isOpen ? (
-                                                                <ChevronUp className="h-5 w-5 text-gray-400" />
-                                                            ) : (
-                                                                <ChevronDown className="h-5 w-5 text-gray-400" />
-                                                            )}
                                                         </div>
                                                     </div>
 
                                                     <div className="px-6 pb-6 border-b border-gray-200">
-                                                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-3">
                                                             {itemStep?.details.map((field) => (
                                                                 <div
                                                                     key={field.id}
@@ -562,83 +680,41 @@ export default function DynamicCreateTransactionPage() {
                                                             ))}
                                                         </div>
                                                     </div>
-
-                                                    {isOpen && (
-                                                        <div className="p-6 bg-gray-50 space-y-8">
-                                                            {privilegeStep && (
-                                                                <div>
-                                                                    <div className="flex items-center mb-6">
-                                                                        <Gift className="h-5 w-5 text-purple-600 mr-2" />
-                                                                        <h4 className="text-lg font-bold text-gray-900">
-                                                                            {privilegeStep.step_name}
-                                                                        </h4>
-                                                                    </div>
-                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                                        {privilegeStep.details.map((field) => (
-                                                                            <div key={field.id}>
-                                                                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                                                    {field.label}
-                                                                                </label>
-                                                                                {renderField(field, generateKey(privilegeStep.step_name), item)}
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-
-                                                            {contentStep && (
-                                                                <div>
-                                                                    <div className="flex items-center mb-6">
-                                                                        <Star className="h-5 w-5 text-yellow-600 mr-2" />
-                                                                        <h4 className="text-lg font-bold text-gray-900">
-                                                                            {contentStep.step_name}
-                                                                        </h4>
-                                                                    </div>
-                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                                        {contentStep.details.map((field) => (
-                                                                            <div key={field.id}>
-                                                                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                                                    {field.label}
-                                                                                </label>
-                                                                                {renderField(field, generateKey(contentStep.step_name), item)}
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-
-                                                            {offerStep && (
-                                                                <div>
-                                                                    <div className="flex items-center mb-6">
-                                                                        <Gift className="h-5 w-5 text-red-600 mr-2" />
-                                                                        <h4 className="text-lg font-bold text-gray-900">
-                                                                            {offerStep.step_name}
-                                                                        </h4>
-                                                                    </div>
-                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                                        {offerStep.details.map((field) => (
-                                                                            <div key={field.id}>
-                                                                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                                                    {field.label}
-                                                                                </label>
-                                                                                {renderField(field, generateKey(offerStep.step_name), item)}
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
                                                 </div>
                                             );
                                         })}
                                     </div>
                                 </div>
                             )}
+                            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 space-y-8">
+                                {formTemplate
+                                    .filter(step => step.is_default === 0)
+                                    .map(step => (
+                                        <div key={step.step_name}>
+                                            <div className="flex items-center mb-6">
+                                                <h4 className="text-lg font-bold text-gray-900">
+                                                    {step.step_name}
+                                                </h4>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {step.details.map((field) => (
+                                                    <div key={field.id}>
+                                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                            {field.label}
+                                                        </label>
+                                                        {renderField(field, generateKey(step.step_name))}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))
+                                }
+                            </div>
                         </div>
 
+
                         <div className="xl:col-span-1">
-                            <div className="sticky top-6 space-y-6">
+                            <div className="sticky top-20 space-y-6">
                                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
                                     <div className="flex items-center mb-6">
                                         <Calculator className="h-6 w-6 text-blue-600 mr-2" />
@@ -656,21 +732,37 @@ export default function DynamicCreateTransactionPage() {
                                             </span>
                                         </div>
                                         <div className="mt-8">
-                                            <label className="block text-sm font-semibold text-gray-700 mb-3">General Notes</label>
-                                            <textarea
-                                                // value={formData.catatan_umum}
-                                                // onChange={(e) => setFormData(prev => ({ ...prev, catatan_umum: e.target.value }))}
-                                                placeholder="Add any general notes for this entire transaction..."
-                                                rows={4}
-                                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
-                                            />
+                                            {findStep('Customer Information') && (() => {
+                                                const customerStep = findStep('Customer Information')!;
+                                                const customerStepKey = generateKey(customerStep.step_name);
+                                                const renderCustomerField = (label: string, fullWidth: boolean = false) => {
+                                                    const field = customerStep.details.find(f => f.label === label);
+                                                    if (!field) return null;
+
+                                                    return (
+                                                        <div key={field.id} className={fullWidth ? 'md:col-span-2' : ''}>
+                                                            <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                                                {field.label}
+                                                                {field.is_default === 1 && <span className="text-red-500 ml-1">*</span>}
+                                                            </label>
+                                                            {renderField(field, customerStepKey)}
+                                                        </div>
+                                                    );
+                                                };
+                                                return (
+                                                    <div >
+                                                        {renderCustomerField('Notes', true)}
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
                                     </div>
                                     <button
                                         type="submit"
-                                        className="w-full mt-8 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                                        disabled={loading}
+                                        className="w-full mt-8 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50"
                                     >
-                                        Create Transaction
+                                        {loading ? "Creating..." : "Create Transaction"}
                                     </button>
                                 </div>
                             </div>
