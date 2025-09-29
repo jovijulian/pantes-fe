@@ -75,7 +75,7 @@ export default function EditCustomerForm() {
 
         try {
             setLoading(true);
-            await httpPost(endpointUrl(`/customer/${id}`), payload, true);
+            await httpPost(endpointUrl(`/customer/${id}/update`), payload, true);
             toast.success("Customer updated successfully!");
             router.push("/customers");
         } catch (error: any) {

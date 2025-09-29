@@ -230,20 +230,39 @@ export default function TransactionDetailPage() {
     const params = useParams();
     const router = useRouter();
     const id = Number(params.id);
-
+    const [role, setRole] = useState<number | null>(null);
     useEffect(() => {
-        if (id) {
-            const getDetail = async (transactionId: number) => {
-                try {
-                    const response = await httpGet(endpointUrl(`/sales/transaction/${transactionId}`), true);
-                    setData(response.data.data);
-                } catch (error) {
-                    console.error("Error fetching transaction details:", error);
-                }
-            };
-            getDetail(id);
+        const userRole = localStorage.getItem("role");
+        if (userRole) {
+            setRole(Number(userRole));
         }
-    }, [id]);
+    }, []);
+    useEffect(() => {
+        if (!id || role === null) {
+            return;
+        }
+
+        const getDetail = async (transactionId: number) => {
+            try {
+                let endpoint = '';
+                if (role === 1) {
+                    endpoint = endpointUrl(`/customer/history/${transactionId}`); 
+                } else if (role === 2) {
+                    endpoint = endpointUrl(`/sales/transaction/${transactionId}`);
+                } else {
+                    console.error("Unknown user role:", role);
+                    return; 
+                }
+
+                const response = await httpGet(endpoint, true);
+                setData(response.data.data);
+            } catch (error) {
+                console.error("Error fetching transaction details:", error);
+            }
+        };
+
+        getDetail(id);
+    }, [id, role]);
 
     const totalPrice = useMemo(() => {
         if (!data) return 0;
@@ -367,7 +386,7 @@ export default function TransactionDetailPage() {
                 </div>
 
                 {data.details_grouped.map((group) => {
-                    
+
                     const isItemsStep = group.step_name.toLowerCase().includes('item');
 
                     return (
@@ -375,7 +394,7 @@ export default function TransactionDetailPage() {
                             <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                    
+
                                         <div>
                                             <h2 className="text-xl font-bold text-gray-800 dark:text-white">{group.step_name}</h2>
                                         </div>
@@ -395,7 +414,7 @@ export default function TransactionDetailPage() {
                                                             <h3 className="text-lg font-bold text-gray-800 dark:text-white">
                                                                 Item #{itemSet.setIndex}
                                                             </h3>
-                                                            
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -406,7 +425,7 @@ export default function TransactionDetailPage() {
                                                                 {getFieldIcon(detail.label, detail.is_default === 1)}
                                                                 <span className={`block text-sm font-medium text-gray-500 dark:text-gray-400`}>
                                                                     {detail.label}
-                                                                    
+
                                                                 </span>
                                                             </div>
                                                             <div className={`ml-6 p-3 rounded-lg group-hover:shadow-sm transition-all ${detail.is_default === 1

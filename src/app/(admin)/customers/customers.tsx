@@ -114,7 +114,20 @@ export default function CustomerPage() {
                 id: "name",
                 header: "Name",
                 accessorKey: "name",
-                cell: ({ row }: any) => <span>{row.name}</span>,
+                cell: ({ row }: any) => {
+                    const data = row;
+
+                    return (
+                        <button
+                            className="text-blue-600 hover:underline"
+                            onClick={() => {
+                                router.push(`/customers/${data.id}`);
+                            }}
+                        >
+                            {data.name}
+                        </button>
+                    );
+                }
             },
             {
                 id: "phone",
