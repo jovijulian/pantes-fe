@@ -315,11 +315,10 @@ export default function DynamicCreateTransactionPage() {
     const handleCreateOption = async (fieldId: number, newValue: string) => {
         try {
             const payload = {
-                field_id: fieldId,
                 value: newValue,
             };
-            const response = await httpPost(endpointUrl('master/field/value'), payload, true);
-            const createdOption = response.data.data;
+            const response = await httpPost(endpointUrl(`master/field/${fieldId}/add-value`), payload, true);
+            const createdOption = response.data.data.field_value;
 
             setFormTemplate(prevTemplate => {
                 const newTemplate = JSON.parse(JSON.stringify(prevTemplate));
@@ -414,7 +413,7 @@ export default function DynamicCreateTransactionPage() {
                         onConfirm: async () => {
                             const newOption = await handleCreateOption(field.id, inputValue);
                             if (newOption) {
-                                onChange(newOption);
+                                onChange(newOption.value);
                             }
                         },
                     });

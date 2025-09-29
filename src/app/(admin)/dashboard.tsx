@@ -1,169 +1,35 @@
-// file: app/dashboard/page.tsx
 "use client";
-import { Metadata } from "next";
 import React, { useEffect, useState } from "react";
-import { SummaryCards } from "@/components/dashboard/SummaryCards";
-import { TransactionTrendChart } from "@/components/dashboard/TransactionTrendChart";
-import { PopularServicesChart } from "@/components/dashboard/PopularServicesChart";
-import { CustomerLeaderboard } from "@/components/dashboard/CustomerLeaderboard";
-import { MechanicLeaderboard } from "@/components/dashboard/MechanicLeaderboard";
-import { useRouter, useSearchParams } from "next/navigation";
-import DateRangePicker from "@/components/common/DateRangePicker";
-import { endpointUrl, httpGet, httpPost } from "../../../helpers";
 import toast from "react-hot-toast";
 import moment from "moment";
+import { useRouter, useSearchParams } from "next/navigation";
+import { endpointUrl, httpPost } from "../../../helpers";
 
-interface CustomerLeaderboard {
-    id: number;
-    name: string;
-    number_plate: string;
-    total_transaction: number;
+import SummaryCards from "@/components/dashboard/SummaryCards";
+import TransactionTrendChart from "@/components/dashboard/TransactionTrendChart";
+import RecentTransactions from "@/components/dashboard/RecentTransactions";
+import DateRangePicker from "@/components/common/DateRangePicker";
+import { Loader2, Calendar } from 'lucide-react';
+import SalesLeaderbord from "@/components/dashboard/SalesLeaderboard";
+import CustomerLeaderboard from "@/components/dashboard/CustomerLeaderboard";
+
+interface LeaderboardItem { id: number; name: string; total_transaction: number; phone?: string; }
+interface GrafikTransaction { date: string; transaction_count: number; }
+interface Transaction { id: number; date: string; name_purchase: string; customer: { name: string }; sales: { name: string }; }
+
+interface DashboardData {
+    customer: { count_all: number; count_new_this_month: number; leaderboard: LeaderboardItem[]; };
+    transaction: { count_all: number; list: Transaction[]; };
+    sales: { count_all: number; leaderboard: LeaderboardItem[]; };
+    grafik: { transaction: GrafikTransaction[]; };
 }
 
-interface Customer {
-    id: number;
-    number_plate: string;
-    owner_name: string;
-    merk: string;
-    phone: string;
-    status: number;
-    created_at: string;
-    updated_at: string;
-}
-
-interface Feature {
-    id: number;
-    type: string;
-    name: string;
-    status: number;
-    created_at: string;
-    updated_at: string;
-}
-
-interface MechanicLeaderboard {
-    id: number;
-    name: string;
-    total_transaction: number;
-}
-
-interface Mechanic {
-    id: number;
-    role_id: number;
-    email: string;
-    name: string;
-    phone: string;
-    token: string | null;
-    url_image: string | null;
-    status: number;
-    created_at: string;
-    updated_at: string;
-}
-
-interface TransactionDetailValue {
-    id: number;
-    transaction_id: number;
-    transaction_detail_id: number;
-    value: string;
-    status: number;
-    created_at: string;
-    updated_at: string | null;
-    full_url: string;
-}
-
-interface TransactionDetail {
-    id: number;
-    transaction_id: number;
-    feature_id: number;
-    feature_field_id: number;
-    feature_field_value_type: number;
-    user_id: number;
-    customer_id: number;
-    step: number;
-    number_plate: string;
-    label: string;
-    notes: string | null;
-    status: number;
-    created_at: string;
-    updated_at: string;
-    feature: Feature;
-    transaction_detail_value: TransactionDetailValue[];
-}
-
-// /data/transaction/list
-interface Transaction {
-    id: number;
-    user_id: number;
-    customer_id: number;
-    number_spk: string;
-    number_plate: string;
-    notes: string | null;
-    is_done: number;
-    status: number;
-    created_at: string;
-    updated_at: string;
-    mechanic: Mechanic;
-    customer: Customer;
-    transaction_detail: TransactionDetail[];
-}
-
-// /data/grafik/transaction
-
-
-
-interface CustomerData {
-    list: Customer[];
-    count_all: number;
-    count_new_this_month: number;
-    leaderboard: CustomerLeaderboard[];
-}
-
-interface FeatureData {
-    list: Feature[];
-    count_all: number;
-}
-
-interface TransactionData {
-    list: Transaction[];
-    count_all: number;
-    on_progress: number;
-    completed: number;
-    canceled: number;
-}
-
-interface MechanicData {
-    list: Mechanic[];
-    count_all: number;
-    leaderboard: MechanicLeaderboard[];
-}
-
-interface GrafikTransaction {
-    date: string;
-    transaction_count: number;
-}
-
-interface GrafikData {
-    transaction: GrafikTransaction[];
-}
-
-interface Data {
-    customer: CustomerData;
-    feature: FeatureData;
-    transaction: TransactionData;
-    mechanic: MechanicData;
-    grafik: GrafikData;
-}
-
-
-export const metadata: Metadata = {
-    title: "Dashboard | CRM Pantes Gold",
-};
-
-export default function Dashboard() {
-    const [dashboardData, setDashboardData] = useState<Data | null>(null);
+export default function DashboardPage() {
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const searchParams = useSearchParams();
-    const router = useRouter()
-    const [searchTerm, setSearchTerm] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+
     const currentStartDate = searchParams.get("start_date") || moment().startOf('month').format("YYYY-MM-DD");
     const currentEndDate = searchParams.get("end_date") || moment().endOf('month').format("YYYY-MM-DD");
 
@@ -181,7 +47,7 @@ export default function Dashboard() {
                 "",
                 true
             );
-            const responseData = response.data.data as Data;
+            const responseData = response.data.data;
             setDashboardData(responseData);
 
         } catch (error) {
@@ -194,6 +60,7 @@ export default function Dashboard() {
     useEffect(() => {
         getData();
     }, [searchParams]);
+
     const handleDatesChange = (dates: { startDate: string | null; endDate: string | null }) => {
         const currentParams = new URLSearchParams(Array.from(searchParams.entries()));
 
@@ -209,24 +76,55 @@ export default function Dashboard() {
         }
         router.push(`?${currentParams.toString()}`);
     }
-    return (
-        <div className="p-4 md:p-6 space-y-6">
-            {/* Bagian Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Dashboard </h1>
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen bg-gray-50">
+                <div className="text-center">
+                    <Loader2 className="w-10 h-10 animate-spin text-blue-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Loading dashboard data...</p>
                 </div>
+            </div>
+        );
+    }
 
+    if (!dashboardData) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen text-center bg-gray-50">
+                <div className="text-gray-500">
+                    <Calendar className="w-16 h-16 mx-auto mb-4" />
+                    <p className="text-xl">No data to display</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-4 md:p-6 space-y-6 bg-gray-50 dark:bg-gray-900">
+            {/* Header */}
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">A summary of your sales and customer activity.</p>
+                </div>
+                <DateRangePicker onDatesChange={handleDatesChange} initialStartDate={currentStartDate} initialEndDate={currentEndDate} />
             </div>
 
-            <div className="w-full">
-                <DateRangePicker
-                    onDatesChange={handleDatesChange}
-                    initialStartDate={searchParams.get("start_date") || moment().startOf('month').format("YYYY-MM-DD")}
-                    initialEndDate={searchParams.get("end_date") || moment().endOf('month').format("YYYY-MM-DD")}
-                />
+            <SummaryCards data={dashboardData} />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <TransactionTrendChart data={dashboardData.grafik.transaction} />
+                </div>
+                <div className="space-y-6">
+                    <RecentTransactions data={dashboardData.transaction.list} />
+                </div>
             </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <CustomerLeaderboard data={dashboardData.customer.leaderboard} />
+                <SalesLeaderbord data={dashboardData.sales.leaderboard} />
+            </div>
         </div>
     );
 }

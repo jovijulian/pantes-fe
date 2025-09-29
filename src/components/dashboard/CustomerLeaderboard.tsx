@@ -1,35 +1,49 @@
-"use client";
 import React from 'react';
-import { Award } from 'lucide-react';
+import { Users, Phone, Trophy } from 'lucide-react';
 
-interface LeaderboardData {
-  id: number;
-  name: string;
-  total_transaction: number;
-}
+export default function CustomerLeaderboard({ data }: { data: any }) {
+    const customers = data || [];
 
-interface CustomerLeaderboardProps {
-  data: LeaderboardData[];
-}
 
-export const CustomerLeaderboard: React.FC<CustomerLeaderboardProps> = ({ data }) => {
-  return (
-    <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow">
-      <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Top 5 Loyal Customers</h3>
-      <ul className="space-y-3">
-        {data.map((customer, index) => (
-          <li key={customer.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50">
-            <div className="flex items-center gap-3">
-              <span className={`font-bold text-gray-500 ${index < 3 ? 'text-blue-500' : ''}`}>{index + 1}</span>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{customer.name}</p>
+    return (
+        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <div className="mb-6 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-slate-100 rounded-lg">
+                        <Users className="w-5 h-5 text-slate-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-900">Top Customers</h3>
+                </div>
+                <p className="text-sm text-slate-500 ml-12">Ranked by total transaction count</p>
             </div>
-            <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-               <Award className="h-4 w-4 text-yellow-500"/>
-               <span>{customer.total_transaction} Transaction</span>
+
+            <div className="space-y-4">
+                {customers.length > 0 ? customers.map((customer: any, index: any) => (
+                    <div key={customer.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-4">
+                            <div className="flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-600 rounded-full font-semibold">
+                                {index + 1}
+                            </div>
+                            <div>
+                                <h4 className="font-medium text-gray-900">{customer.name}</h4>
+                                <div className="flex items-center text-sm text-gray-500">
+                                    <Phone className="w-4 h-4 mr-1" />
+                                    {customer.phone}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-lg font-semibold text-gray-900">{customer.total_transaction}</p>
+                            <p className="text-xs text-gray-500">Transactions</p>
+                        </div>
+                    </div>
+                )) : (
+                    <div className="text-center py-8 text-gray-500">
+                        <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                        <p>No customer data available</p>
+                    </div>
+                )}
             </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
+        </div>
+    );
+}
