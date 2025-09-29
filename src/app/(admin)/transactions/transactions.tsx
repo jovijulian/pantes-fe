@@ -200,7 +200,7 @@ export default function SalesPage() {
 
         try {
             const response = await httpGet(
-                endpointUrl("/transactions"),
+                endpointUrl("/transaction"),
                 true,
                 params
             );
