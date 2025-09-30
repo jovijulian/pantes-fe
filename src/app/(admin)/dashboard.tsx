@@ -31,6 +31,7 @@ export default function DashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
     const searchParams = useSearchParams();
     const router = useRouter();
+    const [role, setRole] = useState<string | null>("null");
 
     const currentStartDate = searchParams.get("start_date") || moment().startOf('month').format("YYYY-MM-DD");
     const currentEndDate = searchParams.get("end_date") || moment().endOf('month').format("YYYY-MM-DD");
@@ -61,6 +62,10 @@ export default function DashboardPage() {
     };
     useEffect(() => {
         getData();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [searchParams]);
 
     const handleDatesChange = (dates: { startDate: string | null; endDate: string | null }) => {
@@ -127,18 +132,20 @@ export default function DashboardPage() {
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white">All Time</h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="h-full">
-                    <SummaryCards data={dashboardData} />
+                <SummaryCards data={dashboardData} role={role} />
+
                 </div>
                 <div className="h-full">
                     <ItemTransactionPieChart data={dashboardData.item_transaction.leaderboard} />
                 </div>
             </div>
 
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt--2">
-                <CustomerLeaderboard data={dashboardData.customer.leaderboard} />
-                <SalesLeaderbord data={dashboardData.sales.leaderboard} />
-            </div>
+            {role === "1" && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt--2">
+                    <CustomerLeaderboard data={dashboardData.customer.leaderboard} />
+                    <SalesLeaderbord data={dashboardData.sales.leaderboard} />
+                </div>
+            )}
 
         </div>
     );
