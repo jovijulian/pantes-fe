@@ -50,10 +50,10 @@ export default function SalesPage() {
         getData();
         const storedRole = localStorage.getItem("role");
         if (storedRole) {
-          setRole(parseInt(storedRole));
+            setRole(parseInt(storedRole));
         }
-        
-    }, [searchParams, currentPage, perPage, page, searchTerm]);
+
+    }, [searchParams, currentPage, perPage, page, searchTerm, role]);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -74,7 +74,7 @@ export default function SalesPage() {
                     return (
                         <div className="flex items-center gap-3 w-[100px]">
                             {/* Edit */}
-                            <button
+                            {/* <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedData(row);
@@ -84,7 +84,7 @@ export default function SalesPage() {
                                 className="px-3 py-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
                             >
                                 <FaEdit className="w-4 h-4" />
-                            </button>
+                            </button> */}
 
                             {/* Delete */}
                             <button
@@ -117,7 +117,7 @@ export default function SalesPage() {
                                 router.push(`/transactions/${data.id}`);
                             }}
                         >
-                           {moment(data.date).format("DD/MM/YYYY")}
+                            {moment(data.date).format("DD/MM/YYYY")}
                         </button>
                     );
                 }
@@ -140,16 +140,19 @@ export default function SalesPage() {
                 accessorKey: "name_purchase",
                 cell: ({ row }: any) => <span>{row.name_purchase}</span>,
             },
-           ...(role === 1
-            ? [
-                {
-                    id: "sales",
-                    header: "Sales Name",
-                    accessorKey: "sales",
-                    cell: ({ row }: any) => <span>{row.sales.name}</span>,
-                },
-            ]
-            : []),
+            ...(role === 1
+                ? [
+                    {
+                        id: "sales",
+                        header: "Sales Name",
+                        accessorKey: "sales",
+                        cell: ({ row }: any) => {
+                            const salesName = row.sales?.name || 'N/A';
+                            return <span>{salesName}</span>;
+                        }
+                    },
+                ]
+                : []),
             {
                 id: "created_at",
                 header: "Created At",
@@ -178,9 +181,19 @@ export default function SalesPage() {
             page: page ? Number(page) : currentPage,
         };
 
+        let endpoint = '';
+        if (role === 1) {
+            endpoint = endpointUrl(`/transaction`);
+        } else if (role === 2) {
+            endpoint = endpointUrl(`/sales/transaction`);
+        } else {
+            console.error("Unknown user role:", role);
+            return;
+        }
+
         try {
             const response = await httpGet(
-                endpointUrl("/sales/transaction"),
+                endpoint,
                 true,
                 params
             );
