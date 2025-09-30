@@ -12,6 +12,7 @@ import DateRangePicker from "@/components/common/DateRangePicker";
 import { Loader2, Calendar } from 'lucide-react';
 import SalesLeaderbord from "@/components/dashboard/SalesLeaderboard";
 import CustomerLeaderboard from "@/components/dashboard/CustomerLeaderboard";
+import ItemTransactionPieChart from "@/components/dashboard/ItemTransactionLeaderboard";
 
 interface LeaderboardItem { id: number; name: string; total_transaction: number; phone?: string; }
 interface GrafikTransaction { date: string; transaction_count: number; }
@@ -22,6 +23,7 @@ interface DashboardData {
     transaction: { count_all: number; list: Transaction[]; };
     sales: { count_all: number; leaderboard: LeaderboardItem[]; };
     grafik: { transaction: GrafikTransaction[]; };
+    item_transaction: { leaderboard: any };
 }
 
 export default function DashboardPage() {
@@ -110,21 +112,34 @@ export default function DashboardPage() {
                 <DateRangePicker onDatesChange={handleDatesChange} initialStartDate={currentStartDate} initialEndDate={currentEndDate} />
             </div>
 
-            <SummaryCards data={dashboardData} />
+
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
+                <div className="lg:col-span-2 h-full">
                     <TransactionTrendChart data={dashboardData.grafik.transaction} />
                 </div>
-                <div className="space-y-6">
+                <div className="space-y-6 h-full">
                     <RecentTransactions data={dashboardData.transaction.list} />
+
+                </div>
+            </div>
+            <hr className="my-8 border-t-2 border-gray-300 dark:border-gray-600" />
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">All Time</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="h-full">
+                    <SummaryCards data={dashboardData} />
+                </div>
+                <div className="h-full">
+                    <ItemTransactionPieChart data={dashboardData.item_transaction.leaderboard} />
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt--2">
                 <CustomerLeaderboard data={dashboardData.customer.leaderboard} />
                 <SalesLeaderbord data={dashboardData.sales.leaderboard} />
             </div>
+
         </div>
     );
 }

@@ -8,8 +8,8 @@ export default function SalesLeaderbord({ data }: { data: any }) {
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="mb-6 pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-indigo-100 rounded-lg">
-                        <TrendingUp className="w-5 h-5 text-indigo-600" />
+                    <div className="p-2 bg-orange-100 rounded-lg">
+                        <TrendingUp className="w-5 h-5 text-orange-600" />
                     </div>
                     <h3 className="text-xl font-bold text-slate-900">Sales Performance</h3>
                 </div>

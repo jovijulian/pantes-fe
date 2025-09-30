@@ -10,7 +10,7 @@ export default function TransactionTrendChart({ data }: { data: ChartData[] }) {
 
   const chartData = data || [];
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm h-full">
       <div className="mb-6 pb-4 border-b border-slate-100">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
@@ -26,7 +26,7 @@ export default function TransactionTrendChart({ data }: { data: ChartData[] }) {
 
       </div>
 
-      <div className="h-80">
+      <div className="h-85">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
