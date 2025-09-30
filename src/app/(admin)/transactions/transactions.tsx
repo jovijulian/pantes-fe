@@ -74,17 +74,16 @@ export default function SalesPage() {
                     return (
                         <div className="flex items-center gap-3 w-[100px]">
                             {/* Edit */}
-                            {/* <button
+                            <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    setSelectedData(row);
-                                    setIsEditOpen(true);
+                                    router.push(`/transactions/edit/${row.id}`);
                                 }}
                                 title="Edit"
                                 className="px-3 py-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
                             >
                                 <FaEdit className="w-4 h-4" />
-                            </button> */}
+                            </button>
 
                             {/* Delete */}
                             <button
@@ -262,9 +261,9 @@ export default function SalesPage() {
                     setSelectedData(null);
                 }}
                 url={
-                        role === 1
-                            ? `transaction/${selectedData?.id}`
-                            : `sales/transaction/${selectedData?.id}/delete`
+                    role === 1
+                        ? `transaction/${selectedData?.id}`
+                        : `sales/transaction/${selectedData?.id}/delete`
                 }
                 itemName={""}
                 selectedData={selectedData}

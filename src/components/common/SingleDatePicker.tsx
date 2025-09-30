@@ -91,6 +91,7 @@ interface SingleDatePickerProps {
   viewingMonthDate: Date;
   placeholderText?: string;
   maxDate?: Date;
+  disabled?: boolean;
 }
 
 export default function SingleDatePicker({
@@ -100,7 +101,8 @@ export default function SingleDatePicker({
   onClearFilter,
   viewingMonthDate,
   placeholderText = "Select date",
-  maxDate
+  maxDate,
+  disabled,
 }: SingleDatePickerProps) {
 
   const showClearDateFilterButton = selectedDate !== null && selectedDate !== undefined;
@@ -295,6 +297,7 @@ export default function SingleDatePicker({
       preventOpenOnFocus
       shouldCloseOnSelect={true}
       enableTabLoop={false}
+      disabled={disabled}
     />
   );
 }

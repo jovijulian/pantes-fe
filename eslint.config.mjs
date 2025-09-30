@@ -22,7 +22,8 @@ const eslintConfig = [
       "react/no-unescaped-entities": "off",
       "@next/next/no-img-element": "off",
       "react/jsx-key": "off",
-      "@next/next/missing-suspense-with-csr-bailout": "off"
+      "@next/next/missing-suspense-with-csr-bailout": "off",
+      "@typescript-eslint/no-unused-expressions": "off"
     },
   },
 ];
