@@ -261,7 +261,11 @@ export default function SalesPage() {
                     setIsDeleteModalOpen(false);
                     setSelectedData(null);
                 }}
-                url={`sales/transaction/${selectedData?.id}/delete`}
+                url={
+                        role === 1
+                            ? `transaction/${selectedData?.id}`
+                            : `sales/transaction/${selectedData?.id}/delete`
+                }
                 itemName={""}
                 selectedData={selectedData}
                 onSuccess={getData}
