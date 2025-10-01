@@ -1,12 +1,7 @@
 "use client";
 
-import React, { useCallback, useMemo } from 'react';
-import DatePicker, { registerLocale, ReactDatePickerCustomHeaderProps } from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { enUS } from 'date-fns/locale';
+import React, { useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import { FiCalendar, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-
-registerLocale('en-US', enUS);
 
 interface SingleDateInputProps {
   value?: string;
@@ -104,6 +99,16 @@ export default function SingleDatePicker({
   maxDate,
   disabled,
 }: SingleDatePickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    if (viewingMonthDate && !isNaN(viewingMonthDate.getTime())) {
+      return new Date(viewingMonthDate.getFullYear(), viewingMonthDate.getMonth(), 1);
+    }
+    return new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  });
+  
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const showClearDateFilterButton = selectedDate !== null && selectedDate !== undefined;
   
@@ -120,15 +125,69 @@ export default function SingleDatePicker({
     "July", "August", "September", "October", "November", "December"
   ], []);
 
-  const handleDateChange = useCallback((date: Date | null) => {
-    onChange(date);
-  }, [onChange]);
+  const dayNames = useMemo(() => ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"], []);
 
-  const handleMonthChange = useCallback((date: Date) => {
-    if (date && !isNaN(date.getTime())) {
-      onMonthChange(date);
+  // Update currentMonth when viewingMonthDate changes
+  useEffect(() => {
+    if (viewingMonthDate && !isNaN(viewingMonthDate.getTime())) {
+      setCurrentMonth(new Date(viewingMonthDate.getFullYear(), viewingMonthDate.getMonth(), 1));
     }
-  }, [onMonthChange]);
+  }, [viewingMonthDate]);
+
+  // Close calendar on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const getDaysInMonth = useCallback((date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+
+    const days: (Date | null)[] = [];
+
+    // Add empty cells for days before the first day of month
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+
+    // Add all days in the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push(new Date(year, month, day));
+    }
+
+    return days;
+  }, []);
+
+  const handleDateClick = useCallback((date: Date) => {
+    if (disabled) return;
+    
+    // Check if date exceeds maxDate
+    if (maxDate && date > maxDate) return;
+
+    onChange(date);
+    setIsOpen(false);
+  }, [onChange, disabled, maxDate]);
 
   const handleClearFilter = useCallback((e: React.MouseEvent<HTMLButtonElement | HTMLSpanElement>) => {
     e.preventDefault();
@@ -136,168 +195,186 @@ export default function SingleDatePicker({
     onClearFilter();
   }, [onClearFilter]);
 
-  const renderCustomHeader = useCallback(({
-    date,
-    changeYear,
-    changeMonth,
-    decreaseMonth,
-    increaseMonth,
-    prevMonthButtonDisabled,
-    nextMonthButtonDisabled,
-  }: ReactDatePickerCustomHeaderProps) => {
-    
-    const handleMonthSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const monthIndex = months.indexOf(e.target.value);
-      if (monthIndex !== -1) {
-        changeMonth(monthIndex);
-      }
-    };
+  const handlePrevMonth = useCallback(() => {
+    const newMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+    setCurrentMonth(newMonth);
+    onMonthChange(newMonth);
+  }, [currentMonth, onMonthChange]);
 
-    const handleYearSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const year = parseInt(e.target.value);
-      if (!isNaN(year)) {
-        changeYear(year);
-      }
-    };
+  const handleNextMonth = useCallback(() => {
+    const newMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+    setCurrentMonth(newMonth);
+    onMonthChange(newMonth);
+  }, [currentMonth, onMonthChange]);
 
-    return (
-      <div className="flex items-center justify-between px-2 py-2">
-        <button 
-          type="button" 
-          onClick={decreaseMonth} 
-          disabled={prevMonthButtonDisabled} 
-          className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
-          aria-label="Previous month"
-        >
-          <FiChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-        </button>
-        
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <select
-              value={months[date.getMonth()] || months[0]}
-              onChange={handleMonthSelect}
-              className="appearance-none cursor-pointer rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-1.5 pl-3 pr-8 text-sm font-semibold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150"
-              aria-label="Select month"
-            >
-              {months.map(month => (
-                <option key={month} value={month}>{month}</option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
-              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-              </svg>
-            </div>
-          </div>
-
-          <div className="relative">
-            <select
-              value={date.getFullYear()}
-              onChange={handleYearSelect}
-              className="appearance-none cursor-pointer rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-1.5 pl-3 pr-8 text-sm font-semibold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150"
-              aria-label="Select year"
-            >
-              {years.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
-              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-        
-        <button 
-          type="button" 
-          onClick={increaseMonth} 
-          disabled={nextMonthButtonDisabled} 
-          className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
-          aria-label="Next month"
-        >
-          <FiChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-        </button>
-      </div>
-    );
-  }, [months, years]);
-
-  const getDayClassName = useCallback((date: Date) => {
-    const baseDayStyle = "text-xs md:text-sm items-center !rounded-full transition-colors duration-150 !w-8 !py-[3px] mx-auto";
-    
-    // Validate dates
-    if (!date || isNaN(date.getTime()) || !viewingMonthDate || isNaN(viewingMonthDate.getTime())) {
-      return `${baseDayStyle} !text-gray-300 dark:!text-gray-500 !select-none !cursor-not-allowed opacity-50`;
+  const handleMonthChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const monthIndex = months.indexOf(e.target.value);
+    if (monthIndex !== -1) {
+      const newMonth = new Date(currentMonth.getFullYear(), monthIndex, 1);
+      setCurrentMonth(newMonth);
+      onMonthChange(newMonth);
     }
-    
+  }, [currentMonth, months, onMonthChange]);
+
+  const handleYearChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const year = parseInt(e.target.value);
+    if (!isNaN(year)) {
+      const newMonth = new Date(year, currentMonth.getMonth(), 1);
+      setCurrentMonth(newMonth);
+      onMonthChange(newMonth);
+    }
+  }, [currentMonth, onMonthChange]);
+
+  const isToday = useCallback((date: Date) => {
     const today = new Date();
-    const isToday = date.getDate() === today.getDate() && 
-                   date.getMonth() === today.getMonth() && 
-                   date.getFullYear() === today.getFullYear();
-    
-    // Days from different months
-    if (date.getMonth() !== viewingMonthDate.getMonth()) {
-      return `${baseDayStyle} !text-gray-300 dark:!text-gray-500 !select-none !cursor-not-allowed opacity-50`;
-    }
-    
-    let dayStyles = `${baseDayStyle} !text-gray-700 dark:!text-gray-200 cursor-pointer`;
-    dayStyles += " hover:!bg-blue-500 hover:!text-white dark:hover:!bg-blue-600";
-    
-    // Today styling
-    if (isToday) {
-      dayStyles += " !bg-blue-100 dark:!bg-blue-500/30 !font-semibold !text-blue-600 dark:!text-blue-300";
-      dayStyles += " hover:!bg-blue-600 dark:hover:!bg-blue-500 hover:!text-white";
-    }
-    
-    // Selected date styling
-    const isSelected = selectedDate && 
-                      date.getDate() === selectedDate.getDate() && 
-                      date.getMonth() === selectedDate.getMonth() && 
-                      date.getFullYear() === selectedDate.getFullYear();
-    
-    if (isSelected) {
-      dayStyles += " !bg-blue-600 dark:!bg-blue-500 !text-white !font-bold";
-    }
-    
-    return dayStyles;
-  }, [selectedDate, viewingMonthDate]);
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  }, []);
 
-  // Validate viewingMonthDate
-  const safeViewingMonthDate = useMemo(() => {
-    if (!viewingMonthDate || isNaN(viewingMonthDate.getTime())) {
-      return new Date();
-    }
-    return viewingMonthDate;
-  }, [viewingMonthDate]);
+  const isSelected = useCallback((date: Date) => {
+    return (
+      selectedDate &&
+      date.getDate() === selectedDate.getDate() &&
+      date.getMonth() === selectedDate.getMonth() &&
+      date.getFullYear() === selectedDate.getFullYear()
+    );
+  }, [selectedDate]);
+
+  const isDisabledDate = useCallback((date: Date) => {
+    if (maxDate && date > maxDate) return true;
+    return false;
+  }, [maxDate]);
+
+  const days = useMemo(() => getDaysInMonth(currentMonth), [currentMonth, getDaysInMonth]);
 
   return (
-    <DatePicker
-      selected={selectedDate}
-      onChange={handleDateChange}
-      onMonthChange={handleMonthChange}
-      customInput={
-        <CustomSingleDateInput
-          selectedDateProp={selectedDate}
-          showClearFilterIcon={showClearDateFilterButton}
-          onClearFilter={handleClearFilter}
-          placeholderText={placeholderText}
-        />
-      }
-      locale="en-US"
-      wrapperClassName="w-full"
-      dateFormat="dd/MM/yyyy"
-      showPopperArrow={false}
-      popperPlacement="bottom-start"
-      calendarClassName="bg-white dark:!bg-slate-700 !border !border-gray-300 dark:!border-slate-600 !rounded-md !shadow-lg p-1 z-10 text-sm"
-      renderCustomHeader={renderCustomHeader}
-      dayClassName={getDayClassName}
-      maxDate={maxDate}
-      openToDate={safeViewingMonthDate}
-      preventOpenOnFocus
-      shouldCloseOnSelect={true}
-      enableTabLoop={false}
-      disabled={disabled}
-    />
+    <div className="relative w-full">
+      <CustomSingleDateInput
+        ref={buttonRef}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        selectedDateProp={selectedDate}
+        showClearFilterIcon={showClearDateFilterButton}
+        onClearFilter={handleClearFilter}
+        placeholderText={placeholderText}
+      />
+
+      {isOpen && (
+        <div
+          ref={calendarRef}
+          className="absolute z-50 mt-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-md shadow-lg p-3"
+          style={{ minWidth: '280px' }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3">
+            <button
+              type="button"
+              onClick={handlePrevMonth}
+              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors duration-150"
+              aria-label="Previous month"
+            >
+              <FiChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            </button>
+
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <select
+                  value={months[currentMonth.getMonth()]}
+                  onChange={handleMonthChange}
+                  className="appearance-none cursor-pointer rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-1.5 pl-3 pr-8 text-sm font-semibold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150"
+                  aria-label="Select month"
+                >
+                  {months.map(month => (
+                    <option key={month} value={month}>{month}</option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                  </svg>
+                </div>
+              </div>
+
+              <div className="relative">
+                <select
+                  value={currentMonth.getFullYear()}
+                  onChange={handleYearChange}
+                  className="appearance-none cursor-pointer rounded-md border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 py-1.5 pl-3 pr-8 text-sm font-semibold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150"
+                  aria-label="Select year"
+                >
+                  {years.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-400">
+                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleNextMonth}
+              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors duration-150"
+              aria-label="Next month"
+            >
+              <FiChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            </button>
+          </div>
+
+          {/* Calendar Grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {/* Day names */}
+            {dayNames.map(day => (
+              <div
+                key={day}
+                className="h-8 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-400"
+              >
+                {day}
+              </div>
+            ))}
+
+            {/* Days */}
+            {days.map((day, index) => {
+              if (!day) {
+                return <div key={`empty-${index}`} className="h-8" />;
+              }
+
+              const today = isToday(day);
+              const selected = isSelected(day);
+              const disabledDay = isDisabledDate(day);
+
+              let dayClasses = "h-8 w-8 flex items-center justify-center text-sm rounded-full transition-colors duration-150";
+
+              if (disabledDay) {
+                dayClasses += " text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-50";
+              } else if (selected) {
+                dayClasses += " bg-blue-600 dark:bg-blue-500 text-white font-bold cursor-pointer";
+              } else if (today) {
+                dayClasses += " bg-blue-100 dark:bg-blue-500/30 font-semibold text-blue-600 dark:text-blue-300 cursor-pointer hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white";
+              } else {
+                dayClasses += " text-gray-700 dark:text-gray-200 cursor-pointer hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600";
+              }
+
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => !disabledDay && handleDateClick(day)}
+                  disabled={disabledDay}
+                  className={dayClasses}
+                >
+                  {day.getDate()}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

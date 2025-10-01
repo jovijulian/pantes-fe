@@ -78,7 +78,12 @@ export default function MasterPage() {
                 header: "Action",
                 accessorKey: "action",
                 cell: ({ row }: any) => {
+                    const isDefault = row.is_default
+                    if (isDefault == 1) {
+                        return null
+                    }
                     return (
+
                         <div className="flex items-center gap-3 w-[100px]">
                             {/* Edit */}
                             <button
@@ -94,7 +99,7 @@ export default function MasterPage() {
 
                             {/* Delete */}
                             <button
-                                 onClick={(e) => {
+                                onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedData(row);
                                     setIsDeleteModalOpen(true);
@@ -107,7 +112,7 @@ export default function MasterPage() {
                         </div>
                     );
                 },
-                minWidth: 160, 
+                minWidth: 160,
                 maxWidth: 220,
             },
             {
