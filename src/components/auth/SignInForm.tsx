@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IconEye, IconEyeOff, IconMail, IconMessage, IconStar } from "@tabler/icons-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -20,6 +20,8 @@ const SignIn: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<{ variant: any; title: string; message: string; showLink: boolean; linkHref: string; linkText: string } | null>(null);
 
+
+  
   const form = useForm({
     initialValues: {
       email: "",
@@ -90,7 +92,7 @@ const SignIn: React.FC = () => {
       console.log(error);
     }
   };
-
+ 
 
   const renderAccountForm = () => (
     <div className="space-y-4">

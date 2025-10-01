@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import moment from "moment";
 import { useRouter, useSearchParams } from "next/navigation";
 import { endpointUrl, httpPost } from "../../../helpers";
@@ -53,8 +53,9 @@ export default function DashboardPage() {
             const responseData = response.data.data;
             setDashboardData(responseData);
 
-        } catch (error) {
-            toast.error("Failed to fetch data");
+        } catch (error: any) {
+            console.log(error?.response?.data?.message)
+            toast.error(error?.response?.data?.message || "Failed to fetch dashboard data");
             setDashboardData(null);
         } finally {
             setIsLoading(false);

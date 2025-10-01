@@ -30,7 +30,7 @@ export default function RootLayout({
     }
   }, [pathname, router]);
   return (
-    <html lang="en">
+    <html lang="en" className="notranslate">
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <ToastContainer
           style={{ marginTop: '4rem' }}

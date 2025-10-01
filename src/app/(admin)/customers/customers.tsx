@@ -187,23 +187,21 @@ export default function CustomerPage() {
     };
     return (
         <div className="space-y-4">
-            <div className="flex justify-end items-center">
-                <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
                     <input
                         type="text"
                         value={searchTerm}
                         onChange={handleSearch}
                         placeholder="Search..."
-                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                        className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
                     <button
                         onClick={() => router.push("/customers/create")}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
                         <span className="text-lg font-bold">+</span>
                         Add Customer
                     </button>
-                </div>
             </div>
 
             {/* Table */}

@@ -115,7 +115,7 @@ export default function SingleDatePicker({
   const currentYear = new Date().getFullYear();
   const years = useMemo(() => 
     Array.from(
-      { length: currentYear - 1989 },
+      { length: currentYear - 1900 },
       (_, i) => currentYear - i
     ), [currentYear]
   );
