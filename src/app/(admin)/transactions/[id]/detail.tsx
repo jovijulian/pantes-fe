@@ -429,7 +429,7 @@ export default function TransactionDetailPage() {
                                                             </div>
                                                             <div className={`ml-6 p-3 rounded-lg group-hover:shadow-sm transition-all ${detail.is_default === 1
                                                                 ? 'bg-white dark:bg-gray-800/50 group-hover:bg-gray-100 dark:group-hover:bg-gray-700/50'
-                                                                : 'bg-purple-50 dark:bg-purple-900/20 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 border border-purple-200 dark:border-purple-800'
+                                                                : 'bg-white dark:bg-gray-800/50 group-hover:bg-gray-100 dark:group-hover:bg-gray-700/50'
                                                                 }`}>
                                                                 <DisplayValue value={fieldValue.value} label={detail.label} />
                                                             </div>

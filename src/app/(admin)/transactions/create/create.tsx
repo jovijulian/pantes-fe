@@ -169,7 +169,7 @@ export default function DynamicCreateTransactionPage() {
             const details: any[] = [];
             const customerInfoStepKey = generateKey('Customer Information');
             const customerInfoData = transactionData[customerInfoStepKey] || {};
-    
+
             formTemplate.forEach(step => {
                 if (step.step_name === 'Items') {
                     transactionData.items.forEach(item => {
@@ -184,7 +184,7 @@ export default function DynamicCreateTransactionPage() {
                     });
                 }
             });
-    
+
             const finalPayload = {
                 customer_id: foundCustomerId,
                 date: customerInfoData[generateKey('Transaction Date')] || moment().format('YYYY-MM-DD'),
@@ -192,20 +192,20 @@ export default function DynamicCreateTransactionPage() {
                 description: customerInfoData[generateKey('Notes')] || '',
                 detail: details,
             };
-    
+
             return finalPayload;
         };
-    
+
         const processField = (field: FormField, step: FormStep, dataObject: any, details: any[]) => {
             const fieldKey = generateKey(field.label);
             const valueFromState = dataObject[fieldKey];
-    
+
             if (valueFromState === undefined || valueFromState === null || valueFromState === '' || (Array.isArray(valueFromState) && valueFromState.length === 0)) {
-                return; 
+                return;
             }
-    
+
             const valueArray: { field_value_id: number; value: any }[] = [];
-    
+
             if (field.value_type === 3 && Array.isArray(valueFromState)) {
                 valueFromState.forEach(selectedValue => {
                     const selectedOption = field.field_value.find(opt => opt.value === selectedValue);
@@ -225,7 +225,7 @@ export default function DynamicCreateTransactionPage() {
                     value: valueFromState,
                 });
             }
-    
+
             if (valueArray.length > 0) {
                 details.push({
                     step: parseInt(step.step, 10),
@@ -254,18 +254,18 @@ export default function DynamicCreateTransactionPage() {
         }
     };
 
-    const handlePhoneSearch = (phone: string) => {
+    const handleMemberSearch = (numberMember: string) => {
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
 
-        if (!phone.trim()) {
+        if (!numberMember.trim()) {
             setCustomerFoundStatus('idle');
             return;
         }
 
         debounceTimeout.current = setTimeout(async () => {
-            if (phone.length < 10) {
+            if (numberMember.length < 4) {
                 setCustomerFoundStatus('idle');
                 return;
             }
@@ -274,13 +274,14 @@ export default function DynamicCreateTransactionPage() {
             setCustomerFoundStatus('idle');
 
             try {
-                const response = await httpPost(endpointUrl('customer/number-phone'), { phone }, true);
+                const response = await httpPost(endpointUrl('customer/number-member'), { number_member: numberMember }, true);
 
                 if (response.data && response.data.data) {
                     const customerData = response.data.data;
                     const customerStepKey = generateKey('Customer Information');
                     setFoundCustomerId(customerData.id);
                     const autofillData = {
+                        [generateKey('Customer Member Number')]: customerData.member_no,
                         [generateKey('Customer Name')]: customerData.name,
                         [generateKey('Customer Phone Number')]: customerData.phone,
                         [generateKey('Date of Birth')]: customerData.date_of_birth ? moment(customerData.date_of_birth).format('YYYY-MM-DD') : '',
@@ -355,9 +356,13 @@ export default function DynamicCreateTransactionPage() {
                 handleFieldChange(stepKey, fieldKey, newValue);
             }
         };
+        let placeholderText = field.label;
+        if (field.label === 'Name Purchase') {
+            placeholderText = 'Ex: RO1';
+        }
 
         const commonProps = {
-            placeholder: field.label,
+            placeholder: placeholderText,
             key: `${stepKey}_${fieldKey}_${item?._id || 'step'}`
         };
 
@@ -374,31 +379,54 @@ export default function DynamicCreateTransactionPage() {
                 );
 
             case 2:
-                const formatNumber = (numStr: string | number) => {
-                    if (!numStr) return '';
-                    const rawValue = String(numStr).replace(/[^0-9]/g, '');
-                    return new Intl.NumberFormat('id-ID').format(Number(rawValue));
-                };
+                const isPhoneNumber = field.label.toLowerCase().includes('phone');
 
-                const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                    const rawValue = e.target.value.replace(/[^0-9]/g, '');
-                    onChange(rawValue);
-                };
+                if (isPhoneNumber) {
+                    // --- Logika untuk Nomor Telepon ---
+                    // Hanya mengizinkan angka, tanpa format Rupiah
+                    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                        const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                        onChange(rawValue);
+                    };
 
-                return (
-                    <Input
-                        type="text"
-                        value={formatNumber(value || '')}
-                        onChange={handleNumberChange}
-                        {...commonProps}
-                        disabled={disabled}
-                    />
-                );
+                    return (
+                        <Input
+                            type="tel" // Menggunakan type="tel" lebih baik untuk nomor telepon
+                            inputMode="numeric"
+                            value={value || ''} // Tampilkan nilai apa adanya
+                            onChange={handlePhoneChange}
+                            {...commonProps}
+                            disabled={disabled}
+                        />
+                    );
+                } else {
+                    // --- Logika untuk Harga / Angka Lain (dengan format Rupiah) ---
+                    const formatNumber = (numStr: string | number) => {
+                        if (!numStr) return '';
+                        const rawValue = String(numStr).replace(/[^0-9]/g, '');
+                        if (rawValue === '') return '';
+                        return new Intl.NumberFormat('id-ID').format(Number(rawValue));
+                    };
+
+                    const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                        const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                        onChange(rawValue);
+                    };
+
+                    return (
+                        <Input
+                            type="text"
+                            inputMode="numeric"
+                            value={formatNumber(value || '')}
+                            onChange={handleNumberChange}
+                            {...commonProps}
+                            disabled={disabled}
+                        />
+                    )
+                }
 
             case 3:
-                if (!field.field_value || field.field_value.length === 0) {
-                    return <div className="text-red-500 text-sm">No options available</div>;
-                }
+
 
                 const options = field.field_value.map((opt: any) => ({
                     value: opt.value.toString(),
@@ -428,6 +456,17 @@ export default function DynamicCreateTransactionPage() {
 
                     onChange(selection ? selection.value : null);
                 };
+                if (!field.field_value || field.field_value.length === 0) {
+                    return (
+                        <CreatableSelect
+                            placeholder={`No options available for ${field.label}, please add new data`}
+                            options={[]}
+                            value={null}
+                            onChange={handleSelectChange}
+                            onCreateOption={onCreate}
+                        />
+                    )
+                }
 
                 const currentValue = value ? options.find(opt => opt.value === value.toString()) : null;
 
@@ -522,8 +561,8 @@ export default function DynamicCreateTransactionPage() {
                             {findStep('Customer Information') && (() => {
                                 const customerStep = findStep('Customer Information')!;
                                 const customerStepKey = generateKey(customerStep.step_name);
-                                const phoneField = customerStep.details.find(f => f.label.toLowerCase().includes('phone'));
-                                const otherFields = customerStep.details.filter(f => !f.label.toLowerCase().includes('phone') && f.label !== 'Name Purchase' && f.label !== 'Transaction Date' && f.label !== 'Notes');
+                                const memberField = customerStep.details.find(f => f.label.toLowerCase().includes('member'));
+                                const otherFields = customerStep.details.filter(f => !f.label.toLowerCase().includes('member') && f.label !== 'Name Purchase' && f.label !== 'Transaction Date' && f.label !== 'Notes');
                                 const isFormDisabled = customerFoundStatus === 'found';
                                 const renderCustomerField = (label: string, fullWidth: boolean = false) => {
                                     const field = customerStep.details.find(f => f.label === label);
@@ -550,22 +589,24 @@ export default function DynamicCreateTransactionPage() {
                                             </h2>
                                         </div>
 
-                                        {phoneField && (
+                                        {memberField && (
                                             <div className="mb-6">
-                                                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                                                    {phoneField.label}
+                                                <label className="flex items-center space-x-1 text-sm font-semibold text-gray-700 mb-3">
+                                                    {memberField.label}
+                                                    <span className="text-red-500 ml-1">*</span>
                                                 </label>
                                                 <div className="relative">
                                                     <Input
                                                         type="tel"
-                                                        placeholder="Enter phone number to search..."
-                                                        value={transactionData[customerStepKey]?.[generateKey(phoneField.label)] || ''}
+                                                        placeholder="Enter member number to search..."
+                                                        value={transactionData[customerStepKey]?.[generateKey(memberField.label)] || ''}
                                                         onChange={(e) => {
-                                                            const phone = e.target.value;
-                                                            handleFieldChange(customerStepKey, generateKey(phoneField.label), phone);
-                                                            handlePhoneSearch(phone);
+                                                            const numberMember = e.target.value;
+                                                            handleFieldChange(customerStepKey, generateKey(memberField.label), numberMember);
+                                                            handleMemberSearch(numberMember);
                                                         }}
                                                     />
+
                                                     {searchingCustomer && (
                                                         <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
                                                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
@@ -590,11 +631,13 @@ export default function DynamicCreateTransactionPage() {
                                             {otherFields.map((field) => (
                                                 <div key={field.id} className={
                                                     field.label.toLowerCase().includes('address')
-                                                        ? 'md:col-span-2' : ''
+                                                        ? '' : ''
                                                 }>
                                                     <label className="block text-sm font-semibold text-gray-700 mb-3">
                                                         {field.label}
-                                                        {field.is_default === 1 && <span className="text-red-500 ml-1">*</span>}
+                                                        {(field.label === 'Customer Name' || field.label === 'Customer Phone Number') && (
+                                                            <span className="text-red-500 ml-1">*</span>
+                                                        )}
                                                     </label>
                                                     {renderField(field, customerStepKey, undefined, isFormDisabled)}
                                                 </div>
@@ -672,7 +715,7 @@ export default function DynamicCreateTransactionPage() {
                                                                 >
                                                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                                                                         {field.label}
-                                                                        {field.is_default === 1 && <span className="text-red-500 ml-1">*</span>}
+                                                                        {<span className="text-red-500 ml-1">*</span>}
                                                                     </label>
                                                                     {renderField(field, generateKey('Items'), item)}
                                                                 </div>

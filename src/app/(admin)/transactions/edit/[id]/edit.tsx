@@ -33,12 +33,18 @@ export default function DynamicEditTransactionPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-    const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {}, });
-    
-    const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+    const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => { }, });
 
+    const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+    const [role, setRole] = useState<number | null>(null);
+    useEffect(() => {
+        const userRole = localStorage.getItem("role");
+        if (userRole) {
+            setRole(Number(userRole));
+        }
+    }, []);
     const fetchData = useCallback(async () => {
-        if (!transactionId) return;
+        if (!transactionId || role === null) return;
         try {
             setLoading(true);
             setError(null);
@@ -47,8 +53,16 @@ export default function DynamicEditTransactionPage() {
             if (templateResponse.status !== 200 || !templateResponse.data?.data) throw new Error('Failed to load form template.');
             const template: FormStep[] = templateResponse.data.data;
             setFormTemplate(template);
-
-            const detailResponse = await httpGet(endpointUrl(`sales/transaction/${transactionId}`), true);
+            let endpoint = '';
+            if (role === 1) {
+                endpoint = endpointUrl(`/customer/history/${transactionId}`);
+            } else if (role === 2) {
+                endpoint = endpointUrl(`/sales/transaction/${transactionId}`);
+            } else {
+                console.error("Unknown user role:", role);
+                return;
+            }
+            const detailResponse = await httpGet(endpoint, true);
             if (detailResponse.status !== 200 || !detailResponse.data?.data) throw new Error('Failed to load transaction details.');
             const transactionDetail = detailResponse.data.data;
 
@@ -59,7 +73,7 @@ export default function DynamicEditTransactionPage() {
         } finally {
             setLoading(false);
         }
-    }, [transactionId]);
+    }, [transactionId, role]);
 
     useEffect(() => {
         fetchData();
@@ -69,13 +83,13 @@ export default function DynamicEditTransactionPage() {
         const initialData: TransactionData = { items: [] };
         const initialDetailIds: any = { items: [] };
         const groupedDetails = detail.details_grouped;
-    
+
         groupedDetails.forEach((stepDetail: any) => {
             const stepKey = generateKey(stepDetail.step_name);
-    
+
             if (stepDetail.step_name === "Items") {
                 const itemFieldsFromBE = stepDetail.details;
-    
+
                 const valuesByFieldId = itemFieldsFromBE.reduce((acc: any, field: any) => {
                     const fieldId = field.id;
                     if (!acc[fieldId]) {
@@ -84,31 +98,31 @@ export default function DynamicEditTransactionPage() {
                     acc[fieldId].push(...field.field_value);
                     return acc;
                 }, {});
-    
+
                 const priceFieldTemplate = template.find(s => s.step_name === "Items")?.details.find(f => f.label === "Price (IDR)");
                 const numItems = priceFieldTemplate && valuesByFieldId[priceFieldTemplate.id]
                     ? valuesByFieldId[priceFieldTemplate.id].length
                     : 0;
-    
+
                 const fieldCounters: { [key: string]: number } = {};
-    
+
                 for (let i = 0; i < numItems; i++) {
                     const newItem: TransactionItem = { _id: `${Date.now()}-${i}` };
                     const newItemIds: any = { _id: newItem._id };
-    
+
                     template.find(s => s.step_name === "Items")?.details.forEach(fieldTemplate => {
                         const fieldId = fieldTemplate.id;
                         const fieldKey = generateKey(fieldTemplate.label);
-    
+
                         if (fieldCounters[fieldId] === undefined) {
                             fieldCounters[fieldId] = 0;
                         }
-    
+
                         const valuesForThisField = valuesByFieldId[fieldId];
                         if (valuesForThisField && fieldCounters[fieldId] < valuesForThisField.length) {
                             const detailValue = valuesForThisField[fieldCounters[fieldId]];
                             newItemIds[fieldKey] = detailValue.id;
-    
+
                             const value = detailValue.value;
                             if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
                                 try {
@@ -122,11 +136,11 @@ export default function DynamicEditTransactionPage() {
                             } else {
                                 newItem[fieldKey] = value;
                             }
-    
+
                             fieldCounters[fieldId]++;
                         }
                     });
-    
+
                     initialData.items.push(newItem);
                     initialDetailIds.items.push(newItemIds);
                 }
@@ -153,7 +167,7 @@ export default function DynamicEditTransactionPage() {
                 });
             }
         });
-    
+
         setTransactionData(initialData);
         setTransactionDetailIds(initialDetailIds);
     };
@@ -171,6 +185,7 @@ export default function DynamicEditTransactionPage() {
         try {
             await httpPost(endpointUrl(`sales/transaction/${transactionId}/update`), payload, true);
             toast.success(`'${field.label}' updated successfully!`);
+            fetchData();
         } catch (error: any) {
             console.error("Update failed:", error);
             toast.error(error?.response?.data?.errors?.type || `Failed to update '${field.label}'`);
@@ -239,16 +254,18 @@ export default function DynamicEditTransactionPage() {
             case 3:
                 const options = field.field_value.map(opt => ({ value: opt.value.toString(), label: opt.value }));
                 const isMulti = Array.isArray(value);
-                const onCreate = (inputValue: string) => setModalState({ isOpen: true, title: `Add New ${field.label}`, message: `Are you sure you want to add "${inputValue}"?`, onConfirm: async () => { 
-                    const newOption = await handleCreateOption(field.id, inputValue); 
-                    if (newOption) { 
-                      if (isMulti) {
-                        onChange([...(value || []), newOption.value]);
-                      } else {
-                        onChange(newOption.value);
-                      }
-                    } 
-                  } });
+                const onCreate = (inputValue: string) => setModalState({
+                    isOpen: true, title: `Add New ${field.label}`, message: `Are you sure you want to add "${inputValue}"?`, onConfirm: async () => {
+                        const newOption = await handleCreateOption(field.id, inputValue);
+                        if (newOption) {
+                            if (isMulti) {
+                                onChange([...(value || []), newOption.value]);
+                            } else {
+                                onChange(newOption.value);
+                            }
+                        }
+                    }
+                });
                 const handleSelectChange = (selection: any) => isMulti ? onChange(selection ? selection.map((opt: any) => opt.value) : []) : onChange(selection ? selection.value : null);
                 const currentValue = isMulti ? options.filter(opt => (value || []).includes(opt.value)) : options.find(opt => opt.value === (value || '').toString()) || null;
                 return <CreatableSelect {...commonProps} options={options} value={currentValue} onChange={handleSelectChange} onCreateOption={onCreate} isMulti={isMulti} />;
@@ -332,8 +349,8 @@ export default function DynamicEditTransactionPage() {
                     isOpen={isAddItemModalOpen}
                     onClose={() => setIsAddItemModalOpen(false)}
                     onSuccess={() => {
-                        setIsAddItemModalOpen(false); 
-                        fetchData(); 
+                        setIsAddItemModalOpen(false);
+                        fetchData();
                     }}
                     formTemplate={formTemplate}
                     transactionId={transactionId}

@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import ComponentCard from "@/components/common/ComponentCard";
 import Input from "@/components/form/input/InputField";
-import { endpointUrl, httpGet, httpPost, httpPut } from  "@/../helpers";
+import { endpointUrl, httpGet, httpPost, httpPut } from "@/../helpers";
 import moment from "moment";
 import SingleDatePicker from "@/components/common/SingleDatePicker";
 
@@ -68,8 +68,8 @@ export default function EditCustomerForm() {
             name,
             phone,
             address,
-            date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
-            date_anniv: moment(dateAnniv).format("YYYY-MM-DD"),
+            date_of_birth: dateOfBirth ? moment(dateOfBirth).format("YYYY-MM-DD") : null,
+            date_anniv: dateAnniv ? moment(dateAnniv).format("YYYY-MM-DD") : null,
             detail_information: detailInformation,
         };
 
@@ -104,11 +104,11 @@ export default function EditCustomerForm() {
                     </div>
                     <div>
                         <label className="block font-medium mb-1">Date of Birth</label>
-                        <SingleDatePicker placeholderText="Select date of birth" selectedDate={dateOfBirth ? new Date(dateOfBirth) : null} onChange={(date: any) => setDateOfBirth(date)} onClearFilter={() => setDateOfBirth("")} viewingMonthDate={viewingMonthDateBirth} onMonthChange={setViewingMonthDateBirth}  />
+                        <SingleDatePicker placeholderText="Select date of birth" selectedDate={dateOfBirth ? new Date(dateOfBirth) : null} onChange={(date: any) => setDateOfBirth(date)} onClearFilter={() => setDateOfBirth("")} viewingMonthDate={viewingMonthDateBirth} onMonthChange={setViewingMonthDateBirth} />
                     </div>
                     <div>
                         <label className="block font-medium mb-1">Anniversary Date</label>
-                        <SingleDatePicker placeholderText="Select anniversary date" selectedDate={dateAnniv ? new Date(dateAnniv) : null} onChange={(date: any) => setDateAnniv(date)} onClearFilter={() => setDateAnniv("")} viewingMonthDate={viewingMonthDateAnniv} onMonthChange={setViewingMonthDateAnniv}  />
+                        <SingleDatePicker placeholderText="Select anniversary date" selectedDate={dateAnniv ? new Date(dateAnniv) : null} onChange={(date: any) => setDateAnniv(date)} onClearFilter={() => setDateAnniv("")} viewingMonthDate={viewingMonthDateAnniv} onMonthChange={setViewingMonthDateAnniv} />
                     </div>
                 </div>
                 <div>

@@ -171,6 +171,12 @@ export default function SalesPage() {
                 cell: ({ row }: any) => <span>{statusText(row.status)}</span>,
             },
             {
+                id: "total_customer",
+                header: "Total Customer",
+                accessorKey: "total_customer",
+                cell: ({ row }: any) => <span className="text-bold text-md">{row.customers_count || 0}</span>,
+            },
+            {
                 id: "created_at",
                 header: "Created At",
                 accessorKey: "created_at",

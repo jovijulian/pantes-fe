@@ -43,8 +43,14 @@ export default function CustomerPage() {
     const [columns, setColumns] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedData, setSelectedData] = useState<any>(null);
+    const [role, setRole] = useState<number | null>(null);
     useEffect(() => {
         getData();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(parseInt(storedRole));
+        }
+
     }, [searchParams, currentPage, perPage, page, searchTerm]);
 
     const handlePageChange = (page: number) => {
@@ -78,42 +84,59 @@ export default function CustomerPage() {
                 header: "Action",
                 accessorKey: "action",
                 cell: ({ row }: any) => {
-                    return (
-                        <div className="flex items-center gap-3 w-[100px]">
-                            {/* Edit */}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(`/customers/edit/${row.id}`);
-                                }}
-                                title="Edit"
-                                className="px-3 py-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
-                            >
-                                <FaEdit className="w-4 h-4" />
-                            </button>
+                    if (role === 2) {
+                        return (
+                            <div className="flex items-center gap-3 w-[100px]">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        router.push(`/customers/edit/${row.id}`);
+                                    }}
+                                    title="Edit"
+                                    className="px-3 py-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
+                                >
+                                    <FaEdit className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )
+                    } else {
+                        return (
+                            <div className="flex items-center gap-3 w-[100px]">
+                                {/* Edit */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        router.push(`/customers/edit/${row.id}`);
+                                    }}
+                                    title="Edit"
+                                    className="px-3 py-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
+                                >
+                                    <FaEdit className="w-4 h-4" />
+                                </button>
 
-                            {/* Delete */}
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedData(row);
-                                    setIsDeleteModalOpen(true);
-                                }}
-                                title="Delete"
-                                className="px-3 py-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
-                            >
-                                <FaTrash className="w-4 h-4" />
-                            </button>
-                        </div>
-                    );
+                                {/* Delete */}
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedData(row);
+                                        setIsDeleteModalOpen(true);
+                                    }}
+                                    title="Delete"
+                                    className="px-3 py-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+                                >
+                                    <FaTrash className="w-4 h-4" />
+                                </button>
+                            </div>
+                        );
+                    }
                 },
                 minWidth: 160, // lebih lebar
                 maxWidth: 220,
             },
             {
-                id: "name",
-                header: "Name",
-                accessorKey: "name",
+                id: "member_no",
+                header: "Member Number",
+                accessorKey: "member_no",
                 cell: ({ row }: any) => {
                     const data = row;
 
@@ -124,10 +147,16 @@ export default function CustomerPage() {
                                 router.push(`/customers/${data.id}`);
                             }}
                         >
-                            {data.name}
+                            {data.member_no}
                         </button>
                     );
                 }
+            },
+            {
+                id: "name",
+                header: "Name",
+                accessorKey: "name",
+                cell: ({ row }: any) => <span>{row.name}</span>,
             },
             {
                 id: "phone",
@@ -149,7 +178,7 @@ export default function CustomerPage() {
             },
         ];
         return [...defaultColumns, ...columns.filter((col) => col.field !== "id" && col.field !== "hide_this_column_field")];
-    }, [columns]);
+    }, [columns, role]);
 
     const getData = async () => {
         setIsLoading(true);
@@ -188,20 +217,20 @@ export default function CustomerPage() {
     return (
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={handleSearch}
-                        placeholder="Search..."
-                        className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    />
-                    <button
-                        onClick={() => router.push("/customers/create")}
-                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                    >
-                        <span className="text-lg font-bold">+</span>
-                        Add Customer
-                    </button>
+                <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    placeholder="Search..."
+                    className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                />
+                <button
+                    onClick={() => router.push("/customers/create")}
+                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                >
+                    <span className="text-lg font-bold">+</span>
+                    Add Customer
+                </button>
             </div>
 
             {/* Table */}

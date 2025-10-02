@@ -36,11 +36,11 @@ export default function RecentTransactions({ data }: { data: Transaction[] }) {
             <div>
               <div
                 key={transaction.id}
-                onClick={() => router.push(`/transactions/detail/${transaction.id}`)}
+                onClick={() => router.push(`/transactions/${transaction.id}`)}
                 className="flex items-center justify-between p-3 mt-2 bg-slate-50 border-2 border-slate-100 rounded-lg hover:bg-slate-100 hover:border-slate-200 transition-all duration-200 cursor-pointer transition-colors"
               >
                 {/* Left side: Icon and Main Info */}
-                <div className="flex items-center gap-4 min-w-0"> {/* <== TAMBAHKAN min-w-0 DI SINI */}
+                <div className="flex items-center gap-4 min-w-0"> 
                   <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full">
                     <ShoppingCart className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   </div>

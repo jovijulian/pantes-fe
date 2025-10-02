@@ -12,6 +12,7 @@ import moment from "moment";
 export default function CreateCustomerForm() {
     const router = useRouter();
 
+    const [numberMember, setNumberMember] = useState("");
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const [address, setAddress] = useState("");
@@ -25,25 +26,26 @@ export default function CreateCustomerForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!name || !phone) {
+        if (!numberMember || !name || !phone) {
             toast.error("Please fill in the customer's name and phone number.");
             return;
         }
 
         const payload = {
+            member_no: numberMember,
             name,
             phone,
             address,
-            date_of_birth: moment(dateOfBirth).format("YYYY-MM-DD"),
-            date_anniv: moment(dateAnniv).format("YYYY-MM-DD"),
+            date_of_birth: dateOfBirth ? moment(dateOfBirth).format("YYYY-MM-DD") : null,
+            date_anniv: dateAnniv ? moment(dateAnniv).format("YYYY-MM-DD") : null,
             detail_information: detailInformation,
         };
 
         try {
             setLoading(true);
-            await httpPost(endpointUrl("/customer"), payload, true); 
+            await httpPost(endpointUrl("/customer"), payload, true);
             toast.success("Customer added successfully!");
-            router.push("/customers"); 
+            router.push("/customers");
         } catch (error: any) {
             toast.error(error?.response?.data?.message || "Failed to add customer.");
         } finally {
@@ -55,6 +57,19 @@ export default function CreateCustomerForm() {
         <ComponentCard title="Add New Customer">
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 gap-6">
+                    {/* Member Number */}
+                    <div>
+                        <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
+                            Member Number <span className="text-red-400 ml-1">*</span>
+                        </label>
+                        <Input
+                            type="text"
+                            placeholder="e.g., 0001"
+                            value={numberMember}
+                            onChange={(e) => setNumberMember(e.target.value)}
+                            required
+                        />
+                    </div>
                     {/* Customer Name */}
                     <div>
                         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
@@ -88,7 +103,7 @@ export default function CreateCustomerForm() {
                         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
                             Date of Birth
                         </label>
-                         <SingleDatePicker placeholderText="Select date of birth" selectedDate={dateOfBirth ? new Date(dateOfBirth) : null} onChange={(date: any) => setDateOfBirth(date)} onClearFilter={() => setDateOfBirth("")} viewingMonthDate={viewingMonthDate} onMonthChange={setViewingMonthDate}  />
+                        <SingleDatePicker placeholderText="Select date of birth" selectedDate={dateOfBirth ? new Date(dateOfBirth) : null} onChange={(date: any) => setDateOfBirth(date)} onClearFilter={() => setDateOfBirth("")} viewingMonthDate={viewingMonthDate} onMonthChange={setViewingMonthDate} />
                     </div>
 
                     {/* Anniversary Date */}
@@ -96,14 +111,14 @@ export default function CreateCustomerForm() {
                         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
                             Anniversary Date
                         </label>
-                        <SingleDatePicker placeholderText="Select anniversary date" selectedDate={dateAnniv ? new Date(dateAnniv) : null} onChange={(date: any) => setDateAnniv(date)} onClearFilter={() => setDateAnniv("")} viewingMonthDate={viewingMonthDate} onMonthChange={setViewingMonthDate}  />
+                        <SingleDatePicker placeholderText="Select anniversary date" selectedDate={dateAnniv ? new Date(dateAnniv) : null} onChange={(date: any) => setDateAnniv(date)} onClearFilter={() => setDateAnniv("")} viewingMonthDate={viewingMonthDate} onMonthChange={setViewingMonthDate} />
                     </div>
                 </div>
 
                 {/* Address */}
                 <div>
                     <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Address
+                        Address <span className="text-red-400 ml-1">*</span>
                     </label>
                     <textarea
                         rows={3}

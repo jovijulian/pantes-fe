@@ -166,7 +166,7 @@ export default function SalesPage() {
             },
         ];
         return [...defaultColumns, ...columns.filter((col) => col.field !== "id" && col.field !== "hide_this_column_field")];
-    }, [columns]);
+    }, [columns, role]);
 
     const getData = async () => {
         setIsLoading(true);
