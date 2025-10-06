@@ -11,9 +11,9 @@ export default function SalesLeaderbord({ data }: { data: any }) {
                     <div className="p-2 bg-orange-100 rounded-lg">
                         <TrendingUp className="w-5 h-5 text-orange-600" />
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900">Sales Performance</h3>
+                    <h3 className="text-xl font-bold text-slate-900">Performa Sales</h3>
                 </div>
-                <p className="text-sm text-slate-500 ml-12">Top performing sales team members</p>
+                <p className="text-sm text-slate-500 ml-12">Sales dengan kinerja terbaik</p>
             </div>
             
             <div className="space-y-4">
@@ -29,18 +29,18 @@ export default function SalesLeaderbord({ data }: { data: any }) {
                             </div>
                             <div>
                                 <h4 className="font-medium text-gray-900">{sales.name}</h4>
-                                <p className="text-xs text-gray-500">Sales Representative</p>
+                                {/* <p className="text-xs text-gray-500">Perwakilan Sales</p> */}
                             </div>
                         </div>
                         <div className="text-right">
                             <p className="text-lg font-semibold text-gray-900">{sales.total_transaction}</p>
-                            <p className="text-xs text-gray-500">Transactions</p>
+                            <p className="text-xs text-gray-500">Transaksi</p>
                         </div>
                     </div>
                 )) : (
                     <div className="text-center py-8 text-gray-500">
                         <Award className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                        <p>No sales data available</p>
+                        <p>Tidak ada data penjualan yang tersedia</p>
                     </div>
                 )}
             </div>

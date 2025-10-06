@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function FormElements() {
     return (
         <div>
-            <PageBreadcrumb pageTitle="Transactions" />
+            <PageBreadcrumb pageTitle="Transaksi" />
             <div className="space-y-6">
                 <div
                     className={`rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]`}

@@ -22,8 +22,8 @@ export default function RecentTransactions({ data }: { data: Transaction[] }) {
               <FaMoneyBillWave className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-slate-900">Recent Activity</h3>
-              <p className="text-sm text-slate-500">Latest transactions</p>
+              <h3 className="text-xl font-bold text-slate-900">Aktivitas Terbaru</h3>
+              <p className="text-sm text-slate-500">Transaksi terbaru</p>
             </div>
           </div>
         </div>
@@ -46,7 +46,7 @@ export default function RecentTransactions({ data }: { data: Transaction[] }) {
                   </div>
                   <div className="truncate">
                     <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">
-                      Customer: {transaction.customer?.name} ({transaction.name_purchase})
+                      Pelanggan: {transaction.customer?.name} ({transaction.name_purchase})
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                       {`by ${transaction.sales?.name}`}
@@ -70,7 +70,7 @@ export default function RecentTransactions({ data }: { data: Transaction[] }) {
         ) : (
           <div className="text-center py-12 text-gray-400">
             {/* Empty state */}
-            <p>No recent transactions found.</p>
+            <p>Tidak ada transaksi terkini yang ditemukan.</p>
           </div>
         )}
       </div>

@@ -55,7 +55,7 @@ export default function DashboardPage() {
 
         } catch (error: any) {
             console.log(error?.response?.data?.message)
-            toast.error(error?.response?.data?.message || "Failed to fetch dashboard data");
+            toast.error(error?.response?.data?.message || "Gagal mengambil data dashboard");
             setDashboardData(null);
         } finally {
             setIsLoading(false);
@@ -101,7 +101,7 @@ export default function DashboardPage() {
             <div className="flex flex-col items-center justify-center h-screen text-center bg-gray-50">
                 <div className="text-gray-500">
                     <Calendar className="w-16 h-16 mx-auto mb-4" />
-                    <p className="text-xl">No data to display</p>
+                    <p className="text-xl">Tidak ada data untuk ditampilkan</p>
                 </div>
             </div>
         );
@@ -113,7 +113,7 @@ export default function DashboardPage() {
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">A summary of your sales and customer activity.</p>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">Ringkasan penjualan dan aktivitas pelanggan Anda.</p>
                 </div>
                 <DateRangePicker onDatesChange={handleDatesChange} initialStartDate={currentStartDate} initialEndDate={currentEndDate} />
             </div>
@@ -130,10 +130,10 @@ export default function DashboardPage() {
                 </div>
             </div>
             <hr className="my-8 border-t-2 border-gray-300 dark:border-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">All Time</h3>
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Sepanjang Waktu</h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="h-full">
-                <SummaryCards data={dashboardData} role={role} />
+                    <SummaryCards data={dashboardData} role={role} />
 
                 </div>
                 <div className="h-full">

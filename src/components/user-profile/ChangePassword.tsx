@@ -20,11 +20,11 @@ export default function UserSecurityCard() {
   const handleChangePassword = async () => {
     setError("");
     if (newPassword !== confirmPassword) {
-      setError("New password and confirm password do not match.");
+      setError("Kata sandi baru dan konfirmasi kata sandi tidak cocok.");
       return;
     }
     if (!oldPassword || !newPassword || !confirmPassword) {
-      setError("All password fields are required.");
+      setError("Semua kolom kata sandi wajib diisi.");
       return;
     }
 
@@ -44,7 +44,7 @@ export default function UserSecurityCard() {
       closeModal();
     } catch (error: any) {
       toast.error(error?.response?.data?.message);
-      setError(error?.response?.data?.message || "Failed to change password.");
+      setError(error?.response?.data?.message || "Gagal mengubah kata sandi.");
     }
 
 
@@ -53,10 +53,10 @@ export default function UserSecurityCard() {
   const UserDisplayInfo = () => (
     <>
       <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-        Account Security
+        Keamanan Akun
       </h4>
       <p className="text-sm text-gray-600 dark:text-gray-300">
-        Manage your account password.
+        Kelola kata sandi akun Anda.
       </p>
     </>
   );
@@ -78,7 +78,7 @@ export default function UserSecurityCard() {
 
         <button
           onClick={openModal}
-          title="Change Password"
+          title="Ubah Kata Sandi"
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 lg:inline-flex lg:w-auto transition-all"
         >
           <svg // Menggunakan SVG yang ada, atau ganti dengan <FaLock className="w-4 h-4" /> jika Anda import FaLock
@@ -94,7 +94,7 @@ export default function UserSecurityCard() {
               fill="currentColor"
             />
           </svg>
-          Change Password
+          Ubah Kata Sandi
         </button>
       </div>
 
@@ -102,10 +102,10 @@ export default function UserSecurityCard() {
         <div className="no-scrollbar relative w-full max-w-[500px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-8">
           <div className="pr-10">
             <h4 className="mb-2 text-xl font-semibold text-gray-800 dark:text-white/90 lg:text-2xl">
-              Change Password
+              Ubah Kata Sandi
             </h4>
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Enter your old password and set a new strong password.
+              Masukkan kata sandi lama Anda dan atur kata sandi baru yang kuat.
             </p>
           </div>
           <form
@@ -117,40 +117,40 @@ export default function UserSecurityCard() {
           >
             <div className="space-y-5 px-2 pb-3">
               <div>
-                <Label htmlFor="old_password">Old Password</Label>
+                <Label htmlFor="old_password">Kata Sandi Lama</Label>
                 <Input
                   type="password"
                   id="old_password"
                   name="old_password"
                   defaultValue={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
-                  placeholder="Enter your current password"
+                  placeholder="Masukkan kata sandi Anda saat ini"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="new_password">New Password</Label>
+                <Label htmlFor="new_password">Kata Sandi Baru</Label>
                 <Input
                   type="password"
                   id="new_password"
                   name="new_password"
                   defaultValue={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter your new password"
+                  placeholder="Masukkan kata sandi baru Anda"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="confirm_password">Confirm New Password</Label>
+                <Label htmlFor="confirm_password">Konfirmasi Kata Sandi Baru</Label>
                 <Input
                   type="password"
                   id="confirm_password"
                   name="confirm_password"
                   defaultValue={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm your new password"
+                  placeholder="Konfirmasikan kata sandi baru Anda"
                   required
                 />
               </div>
@@ -174,7 +174,7 @@ export default function UserSecurityCard() {
                 className="px-4 py-2 rounded-md border border-transparent bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all"
               >
                 {/* <FaSave className="w-4 h-4 mr-2" /> // Contoh dengan ikon */}
-                Save Password
+                Simpan Kata Sandi
               </button>
             </div>
           </form>

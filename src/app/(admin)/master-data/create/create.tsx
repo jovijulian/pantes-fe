@@ -22,17 +22,17 @@ export default function CreateMasterFieldForm() {
     const [valueLength, setValueLength] = useState<number>(0);
 
     const [details, setDetails] = useState<DetailItem[]>([]);
-    const [currentOption, setCurrentOption] = useState(""); 
+    const [currentOption, setCurrentOption] = useState("");
 
     const [loading, setLoading] = useState(false);
 
     const handleAddOption = () => {
         if (currentOption.trim() === "") {
-            toast.warn("Option value cannot be empty");
+            toast.warn("Nilai opsi tidak boleh kosong");
             return;
         }
         setDetails([...details, { value: currentOption.trim() }]);
-        setCurrentOption(""); 
+        setCurrentOption("");
     };
 
     const handleRemoveOption = (indexToRemove: number) => {
@@ -42,11 +42,11 @@ export default function CreateMasterFieldForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!stepName || !label || !step) {
-            toast.error("Please fill all required fields");
+            toast.error("Harap isi semua kolom yang diperlukan");
             return;
         }
         if (valueType === 3 && details.length === 0) {
-            toast.error("Please add at least one option for 'Value Type: Options'");
+            toast.error("Harap tambahkan setidaknya satu opsi untuk 'Jenis Nilai: Opsi'");
             return;
         }
 
@@ -62,14 +62,14 @@ export default function CreateMasterFieldForm() {
         try {
             setLoading(true);
             await httpPost(
-                endpointUrl("/master/field"), 
+                endpointUrl("/master/field"),
                 payload,
                 true,
             );
-            toast.success("Master field created successfully!");
-            router.push("/master-data"); 
+            toast.success("Master field berhasil ditambahkan!");
+            router.push("/master-data");
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Failed to create master field");
+            toast.error(error?.response?.data?.message || "Gagal menambahkan master field");
         } finally {
             setLoading(false);
         }
@@ -83,12 +83,12 @@ export default function CreateMasterFieldForm() {
     ];
 
     return (
-        <ComponentCard title="Create New Master Field">
+        <ComponentCard title="Buat Master Field Baru">
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                            Step Order <span className="text-red-400 ml-1">*</span>
+                            Urutan Step <span className="text-red-400 ml-1">*</span>
                         </label>
                         <Input
                             type="number"
@@ -97,11 +97,11 @@ export default function CreateMasterFieldForm() {
                             onChange={(e) => setStep(Number(e.target.value))}
                             required
                         />
-                        <p className="text-sm text-gray-500 mt-1">The numerical order for this field.</p>
+                        <p className="text-sm text-gray-500 mt-1">Turutan numerik untuk field ini.</p>
                     </div>
                     <div>
                         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                            Step Name <span className="text-red-400 ml-1">*</span>
+                            Nama Step <span className="text-red-400 ml-1">*</span>
                         </label>
                         <Input
                             type="text"
@@ -110,13 +110,13 @@ export default function CreateMasterFieldForm() {
                             onChange={(e) => setStepName(e.target.value)}
                             required
                         />
-                        <p className="text-sm text-gray-500 mt-1">The name of the process stage.</p>
+                        <p className="text-sm text-gray-500 mt-1">Nama tahapan proses.</p>
                     </div>
                 </div>
 
                 <div>
                     <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Field Label <span className="text-red-400 ml-1">*</span>
+                        Label Field <span className="text-red-400 ml-1">*</span>
                     </label>
                     <Input
                         type="text"
@@ -125,28 +125,28 @@ export default function CreateMasterFieldForm() {
                         onChange={(e) => setLabel(e.target.value)}
                         required
                     />
-                    <p className="text-sm text-gray-500 mt-1">The text that will appear as the input label on the form.</p>
+                    <p className="text-sm text-gray-500 mt-1">Teks yang akan muncul sebagai label input pada formulir.</p>
                 </div>
 
                 <div>
                     <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Value Type <span className="text-red-400 ml-1">*</span>
+                        Tipe Value <span className="text-red-400 ml-1">*</span>
                     </label>
                     <Select
                         options={valueTypeOptions}
                         value={valueTypeOptions.find(opt => opt.value === valueType)}
                         onValueChange={(option) => setValueType(option ? option.value : 1)}
                     />
-                    <p className="text-sm text-gray-500 mt-1">The type of input that will be used for this field.</p>
+                    <p className="text-sm text-gray-500 mt-1">Jenis input yang akan digunakan untuk field ini.</p>
                 </div>
 
                 {valueType === 3 && (
                     <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg space-y-4">
-                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">Manage Options</h3>
+                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">Kelola Opsi</h3>
                         <div className="flex items-center gap-2">
                             <Input
                                 type="text"
-                                placeholder="Enter a new option value"
+                                placeholder="Masukkan nilai opsi baru"
                                 value={currentOption}
                                 onChange={(e) => setCurrentOption(e.target.value)}
                             />
@@ -155,7 +155,7 @@ export default function CreateMasterFieldForm() {
                                 onClick={handleAddOption}
                                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 shrink-0"
                             >
-                                Add
+                                Tambah
                             </button>
                         </div>
 
@@ -169,12 +169,12 @@ export default function CreateMasterFieldForm() {
                                         onClick={() => handleRemoveOption(index)}
                                         className="text-red-500 hover:text-red-700 font-semibold"
                                     >
-                                        Remove
+                                        Hapus
                                     </button>
                                 </div>
                             ))}
                             {details.length === 0 && (
-                                <p className="text-sm text-gray-500 text-center py-2">No options added yet.</p>
+                                <p className="text-sm text-gray-500 text-center py-2">Belum ada opsi yang ditambahkan.</p>
                             )}
                         </div>
                     </div>
@@ -193,7 +193,7 @@ export default function CreateMasterFieldForm() {
                         disabled={loading}
                         className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                     >
-                        {loading ? "Saving..." : "Save Master Field"}
+                        {loading ? "Saving..." : "Simpan Master Field"}
                     </button>
                 </div>
             </form>

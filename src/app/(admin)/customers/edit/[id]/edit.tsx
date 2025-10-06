@@ -46,7 +46,7 @@ export default function EditCustomerForm() {
                 setDetailInformation(customer.detail_information || "");
 
             } catch (error) {
-                toast.error("Failed to fetch customer data.");
+                toast.error("Gagal mengambil data pelanggan.");
                 router.push("/customers"); // Kembali jika data tidak ditemukan
             } finally {
                 setInitialLoading(false);
@@ -60,7 +60,7 @@ export default function EditCustomerForm() {
         e.preventDefault();
 
         if (!name || !phone) {
-            toast.error("Please fill in the customer's name and phone number.");
+            toast.error("Silakan isi nama dan nomor telepon pelanggan.");
             return;
         }
 
@@ -76,10 +76,10 @@ export default function EditCustomerForm() {
         try {
             setLoading(true);
             await httpPost(endpointUrl(`/customer/${id}/update`), payload, true);
-            toast.success("Customer updated successfully!");
+            toast.success("Pelanggan berhasil diperbarui!");
             router.push("/customers");
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Failed to update customer.");
+            toast.error(error?.response?.data?.message || "Gagal memperbarui pelanggan.");
         } finally {
             setLoading(false);
         }
@@ -90,33 +90,32 @@ export default function EditCustomerForm() {
     }
 
     return (
-        <ComponentCard title="Edit Customer">
+        <ComponentCard title="Edit Pelanggan">
             <form onSubmit={handleSubmit} className="space-y-6">
-                {/* ... (Isi form sama persis dengan halaman create) ... */}
                 <div className="grid grid-cols-1 gap-6">
                     <div>
-                        <label className="block font-medium mb-1">Customer Name <span className="text-red-400">*</span></label>
+                        <label className="block font-medium mb-1">Nama Pelanggan <span className="text-red-400">*</span></label>
                         <Input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
                     </div>
                     <div>
-                        <label className="block font-medium mb-1">Phone Number <span className="text-red-400">*</span></label>
+                        <label className="block font-medium mb-1">No. Telp <span className="text-red-400">*</span></label>
                         <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
                     </div>
                     <div>
-                        <label className="block font-medium mb-1">Date of Birth</label>
+                        <label className="block font-medium mb-1">Tanggal lahir</label>
                         <SingleDatePicker placeholderText="Select date of birth" selectedDate={dateOfBirth ? new Date(dateOfBirth) : null} onChange={(date: any) => setDateOfBirth(date)} onClearFilter={() => setDateOfBirth("")} viewingMonthDate={viewingMonthDateBirth} onMonthChange={setViewingMonthDateBirth} />
                     </div>
                     <div>
-                        <label className="block font-medium mb-1">Anniversary Date</label>
+                        <label className="block font-medium mb-1">Tanggal Anniversary</label>
                         <SingleDatePicker placeholderText="Select anniversary date" selectedDate={dateAnniv ? new Date(dateAnniv) : null} onChange={(date: any) => setDateAnniv(date)} onClearFilter={() => setDateAnniv("")} viewingMonthDate={viewingMonthDateAnniv} onMonthChange={setViewingMonthDateAnniv} />
                     </div>
                 </div>
                 <div>
-                    <label className="block font-medium mb-1">Address</label>
+                    <label className="block font-medium mb-1">Alamat</label>
                     <textarea rows={3} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
                 </div>
                 <div>
-                    <label className="block font-medium mb-1">Detail Information</label>
+                    <label className="block font-medium mb-1">Informasi Detail</label>
                     <textarea rows={4} value={detailInformation} onChange={(e) => setDetailInformation(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
                 </div>
                 <div className="flex justify-end gap-2 pt-4 border-t">
@@ -124,7 +123,7 @@ export default function EditCustomerForm() {
                         Cancel
                     </button>
                     <button type="submit" disabled={loading} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
-                        {loading ? "Updating..." : "Update Customer"}
+                        {loading ? "Updating..." : "Update Pelanggan"}
                     </button>
                 </div>
             </form>

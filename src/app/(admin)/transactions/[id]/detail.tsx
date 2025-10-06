@@ -301,9 +301,9 @@ export default function TransactionDetailPage() {
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                                 <FaReceipt className="w-8 h-8 text-blue-500" />
-                                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Detail Transaction</h1>
+                                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Detail Transaksi</h1>
                             </div>
-                            <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">Purchase Name: {data.name_purchase}</p>
+                            <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">Nama Pembelian: {data.name_purchase}</p>
                             <div className="flex flex-wrap items-center gap-4 text-sm">
                                 <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg">
                                     <FaCalendarAlt className="w-5 h-5 text-gray-600 dark:text-gray-300" />
@@ -317,10 +317,12 @@ export default function TransactionDetailPage() {
                                 )}
                             </div>
                         </div>
-                        <div className="px-6 py-3 rounded-full font-semibold text-sm flex items-center gap-2 self-start {data.status === 1
-            ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
-            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300'
-            }">
+                        <div
+                            className={`px-6 py-3 rounded-full font-semibold text-sm flex items-center gap-2 self-start ${data.status === 1
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300'
+                                }`}
+                        >
                             {data.status === 1 ? <FaCheckCircle className="w-5 h-5" /> : <FaTimesCircle className="w-5 h-5" />}
                             {data.status === 1 ? 'Completed' : 'Pending'}
                         </div>
@@ -367,13 +369,13 @@ export default function TransactionDetailPage() {
                                 <FaUserTie className="w-7 h-7 text-green-500" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-gray-800 dark:text-white">Sales Person</h3>
-                                <p className="text-sm text-gray-500">Handled by</p>
+                                <h3 className="text-lg font-bold text-gray-800 dark:text-white">Sales</h3>
+                                <p className="text-sm text-gray-500">Ditangani oleh</p>
                             </div>
                         </div>
                         <div className="space-y-3">
                             <div>
-                                <p className="text-sm text-gray-500 mb-1">Name</p>
+                                <p className="text-sm text-gray-500 mb-1">Nama</p>
                                 <p className="font-bold text-xl text-gray-800 dark:text-white">{data.sales.name}</p>
                             </div>
                             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
@@ -499,7 +501,7 @@ export default function TransactionDetailPage() {
                         onClick={() => router.back()}
                         className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-500">
                         <FaArrowLeft />
-                        Back
+                        Kembali
                     </button>
                 </div>
 

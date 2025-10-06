@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function FormElements() {
     return (
         <div>
-            <PageBreadcrumb pageTitle="Edit page" />
+            <PageBreadcrumb pageTitle="Halaman Edit" />
             <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-6">
                     <EditPage />

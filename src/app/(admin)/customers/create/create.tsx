@@ -27,7 +27,7 @@ export default function CreateCustomerForm() {
         e.preventDefault();
 
         if (!numberMember || !name || !phone) {
-            toast.error("Please fill in the customer's name and phone number.");
+            toast.error("Silakan isi nama dan nomor telepon pelanggan.");
             return;
         }
 
@@ -44,23 +44,23 @@ export default function CreateCustomerForm() {
         try {
             setLoading(true);
             await httpPost(endpointUrl("/customer"), payload, true);
-            toast.success("Customer added successfully!");
+            toast.success("Pelanggan berhasil ditambahkan!");
             router.push("/customers");
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Failed to add customer.");
+            toast.error(error?.response?.data?.message || "Gagal menambahkan pelanggan.");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <ComponentCard title="Add New Customer">
+        <ComponentCard title="Tambahkan Pelanggan Baru">
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 gap-6">
                     {/* Member Number */}
                     <div>
                         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                            Member Number <span className="text-red-400 ml-1">*</span>
+                            Nomor Anggota <span className="text-red-400 ml-1">*</span>
                         </label>
                         <Input
                             type="text"
@@ -73,7 +73,7 @@ export default function CreateCustomerForm() {
                     {/* Customer Name */}
                     <div>
                         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                            Customer Name <span className="text-red-400 ml-1">*</span>
+                            Nama Pelanggan <span className="text-red-400 ml-1">*</span>
                         </label>
                         <Input
                             type="text"
@@ -87,7 +87,7 @@ export default function CreateCustomerForm() {
                     {/* Phone Number */}
                     <div>
                         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                            Phone Number <span className="text-red-400 ml-1">*</span>
+                            Nomor telepon <span className="text-red-400 ml-1">*</span>
                         </label>
                         <Input
                             type="tel" // 'tel' lebih baik untuk input nomor telepon
@@ -101,7 +101,7 @@ export default function CreateCustomerForm() {
                     {/* Date of Birth */}
                     <div>
                         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                            Date of Birth
+                            Tanggal lahir
                         </label>
                         <SingleDatePicker placeholderText="Select date of birth" selectedDate={dateOfBirth ? new Date(dateOfBirth) : null} onChange={(date: any) => setDateOfBirth(date)} onClearFilter={() => setDateOfBirth("")} viewingMonthDate={viewingMonthDate} onMonthChange={setViewingMonthDate} />
                     </div>
@@ -109,7 +109,7 @@ export default function CreateCustomerForm() {
                     {/* Anniversary Date */}
                     <div>
                         <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                            Anniversary Date
+                            Tanggal Anniversary
                         </label>
                         <SingleDatePicker placeholderText="Select anniversary date" selectedDate={dateAnniv ? new Date(dateAnniv) : null} onChange={(date: any) => setDateAnniv(date)} onClearFilter={() => setDateAnniv("")} viewingMonthDate={viewingMonthDate} onMonthChange={setViewingMonthDate} />
                     </div>
@@ -118,7 +118,7 @@ export default function CreateCustomerForm() {
                 {/* Address */}
                 <div>
                     <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Address <span className="text-red-400 ml-1">*</span>
+                        Alamat <span className="text-red-400 ml-1">*</span>
                     </label>
                     <textarea
                         rows={3}
@@ -132,7 +132,7 @@ export default function CreateCustomerForm() {
                 {/* Detail Information */}
                 <div>
                     <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Customer Details
+                        Detail Pelanggan
                     </label>
                     <textarea
                         rows={4}
@@ -157,7 +157,7 @@ export default function CreateCustomerForm() {
                         disabled={loading}
                         className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                     >
-                        {loading ? "Saving..." : "Save Customer"}
+                        {loading ? "Saving..." : "Simpan Pelanggan"}
                     </button>
                 </div>
             </form>

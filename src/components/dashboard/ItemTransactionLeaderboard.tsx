@@ -45,7 +45,7 @@ export default function ItemTransactionPieChart({ data }: Props) {
     if (chartData.length === 0) {
         return (
             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border h-full flex items-center justify-center">
-                <p className="text-gray-500">No item transaction data to display.</p>
+                <p className="text-gray-500">Tidak ada data transaksi item untuk ditampilkan.</p>
             </div>
         );
     }
@@ -59,9 +59,9 @@ export default function ItemTransactionPieChart({ data }: Props) {
                             <Package className="w-5 h-5 text-purple-600" />
                         </div>
                         <div>
-                            <h3 className="text-xl font-bold text-slate-900">Popular Items</h3>
+                            <h3 className="text-xl font-bold text-slate-900">Barang Populer</h3>
                             <p className="text-sm text-slate-500">
-                                Most frequently sold items
+                                Barang yang paling sering terjual
                             </p>
                         </div>
                     </div>

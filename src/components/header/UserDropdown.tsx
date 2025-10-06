@@ -123,7 +123,7 @@ export default function UserDropdown() {
                   fill=""
                 />
               </svg>
-              Account settings
+              Pengaturan akun
             </DropdownItem>
           </li>
           {/* <li>
@@ -172,7 +172,7 @@ export default function UserDropdown() {
               fill=""
             />
           </svg>
-          Sign out
+          Log out
         </Link>
       </Dropdown>
     </div>

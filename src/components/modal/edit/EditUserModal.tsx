@@ -46,8 +46,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 setPhone(userData.phone || "");
 
             } catch (err: any) {
-                toast.error(err?.response?.data?.message || "Failed to fetch sales account data.");
-                setError("Could not load sales account data.");
+                toast.error(err?.response?.data?.message || "Gagal mengambil data akun penjualan.");
+                setError("Tidak dapat memuat data akun penjualan.");
             } finally {
                 setIsLoading(false);
             }
@@ -71,7 +71,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
         try {
             await httpPost(endpointUrl(`sales/${selectedId}/update`), payload, true);
-            toast.success("User updated succesfully");
+            toast.success("Akun sales berhasil diperbarui!");
             setName("");
             setPhone("");
             setEmail("");
@@ -99,7 +99,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             <div className="no-scrollbar relative w-full max-w-[500px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-8">
                 <div className="pr-10">
                     <h4 className="mb-2 text-xl font-semibold text-gray-800 dark:text-white/90 lg:text-2xl">
-                        Edit Sales Account
+                        Edit Akun Sales
                     </h4>
                 </div>
                 <form
@@ -111,7 +111,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 >
                     <div className="space-y-5 px-2 pb-3">
                         <div>
-                            <Label htmlFor="name">Name</Label>
+                            <Label htmlFor="name">Nama</Label>
                             <Input
                                 type="text"
                                 id="name"
@@ -135,7 +135,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                         </div>
 
                         <div>
-                            <Label htmlFor="phone">Phone</Label>
+                            <Label htmlFor="phone">No. Telp</Label>
                             <Input
                                 type="text"
                                 id="phone"
@@ -163,7 +163,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                             title="Save"
                             className="px-4 py-2 rounded-md border border-transparent bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all"
                         >
-                            Save
+                            Simpan
                         </button>
                     </div>
                 </form>

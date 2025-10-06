@@ -31,7 +31,7 @@ export default function CreateForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !email || !password || !phone) {
-            toast.error("Please fill all required fields");
+            toast.error("Harap isi semua kolom yang diperlukan");
             return;
         }
         try {
@@ -48,10 +48,10 @@ export default function CreateForm() {
                 data,
                 true,
             );
-            toast.success("Sales account added successfully!");
+            toast.success("Akun sales berhasil ditambahkan!");
             router.push("/sales-accounts");
         } catch (error: any) {
-            toast.error(error?.response?.data?.errors?.type || "Failed to add sales account");
+            toast.error(error?.response?.data?.errors?.type || "Gagal menambahkan akun penjualan");
         } finally {
             setLoading(false);
         }
@@ -59,11 +59,11 @@ export default function CreateForm() {
 
 
     return (
-        <ComponentCard title="Sales Account Data">
+        <ComponentCard title="Data Akun Sales">
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                     <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Name<span className="text-red-400 ml-1">*</span>
+                        Nama<span className="text-red-400 ml-1">*</span>
                     </label>
                     <Input
                         type="text"
@@ -74,7 +74,7 @@ export default function CreateForm() {
                 </div>
                 <div>
                     <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Phone<span className="text-red-400 ml-1">*</span>
+                        No. Telp<span className="text-red-400 ml-1">*</span>
                     </label>
                     <Input
                         type="number"
@@ -119,7 +119,7 @@ export default function CreateForm() {
                         disabled={loading}
                         className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                     >
-                        {loading ? "Creating..." : "Add Sales Account"}
+                        {loading ? "Creating..." : "Tambahkan Akun Sales"}
                     </button>
                 </div>
             </form>

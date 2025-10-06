@@ -36,7 +36,7 @@ export default function UpdateMasterFieldForm() {
 
         const getFieldData = async () => {
             try {
-                const response = await httpGet(endpointUrl(`/master/field/${id}`),true);
+                const response = await httpGet(endpointUrl(`/master/field/${id}`), true);
                 const data = response.data.data;
 
                 // Populate the form with existing data
@@ -51,7 +51,7 @@ export default function UpdateMasterFieldForm() {
                 }
 
             } catch (error) {
-                toast.error("Failed to fetch master field data.");
+                toast.error("Gagal mengambil data master field utama.");
                 router.push("/master-data");
             } finally {
                 setInitialLoading(false);
@@ -65,7 +65,7 @@ export default function UpdateMasterFieldForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!stepName || !label || !step) {
-            toast.error("Please fill all required fields");
+            toast.error("Harap isi semua kolom yang diperlukan");
             return;
         }
 
@@ -85,10 +85,10 @@ export default function UpdateMasterFieldForm() {
                 payload,
                 true
             );
-            toast.success("Master field updated successfully!");
+            toast.success("Master field berhasil diubah!");
             router.push("/master-data");
         } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Failed to update master field");
+            toast.error(error?.response?.data?.message || "Gagal mengubah master field");
         } finally {
             setLoading(false);
         }
@@ -110,7 +110,7 @@ export default function UpdateMasterFieldForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block font-medium mb-1">Step Order <span className="text-red-400">*</span></label>
+                        <label className="block font-medium mb-1">Urutan Step <span className="text-red-400">*</span></label>
                         <Input
                             type="number"
                             value={step}
@@ -119,7 +119,7 @@ export default function UpdateMasterFieldForm() {
                         />
                     </div>
                     <div>
-                        <label className="block font-medium mb-1">Step Name <span className="text-red-400">*</span></label>
+                        <label className="block font-medium mb-1">Nama Step <span className="text-red-400">*</span></label>
                         <Input
                             type="text"
                             value={stepName}
@@ -130,7 +130,7 @@ export default function UpdateMasterFieldForm() {
                 </div>
 
                 <div>
-                    <label className="block font-medium mb-1">Field Label <span className="text-red-400">*</span></label>
+                    <label className="block font-medium mb-1">Label Field <span className="text-red-400">*</span></label>
                     <Input
                         type="text"
                         value={label}
@@ -140,7 +140,7 @@ export default function UpdateMasterFieldForm() {
                 </div>
 
                 <div>
-                    <label className="block font-medium mb-1">Value Type <span className="text-red-400">*</span></label>
+                    <label className="block font-medium mb-1">Tipe Value <span className="text-red-400">*</span></label>
                     <Select
                         options={valueTypeOptions}
                         value={valueTypeOptions.find(opt => opt.value === valueType)}
@@ -151,15 +151,15 @@ export default function UpdateMasterFieldForm() {
                 {/* This section now just displays existing options */}
                 {valueType === 3 && (
                     <div className="p-4 border rounded-lg space-y-4">
-                        <h3 className="font-semibold">Existing Options</h3>
-                        <p className="text-sm text-gray-500">Managing options (add/remove) should be done through a separate feature to avoid accidental data changes.</p>
+                        <h3 className="font-semibold">Opsi yang Ada</h3>
+                        <p className="text-sm text-gray-500">Pengelolaan opsi (tambah/hapus) harus dilakukan melalui fitur terpisah untuk menghindari perubahan data yang tidak disengaja.</p>
                         <div className="space-y-2">
                             {details.map((item) => (
                                 <div key={item.id} className="bg-gray-50 p-2 rounded">
                                     <span>{item.value}</span>
                                 </div>
                             ))}
-                            
+
                         </div>
                     </div>
                 )}
@@ -178,7 +178,7 @@ export default function UpdateMasterFieldForm() {
                         disabled={loading}
                         className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                     >
-                        {loading ? "Updating..." : "Update Master Field"}
+                        {loading ? "Updating..." : "Perbarui Master Field"}
                     </button>
                 </div>
             </form>

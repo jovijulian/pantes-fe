@@ -12,9 +12,9 @@ export default function CustomerLeaderboard({ data }: { data: any }) {
                     <div className="p-2 bg-blue-100 rounded-lg">
                         <Users className="w-5 h-5 text-blue-600" />
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900">Top Customers</h3>
+                    <h3 className="text-xl font-bold text-slate-900">Top Pelanggan</h3>
                 </div>
-                <p className="text-sm text-slate-500 ml-12">Ranked by total transaction count</p>
+                <p className="text-sm text-slate-500 ml-12">Diurutkan berdasarkan jumlah total transaksi</p>
             </div>
 
             <div className="space-y-4">
@@ -34,13 +34,13 @@ export default function CustomerLeaderboard({ data }: { data: any }) {
                         </div>
                         <div className="text-right">
                             <p className="text-lg font-semibold text-gray-900">{customer.total_transaction}</p>
-                            <p className="text-xs text-gray-500">Transactions</p>
+                            <p className="text-xs text-gray-500">Transaksi</p>
                         </div>
                     </div>
                 )) : (
                     <div className="text-center py-8 text-gray-500">
                         <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                        <p>No customer data available</p>
+                        <p>Tidak ada data pelanggan yang tersedia</p>
                     </div>
                 )}
             </div>

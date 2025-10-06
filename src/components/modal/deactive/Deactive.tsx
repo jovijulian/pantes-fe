@@ -30,7 +30,7 @@ const DeactiveModal: React.FC<DeactiveModalProps> = ({
     if (!isOpen) return null;
     const handleDeactive = async () => {
         if (!selectedData) return;
-       
+
         try {
             setDeleteLoading(true);
             const response = await httpDelete(
@@ -48,7 +48,7 @@ const DeactiveModal: React.FC<DeactiveModalProps> = ({
     };
     return (
         <Modal isOpen={isOpen} onClose={onClose} className="max-w-[500px] m-4">
-        <div className="no-scrollbar relative w-full max-w-[500px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-8">
+            <div className="no-scrollbar relative w-full max-w-[500px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-8">
 
                 {/* Header dengan Icon */}
                 <div className="flex items-start mb-6">
@@ -59,10 +59,10 @@ const DeactiveModal: React.FC<DeactiveModalProps> = ({
                     </div>
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                            Confirm Delete
+                            Konfirmasi Hapus
                         </h2>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            This action is permanent
+                            Tindakan ini bersifat permanen
                         </p>
                     </div>
                 </div>
@@ -70,11 +70,11 @@ const DeactiveModal: React.FC<DeactiveModalProps> = ({
                 {/* Description */}
                 <div className="mb-8">
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                        Are you sure you want to delete{" "}
+                    Apakah Anda yakin ingin menghapus?{" "}
                         <span className="font-semibold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">
                             {itemName || "this item"}
                         </span>
-                        ? This action cannot be undone and all associated data will be permanently removed.
+                        ? Tindakan ini tidak dapat dibatalkan dan semua data terkait akan dihapus secara permanen.
                     </p>
                 </div>
 
@@ -102,12 +102,12 @@ const DeactiveModal: React.FC<DeactiveModalProps> = ({
                                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
-                                Delete
+                                Hapus
                             </>
                         )}
                     </button>
                 </div>
-                </div>
+            </div>
         </Modal>
     );
 };

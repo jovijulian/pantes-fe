@@ -245,10 +245,10 @@ export default function DynamicCreateTransactionPage() {
                 finalPayload,
                 true,
             );
-            toast.success("Transaction added successfully!");
+            toast.success("Transaksi berhasil ditambahkan!");
             router.push("/transactions");
         } catch (error: any) {
-            toast.error(error?.response?.data?.errors?.type || "Failed to add Transaction");
+            toast.error(error?.response?.data?.errors?.type || "Gagal menambahkan Transaksi");
         } finally {
             setLoading(false);
         }
@@ -436,8 +436,8 @@ export default function DynamicCreateTransactionPage() {
                 const onCreate = (inputValue: string) => {
                     setModalState({
                         isOpen: true,
-                        title: `Add New ${field.label}`,
-                        message: `Are you sure you want to add "${inputValue}" to the master data?`,
+                        title: `Tambah ${field.label} baru`,
+                        message: `Apakah Anda yakin ingin menambahkan "${inputValue}" ke data master?`,
                         onConfirm: async () => {
                             const newOption = await handleCreateOption(field.id, inputValue);
                             if (newOption) {
@@ -459,7 +459,7 @@ export default function DynamicCreateTransactionPage() {
                 if (!field.field_value || field.field_value.length === 0) {
                     return (
                         <CreatableSelect
-                            placeholder={`No options available for ${field.label}, please add new data`}
+                            placeholder={`Tidak ada opsi yang tersedia untuk ${field.label}, silakan tambahkan data baru`}
                             options={[]}
                             value={null}
                             onChange={handleSelectChange}
@@ -472,7 +472,7 @@ export default function DynamicCreateTransactionPage() {
 
                 return (
                     <CreatableSelect
-                        placeholder={`Select or type ${field.label}`}
+                        placeholder={`Pilih atau ketik ${field.label}`}
                         options={options}
                         value={currentValue}
                         onChange={handleSelectChange}
@@ -483,7 +483,7 @@ export default function DynamicCreateTransactionPage() {
             case 4:
                 return (
                     <SingleDatePicker
-                        placeholderText={`Select ${field.label}`}
+                        placeholderText={`Pilih ${field.label}`}
                         selectedDate={value ? new Date(value) : null}
                         onChange={(date: Date | null) =>
                             onChange(date ? moment(date).format('YYYY-MM-DD') : null)
@@ -547,9 +547,9 @@ export default function DynamicCreateTransactionPage() {
                             <ShoppingCart className="h-8 w-8 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Create New Transaction</h1>
+                            <h1 className="text-3xl font-bold text-gray-900">Buat Transaksi Baru</h1>
                             <p className="text-gray-600 mt-1">
-                                Search or input customer data, then add transaction items.
+                                Cari atau masukkan data pelanggan, lalu tambahkan item transaksi.
                             </p>
                         </div>
                     </div>
@@ -585,7 +585,7 @@ export default function DynamicCreateTransactionPage() {
                                                 <User className="h-6 w-6 text-white" />
                                             </div>
                                             <h2 className="text-xl font-bold text-gray-900">
-                                                Customer Transaction Information
+                                                Informasi Transaksi Pelanggan
                                             </h2>
                                         </div>
 
@@ -618,12 +618,12 @@ export default function DynamicCreateTransactionPage() {
 
                                         {customerFoundStatus === 'found' && (
                                             <div className="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 mb-6 text-sm">
-                                                Customer found! Data has been auto-filled.
+                                                Pelanggan ditemukan! Data telah terisi otomatis.
                                             </div>
                                         )}
                                         {customerFoundStatus === 'not_found' && (
                                             <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-6 text-sm">
-                                                This is a new customer. Please complete the details below.
+                                                Ini pelanggan baru. Mohon lengkapi detail di bawah ini.
                                             </div>
                                         )}
 
@@ -658,7 +658,7 @@ export default function DynamicCreateTransactionPage() {
                                             <div className="bg-green-600 p-2 rounded-lg mr-4">
                                                 <Package className="h-6 w-6 text-white" />
                                             </div>
-                                            <h2 className="text-xl font-bold text-gray-900">Transaction Items</h2>
+                                            <h2 className="text-xl font-bold text-gray-900">Item Transaksi</h2>
                                         </div>
                                         <button
                                             type="button"
@@ -666,7 +666,7 @@ export default function DynamicCreateTransactionPage() {
                                             className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                                         >
                                             <Plus className="h-4 w-4 mr-2" />
-                                            Add Item
+                                            Tambah Item
                                         </button>
                                     </div>
 
@@ -760,15 +760,15 @@ export default function DynamicCreateTransactionPage() {
                                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
                                     <div className="flex items-center mb-6">
                                         <Calculator className="h-6 w-6 text-blue-600 mr-2" />
-                                        <h3 className="text-xl font-bold text-gray-900">Order Summary</h3>
+                                        <h3 className="text-xl font-bold text-gray-900">Ringkasan Pesanan</h3>
                                     </div>
                                     <div className="space-y-4">
                                         <div className="flex justify-between py-2 border-b">
-                                            <span className="text-gray-600">Total Items:</span>
+                                            <span className="text-gray-600">Total Item:</span>
                                             <span className="font-semibold">{transactionData.items.length}</span>
                                         </div>
                                         <div className="flex justify-between py-2 border-b">
-                                            <span className="text-gray-600">Total Amount:</span>
+                                            <span className="text-gray-600">Jumlah Total Bayar:</span>
                                             <span className="font-bold text-lg text-green-600">
                                                 {formatCurrency(totalAmount)}
                                             </span>
@@ -804,7 +804,7 @@ export default function DynamicCreateTransactionPage() {
                                         disabled={loading}
                                         className="w-full mt-8 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50"
                                     >
-                                        {loading ? "Creating..." : "Create Transaction"}
+                                        {loading ? "Creating..." : "Buat Transaksi"}
                                     </button>
                                 </div>
                             </div>

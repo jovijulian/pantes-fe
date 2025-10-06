@@ -3,30 +3,30 @@ import { Users, ShoppingCart, Package, User } from 'lucide-react';
 export default function SummaryCards({ data, role }: { data: any, role: any }) {
   const cards = [
     {
-      title: "Total Customers",
+      title: "Total Pelanggan",
       value: data?.customer?.count_all || 0,
-      subtitle: "All time customers",
+      subtitle: "Pelanggan sepanjang masa",
       icon: <Users className="w-6 h-6" />,
       color: "bg-blue-50 text-blue-600"
     },
     {
-      title: "Total Transactions",
+      title: "Total Transaksi",
       value: data?.transaction?.count_all || 0,
-      subtitle: "All time transactions",
+      subtitle: "Semua transaksi sepanjang masa",
       icon: <ShoppingCart className="w-6 h-6" />,
       color: "bg-green-50 text-green-600"
     },
     {
       title: "Total Sales",
       value: data?.sales?.count_all || 0,
-      subtitle: "Active sales team",
+      subtitle: "Tim sales aktif",
       icon: <User className="w-6 h-6" />,
       color: "bg-orange-50 text-orange-600"
     },
     {
-      title: "Total Items Sold",
+      title: "Total Barang Terjual",
       value: data?.item_transaction?.count_all || 0,
-      subtitle: "All time items sold",
+      subtitle: "Semua barang terjual sepanjang masa",
       icon: <Package className="w-6 h-6" />,
       color: "bg-purple-50 text-purple-600"
     }

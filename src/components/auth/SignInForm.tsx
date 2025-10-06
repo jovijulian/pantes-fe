@@ -1,12 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { IconEye, IconEyeOff, IconMail, IconMessage, IconStar } from "@tabler/icons-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Root } from "@/types";
 import { useForm } from "@mantine/form";
-import { endpointUrl, endpointUrlv2, httpGet } from "@/../helpers";
-import { BiSolidCarMechanic } from "react-icons/bi";
+import { endpointUrl, httpGet } from "@/../helpers";
 
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { setCookie } from "cookies-next";
@@ -30,7 +28,7 @@ const SignIn: React.FC = () => {
     validate: {
       password: (value: any) =>
         value.length < 6
-          ? "Password should include at least 6 characters"
+          ? "Kata sandi harus mencakup setidaknya 6 karakter"
           : null,
     },
   });
@@ -56,8 +54,8 @@ const SignIn: React.FC = () => {
       if (error.response.status === 401) {
         setAlert({
           variant: "error",
-          title: "Fail to Login",
-          message: "Email or Password is incorrect.",
+          title: "Gagal Masuk",
+          message: "Email atau Kata Sandi salah.",
           showLink: false,
           linkHref: "",
           linkText: "",
@@ -66,8 +64,8 @@ const SignIn: React.FC = () => {
       }
       setAlert({
         variant: "error",
-        title: "Fail to Login",
-        message: "Internal Server Error.",
+        title: "Gagal Masuk",
+        message: "Kesalahan Server Internal.",
         showLink: false,
         linkHref: "",
         linkText: "",
@@ -104,10 +102,10 @@ const SignIn: React.FC = () => {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Kata Sandi</label>
         <div className="relative">
           <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-          <input {...form.getInputProps("password")} type={isPasswordVisible ? "text" : "password"} placeholder="Enter password" className="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+          <input {...form.getInputProps("password")} type={isPasswordVisible ? "text" : "password"} placeholder="Masukan kata sandi" className="w-full pl-10 pr-10 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
           <button type="button" onClick={() => setIsPasswordVisible(!isPasswordVisible)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600">
             {isPasswordVisible ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
@@ -123,10 +121,10 @@ const SignIn: React.FC = () => {
         <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
           <div className="mb-8">
             <Link href="/" className="flex items-center">
-              <span className="text-gray-800 dark:text-white font-bold text-xl sm:text-2xl">CRM Pantes Gold</span>
+              <span className="text-gray-800 dark:text-white font-bold text-xl sm:text-2xl">CRM Toko Mas Pantes</span>
             </Link>
             <h1 className="font-bold text-2xl text-slate-800 mt-4">Log in</h1>
-            <p className="text-slate-500 text-sm">Please log in using your registered account.</p>
+            <p className="text-slate-500 text-sm">Silakan masuk menggunakan akun Anda yang terdaftar.</p>
           </div>
 
           <form onSubmit={form.onSubmit(onSubmit)} className="space-y-5">

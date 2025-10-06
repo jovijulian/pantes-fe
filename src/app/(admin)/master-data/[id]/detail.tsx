@@ -64,21 +64,21 @@ export default function StepDetailPage() {
             <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-lg p-6 mb-8 shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
                     <FaLayerGroup className="text-blue-500 w-6 h-6" />
-                    <h2 className="text-2xl font-bold text-blue-800">Step Information</h2>
+                    <h2 className="text-2xl font-bold text-blue-800">Informasi Step</h2>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
                     <div>
-                        <span className="block text-sm text-gray-500">Step Name</span>
+                        <span className="block text-sm text-gray-500">Nama Step</span>
                         <span className="text-lg font-semibold">{data.step_name}</span>
                     </div>
                     <div>
-                        <span className="block text-sm text-gray-500">Step Order</span>
+                        <span className="block text-sm text-gray-500">Urutan Step</span>
                         <span className="text-lg font-semibold">{data.step}</span>
                     </div>
                 </div>
             </div>
 
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Fields in this Step</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Field dalam Step ini</h3>
             
             <div className="space-y-6">
                 {data.details.map((field, index) => (
@@ -87,7 +87,7 @@ export default function StepDetailPage() {
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 text-sm mb-4">
                             <div>
-                                <span className="block text-gray-500">Value Type</span>
+                                <span className="block text-gray-500">Tipe Value</span>
                                 <span className="font-medium text-gray-800">{getValueTypeLabel(field.value_type)}</span>
                             </div>
                              <div>
@@ -98,14 +98,14 @@ export default function StepDetailPage() {
                                 </span>
                             </div>
                              <div>
-                                <span className="block text-gray-500">Is Default?</span>
+                                <span className="block text-gray-500">Apakah Default?</span>
                                 <span className="font-medium text-gray-800">{field.is_default == '1' ? 'Yes' : 'No'}</span>
                             </div>
                         </div>
 
                         {field.field_value && field.field_value.length > 0 && (
                              <div>
-                                <span className="block text-gray-500 text-sm mb-2">Available Options</span>
+                                <span className="block text-gray-500 text-sm mb-2">Pilihan yang Tersedia</span>
                                 <div className="flex flex-wrap gap-2">
                                     {field.field_value.map(option => (
                                         <span key={option.id} className="bg-gray-100 text-gray-800 text-xs font-semibold px-3 py-1 rounded-full">

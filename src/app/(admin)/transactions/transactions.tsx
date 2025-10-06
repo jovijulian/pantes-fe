@@ -68,7 +68,7 @@ export default function SalesPage() {
         const defaultColumns = [
             {
                 id: "action",
-                header: "Action",
+                header: "Aksi",
                 accessorKey: "action",
                 cell: ({ row }: any) => {
                     return (
@@ -105,7 +105,7 @@ export default function SalesPage() {
             },
             {
                 id: "date",
-                header: "Transaction Date",
+                header: "Tanggal Transaksi",
                 accessorKey: "date",
                 cell: ({ row }: any) => {
                     const data = row;
@@ -123,19 +123,19 @@ export default function SalesPage() {
             },
             {
                 id: "name",
-                header: "Customer Name",
+                header: "Nama Pelanggan",
                 accessorKey: "name",
                 cell: ({ row }: any) => <span>{row.customer.name}</span>,
             },
             {
                 id: "phone",
-                header: "Customer Phone Number",
+                header: "No. Telp Pelanggan",
                 accessorKey: "phone",
                 cell: ({ row }: any) => <span>{row.customer.phone}</span>,
             },
             {
                 id: "name_purchase",
-                header: "Purchase Name",
+                header: "Nama Pembelian",
                 accessorKey: "name_purchase",
                 cell: ({ row }: any) => <span>{row.name_purchase}</span>,
             },
@@ -143,7 +143,7 @@ export default function SalesPage() {
                 ? [
                     {
                         id: "sales",
-                        header: "Sales Name",
+                        header: "Nama Sales",
                         accessorKey: "sales",
                         cell: ({ row }: any) => {
                             const salesName = row.sales?.name || 'N/A';
@@ -154,13 +154,13 @@ export default function SalesPage() {
                 : []),
             {
                 id: "created_at",
-                header: "Created At",
+                header: "Dibuat pada",
                 accessorKey: "created_at",
                 cell: ({ row }: any) => <span>{moment(row.created_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
             {
                 id: "updated_at",
-                header: "Updated At",
+                header: "Diubah pada",
                 accessorKey: "updated_at",
                 cell: ({ row }: any) => <span>{moment(row.updated_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
@@ -229,7 +229,7 @@ export default function SalesPage() {
                             className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
                         >
                             <span className="text-lg font-bold">+</span>
-                            Add Transactions
+                            Tambahkan Transaksi
                         </button>
                     )
                 }

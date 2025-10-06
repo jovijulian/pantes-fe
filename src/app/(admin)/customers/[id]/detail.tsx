@@ -30,6 +30,7 @@ interface CustomerData {
     address: string | null;
     date_anniv: string | null;
     detail_information: string | null;
+    member_no: string;
     status: string;
     created_at: string;
     updated_at: string;
@@ -100,7 +101,7 @@ export default function CustomerDetailPage() {
         const defaultColumns = [
             {
                 id: "date",
-                header: "Transaction Date",
+                header: "Tanggal Transaksi",
                 accessorKey: "date",
                 cell: ({ row }: any) => {
                     const data = row;
@@ -118,19 +119,19 @@ export default function CustomerDetailPage() {
             },
             {
                 id: "name",
-                header: "Customer Name",
+                header: "Nama Pelanggan",
                 accessorKey: "name",
                 cell: ({ row }: any) => <span>{row.customer.name}</span>,
             },
             {
                 id: "phone",
-                header: "Customer Phone Number",
+                header: "No. Telp",
                 accessorKey: "phone",
                 cell: ({ row }: any) => <span>{row.customer.phone}</span>,
             },
             {
                 id: "name_purchase",
-                header: "Purchase Name",
+                header: "Nama Pembelian",
                 accessorKey: "name_purchase",
                 cell: ({ row }: any) => <span>{row.name_purchase}</span>,
             },
@@ -138,7 +139,7 @@ export default function CustomerDetailPage() {
                 ? [
                     {
                         id: "sales",
-                        header: "Sales Name",
+                        header: "Nama Sales",
                         accessorKey: "sales",
                         cell: ({ row }: any) => <span>{row.sales.name}</span>,
                     },
@@ -146,19 +147,19 @@ export default function CustomerDetailPage() {
                 : []),
             {
                 id: "created_at",
-                header: "Created At",
+                header: "Dibuat pada",
                 accessorKey: "created_at",
                 cell: ({ row }: any) => <span>{moment(row.created_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
             {
                 id: "updated_at",
-                header: "Updated At",
+                header: "Diubah pada",
                 accessorKey: "updated_at",
                 cell: ({ row }: any) => <span>{moment(row.updated_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
         ];
         return [...defaultColumns, ...columns.filter((col) => col.field !== "id" && col.field !== "hide_this_column_field")];
-    }, [columns]);
+    }, [columns, role]);
 
     const getDataHistory = async () => {
         setIsLoadingHistory(true);
@@ -206,7 +207,7 @@ export default function CustomerDetailPage() {
                     <div className="flex items-center gap-4 mb-5">
                         <FaUserCircle className="w-8 h-8 text-blue-500" />
                         <div>
-                            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{data.name}</h2>
+                            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{data.name} ({data.member_no})</h2>
                             <div className={`mt-1 inline-flex items-center gap-2 text-sm font-semibold px-3 py-1 rounded-full ${data.status === '1'
                                 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                                 : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
@@ -221,21 +222,21 @@ export default function CustomerDetailPage() {
                         <div className="flex items-start gap-3">
                             <FaPhoneAlt className="w-4 h-4 mt-1 text-gray-400" />
                             <div>
-                                <span className="block text-xs text-gray-500">Phone</span>
+                                <span className="block text-xs text-gray-500">No. Telp</span>
                                 <a href={`tel:${data.phone}`} className="font-semibold hover:underline">{data.phone || 'N/A'}</a>
                             </div>
                         </div>
                         <div className="flex items-start gap-3">
                             <FaMapMarkerAlt className="w-4 h-4 mt-1 text-gray-400" />
                             <div>
-                                <span className="block text-xs text-gray-500">Address</span>
+                                <span className="block text-xs text-gray-500">Alamat</span>
                                 <p className="font-semibold">{data.address || 'N/A'}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
                             <FaBirthdayCake className="w-5 h-5 text-pink-500" />
                             <div>
-                                <span className="block text-xs text-gray-500">Date of Birth</span>
+                                <span className="block text-xs text-gray-500">Tanggal Lahir</span>
                                 <span className="font-semibold">{formatDate(data.date_of_birth)}</span>
                             </div>
                         </div>
@@ -249,13 +250,13 @@ export default function CustomerDetailPage() {
                         <div className="flex items-start gap-3">
                             <FaInfoCircle className="w-4 h-4 mt-1 text-gray-400" />
                             <div>
-                                <span className="block text-xs text-gray-500">Additional Information</span>
+                                <span className="block text-xs text-gray-500">Informasi Tambahan</span>
                                 <p className="text-gray-600 dark:text-gray-400 italic">
                                     {data.detail_information || 'No additional information provided.'}
                                 </p>
                                 <div className="text-xs text-gray-400 dark:text-gray-500 mt-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                    <p>Data Created: {formatDate(data.created_at)}</p>
-                                    <p>Last Updated: {formatDate(data.updated_at)}</p>
+                                    <p>Data Dibuat: {formatDate(data.created_at)}</p>
+                                    <p>Terakhir Diperbarui: {formatDate(data.updated_at)}</p>
                                 </div>
                             </div>
                         </div>
@@ -267,7 +268,7 @@ export default function CustomerDetailPage() {
                         {/* Kiri */}
                         <div className="flex items-center gap-3">
                             <h3 className="text-lg font-bold text-gray-800 dark:text-white">
-                                Transaction History
+                                Histori Transaksi
                             </h3>
                         </div>
 
@@ -286,20 +287,20 @@ export default function CustomerDetailPage() {
                     </div>
 
 
-                <Table
-                    data={dataHistory}
-                    columns={columnsNew}
-                    pagination={true}
-                    // selection={true}
-                    lastPage={lastPage}
-                    total={count}
-                    loading={isLoadingHistory}
-                    onPageChange={handlePageChange}
-                    onPerPageChange={handlePerPageChange}
-                    onRowClick={(rowData) => router.push(`/transactions/${rowData.id}`)}
-                />
+                    <Table
+                        data={dataHistory}
+                        columns={columnsNew}
+                        pagination={true}
+                        // selection={true}
+                        lastPage={lastPage}
+                        total={count}
+                        loading={isLoadingHistory}
+                        onPageChange={handlePageChange}
+                        onPerPageChange={handlePerPageChange}
+                        onRowClick={(rowData) => router.push(`/transactions/${rowData.id}`)}
+                    />
+                </div>
             </div>
-        </div>
         </ComponentCard >
     );
 }

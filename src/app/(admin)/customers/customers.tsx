@@ -135,7 +135,7 @@ export default function CustomerPage() {
             },
             {
                 id: "member_no",
-                header: "Member Number",
+                header: "Nomor Anggota",
                 accessorKey: "member_no",
                 cell: ({ row }: any) => {
                     const data = row;
@@ -154,25 +154,25 @@ export default function CustomerPage() {
             },
             {
                 id: "name",
-                header: "Name",
+                header: "Nama",
                 accessorKey: "name",
                 cell: ({ row }: any) => <span>{row.name}</span>,
             },
             {
                 id: "phone",
-                header: "Phone Number",
+                header: "No. Telp",
                 accessorKey: "phone",
                 cell: ({ row }: any) => <span>{row.phone}</span>,
             },
             {
                 id: "created_at",
-                header: "Created At",
+                header: "Dibuat pada",
                 accessorKey: "created_at",
                 cell: ({ row }: any) => <span>{moment(row.created_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
             {
                 id: "updated_at",
-                header: "Updated At",
+                header: "Diubah pada",
                 accessorKey: "updated_at",
                 cell: ({ row }: any) => <span>{moment(row.updated_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
@@ -229,7 +229,7 @@ export default function CustomerPage() {
                     className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                 >
                     <span className="text-lg font-bold">+</span>
-                    Add Customer
+                    Tambahkan Pelanggan
                 </button>
             </div>
 

@@ -255,7 +255,7 @@ export default function DynamicEditTransactionPage() {
                 const options = field.field_value.map(opt => ({ value: opt.value.toString(), label: opt.value }));
                 const isMulti = Array.isArray(value);
                 const onCreate = (inputValue: string) => setModalState({
-                    isOpen: true, title: `Add New ${field.label}`, message: `Are you sure you want to add "${inputValue}"?`, onConfirm: async () => {
+                    isOpen: true, title: `Tambahkan ${field.label} Baru`, message: `Apakah Anda yakin ingin menambahkan "${inputValue}"?`, onConfirm: async () => {
                         const newOption = await handleCreateOption(field.id, inputValue);
                         if (newOption) {
                             if (isMulti) {
@@ -284,8 +284,8 @@ export default function DynamicEditTransactionPage() {
                     <div className="flex items-center space-x-4">
                         <div className="bg-blue-600 p-3 rounded-lg"><Edit className="h-8 w-8 text-white" /></div>
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Transaction</h1>
-                            <p className="text-gray-600 dark:text-gray-400 mt-1">Transaction ID: {transactionId}</p>
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Edit Transaksi</h1>
+                            <p className="text-gray-600 dark:text-gray-400 mt-1">Transaksi ID: {transactionId}</p>
                         </div>
                     </div>
                 </div>
@@ -295,7 +295,7 @@ export default function DynamicEditTransactionPage() {
                         <div className="xl:col-span-2 space-y-6">
                             {findStep('Customer Information') && (
                                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8 opacity-80">
-                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Customer Information (Read-Only)</h2>
+                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Informasi Pelanggan (Hanya Baca)</h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {findStep('Customer Information')!.details.map(field => (<div key={field.id}><label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{field.label}</label>{renderField(field, generateKey('Customer Information'), undefined, true)}</div>))}
                                     </div>
@@ -336,9 +336,9 @@ export default function DynamicEditTransactionPage() {
                         <div className="xl:col-span-1">
                             <div className="sticky top-20 space-y-6">
                                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-8">
-                                    <div className="flex items-center gap-3 mb-6"><Calculator className="h-6 w-6 text-blue-600" /><h3 className="text-xl font-bold text-gray-900 dark:text-white">Order Summary</h3></div>
-                                    <div className="space-y-4"><div className="flex justify-between py-2 border-b dark:border-gray-700"><span className="text-gray-600 dark:text-gray-400">Total Items:</span><span className="font-semibold dark:text-white">{transactionData.items.length}</span></div><div className="flex justify-between py-2"><span className="text-gray-600 dark:text-gray-400">Total Amount:</span><span className="font-bold text-lg text-green-600">{formatCurrency(totalAmount)}</span></div></div>
-                                    <button type="button" onClick={() => router.push('/transactions')} className="w-full mt-8 bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors font-semibold">Back to Transactions</button>
+                                    <div className="flex items-center gap-3 mb-6"><Calculator className="h-6 w-6 text-blue-600" /><h3 className="text-xl font-bold text-gray-900 dark:text-white">Ringkasan Pesanan</h3></div>
+                                    <div className="space-y-4"><div className="flex justify-between py-2 border-b dark:border-gray-700"><span className="text-gray-600 dark:text-gray-400">Total Item:</span><span className="font-semibold dark:text-white">{transactionData.items.length}</span></div><div className="flex justify-between py-2"><span className="text-gray-600 dark:text-gray-400">Jumlah Total Bayar:</span><span className="font-bold text-lg text-green-600">{formatCurrency(totalAmount)}</span></div></div>
+                                    <button type="button" onClick={() => router.push('/transactions')} className="w-full mt-8 bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors font-semibold">Kembali ke Transaksi</button>
                                 </div>
                             </div>
                         </div>

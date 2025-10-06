@@ -75,7 +75,7 @@ export default function MasterPage() {
         const defaultColumns = [
             {
                 id: "action",
-                header: "Action",
+                header: "Aksi",
                 accessorKey: "action",
                 cell: ({ row }: any) => {
                     const isDefault = row.is_default
@@ -136,25 +136,25 @@ export default function MasterPage() {
             },
             {
                 id: "step_name",
-                header: "Step Name",
+                header: "Nama Step",
                 accessorKey: "step_name",
                 cell: ({ row }: any) => <span>{row.step_name}</span>,
             },
             {
                 id: "step",
-                header: "Step Order",
+                header: "Urutan Step",
                 accessorKey: "step",
                 cell: ({ row }: any) => <span>{row.step}</span>,
             },
             {
                 id: "created_at",
-                header: "Created At",
+                header: "Dibuat pada",
                 accessorKey: "created_at",
                 cell: ({ row }: any) => <span>{moment(row.created_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
             {
                 id: "updated_at",
-                header: "Updated At",
+                header: "Diubah pada",
                 accessorKey: "updated_at",
                 cell: ({ row }: any) => <span>{moment(row.updated_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
@@ -212,7 +212,7 @@ export default function MasterPage() {
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
                         <span className="text-lg font-bold">+</span>
-                        Add Field
+                        Tambah Master Field
                     </button>
                 </div>
             </div>

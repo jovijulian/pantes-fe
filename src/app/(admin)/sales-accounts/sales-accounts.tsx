@@ -75,7 +75,7 @@ export default function SalesPage() {
         const defaultColumns = [
             {
                 id: "action",
-                header: "Action",
+                header: "Aksi",
                 accessorKey: "action",
                 cell: ({ row }: any) => {
                     return (
@@ -113,13 +113,13 @@ export default function SalesPage() {
             },
             {
                 id: "name",
-                header: "Name",
+                header: "Nama",
                 accessorKey: "name",
                 cell: ({ row }: any) => <span>{row.name}</span>,
             },
             {
                 id: "phone",
-                header: "Phone Number",
+                header: "No. Telp",
                 accessorKey: "phone",
                 cell: ({ row }: any) => <span>{row.phone}</span>,
             },
@@ -172,19 +172,19 @@ export default function SalesPage() {
             },
             {
                 id: "total_customer",
-                header: "Total Customer",
+                header: "Total Pelanggan",
                 accessorKey: "total_customer",
                 cell: ({ row }: any) => <span className="text-bold text-md">{row.customers_count || 0}</span>,
             },
             {
                 id: "created_at",
-                header: "Created At",
+                header: "Dibuat pada",
                 accessorKey: "created_at",
                 cell: ({ row }: any) => <span>{moment(row.created_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
             {
                 id: "updated_at",
-                header: "Updated At",
+                header: "Diubah pada",
                 accessorKey: "updated_at",
                 cell: ({ row }: any) => <span>{moment(row.updated_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
@@ -242,7 +242,7 @@ export default function SalesPage() {
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
                         <span className="text-lg font-bold">+</span>
-                        Add Sales Account
+                        Tambahkan Akun Sales
                     </button>
                 </div>
             </div>
