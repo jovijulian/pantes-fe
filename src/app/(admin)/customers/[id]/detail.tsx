@@ -1,42 +1,28 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { useParams } from 'next/navigation';
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import ComponentCard from "@/components/common/ComponentCard";
-import { endpointUrl, httpGet } from "../../../../../helpers"; // Sesuaikan path helper
-import {
-    FaUserCircle,
-    FaPhoneAlt,
-    FaMapMarkerAlt,
-    FaInfoCircle,
-    FaBirthdayCake,
-    FaGift,
-    FaCheckCircle,
-    FaTimesCircle,
-    FaHistory
-} from "react-icons/fa";
+import { endpointUrl, httpGet } from "../../../../../helpers";
+import { FaUserCircle, FaPhoneAlt, FaMapMarkerAlt, FaInfoCircle, FaBirthdayCake, FaGift, FaCheckCircle, FaTimesCircle, FaHistory } from "react-icons/fa";
 import Table from "@/components/tables/Table";
 import moment from "moment";
 import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
 
-// Interface untuk tipe data customer
 interface CustomerData {
     id: number;
     name: string;
+    member_no: string;
     phone: string;
     date_of_birth: string | null;
     address: string | null;
     date_anniv: string | null;
     detail_information: string | null;
-    member_no: string;
     status: string;
     created_at: string;
     updated_at: string;
 }
 
-// Helper untuk memformat tanggal agar lebih mudah dibaca
 const formatDate = (dateString: string | null) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -47,153 +33,149 @@ const formatDate = (dateString: string | null) => {
     });
 };
 
+const parseAndFormatValue = (value: string): string => {
+    try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) {
+            return parsed.map(item => item.value).join(', ');
+        }
+    } catch (e) {
+        return value;
+    }
+    return value;
+};
+
 export default function CustomerDetailPage() {
     const searchParams = useSearchParams();
     const [data, setData] = useState<CustomerData | null>(null);
     const params = useParams();
     const id = Number(params.id);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [perPage, setPerPage] = useState(20);
-    const router = useRouter()
+    const router = useRouter();
+    const [searchTerm, setSearchTerm] = useState('');
     const page = searchParams.get("page") || "1";
-    const [dataHistory, setDataHistory] = useState<[]>([]);
+    const [historyData, setHistoryData] = useState<any[]>([]);
+    const [historyColumns, setHistoryColumns] = useState<any[]>([]);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [perPage, setPerPage] = useState(10);
     const [lastPage, setLastPage] = useState(1);
     const [count, setCount] = useState(0);
-    const [columns, setColumns] = useState<any[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedData, setSelectedData] = useState<any>(null);
-    const [role, setRole] = useState<number | null>(null);
-    const [isLoadingHistory, setIsLoadingHistory] = useState(true);
-    const getDetail = async (customerId: number) => {
-        try {
-            const response = await httpGet(endpointUrl(`/customer/${customerId}`), true);
-            setData(response.data.data);
-        } catch (error) {
-            console.error("Error fetching customer details:", error);
-        }
-    };
 
     useEffect(() => {
         if (id) {
+            const getDetail = async (customerId: number) => {
+                try {
+                    const response = await httpGet(endpointUrl(`/customer/${customerId}`), true);
+                    setData(response.data.data);
+                } catch (error) {
+                    console.error("Error fetching customer details:", error);
+                    toast.error("Failed to load customer data.");
+                }
+            };
             getDetail(id);
-
         }
-        const storedRole = localStorage.getItem("role");
-        if (storedRole) {
-            setRole(parseInt(storedRole));
-        }
-    }, [id]);
+    }, [searchParams, currentPage, perPage, page, searchTerm, id]);
 
     useEffect(() => {
+        if (!id) return;
+
+        const getDataHistory = async () => {
+            setIsLoadingHistory(true);
+            const search = searchTerm.trim();;
+            const page = searchParams.get("page");
+            const perPageParam = searchParams.get("per_page");
+
+            const params: any = {
+                ...(search ? { search } : {}),
+                per_page: perPageParam ? Number(perPageParam) : perPage,
+                page: page ? Number(page) : currentPage,
+            };
+
+            try {
+                const response = await httpGet(
+                    endpointUrl(`/customer/${id}/history`),
+                    true,
+                    params
+                );
+                const responseData = response.data.data.data;
+                const pageInfo = response.data.data.page_info;
+
+                const staticColumns = [
+                    {
+                        id: "date",
+                        header: "Tanggal Transaksi",
+                        cell: ({ row }: any) => (
+                            <button
+                                className="text-blue-600 hover:underline"
+                                onClick={() => router.push(`/transactions/${row.id}`)}
+                            >
+                                {moment(row.date).format("DD/MM/YYYY")}
+                            </button>
+                        )
+                    },
+                    {
+                        id: "name_purchase",
+                        header: "Nama Pembelian",
+                        accessorKey: "name_purchase",
+                    },
+                    {
+                        id: "total_price",
+                        header: "Total Harga",
+                        accessorKey: "total_price",
+                        cell: ({ row }: any) => (
+                            <span className="font-semibold">
+                                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(row.total_price)}
+                            </span>
+                        )
+                    }
+                ];
+
+                const dynamicLabels = new Set<string>();
+                responseData.forEach((transaction: any) => {
+                    transaction.transaction_detail.forEach((detail: any) => {
+                        if (parseInt(detail.step, 10) >= 2) {
+                            dynamicLabels.add(detail.label);
+                        }
+                    });
+                });
+
+                const dynamicColumns = Array.from(dynamicLabels).map(label => ({
+                    id: label,
+                    header: label,
+                    cell: ({ row }: any) => {
+                        const relevantDetail = row.transaction_detail.find(
+                            (d: any) => d.label === label
+                        );
+                        if (!relevantDetail) return "-";
+                        return parseAndFormatValue(relevantDetail.value);
+                    }
+                }));
+
+                setHistoryColumns([...staticColumns, ...dynamicColumns]);
+                setHistoryData(responseData);
+                setLastPage(pageInfo.total_pages);
+                setCount(pageInfo.total_record);
+
+            } catch (error) {
+                toast.error("Failed to fetch transaction history");
+            } finally {
+                setIsLoadingHistory(false);
+            }
+        };
+
         getDataHistory();
-    }, [searchParams, currentPage, perPage, page, searchTerm]);
+    }, [searchParams, currentPage, perPage, page, searchTerm, id]);
 
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-    };
-
+    const handlePageChange = (page: number) => setCurrentPage(page);
     const handlePerPageChange = (newPerPage: number) => {
         setPerPage(newPerPage);
         setCurrentPage(1);
     };
 
-    const columnsNew = useMemo(() => {
-        const defaultColumns = [
-            {
-                id: "date",
-                header: "Tanggal Transaksi",
-                accessorKey: "date",
-                cell: ({ row }: any) => {
-                    const data = row;
-                    return (
-                        <button
-                            className="text-blue-600 hover:underline"
-                            onClick={() => {
-                                router.push(`/transactions/${data.id}`);
-                            }}
-                        >
-                            {moment(data.date).format("DD/MM/YYYY")}
-                        </button>
-                    );
-                }
-            },
-            {
-                id: "name",
-                header: "Nama Pelanggan",
-                accessorKey: "name",
-                cell: ({ row }: any) => <span>{row.customer.name}</span>,
-            },
-            {
-                id: "phone",
-                header: "No. Telp",
-                accessorKey: "phone",
-                cell: ({ row }: any) => <span>{row.customer.phone}</span>,
-            },
-            {
-                id: "name_purchase",
-                header: "Nama Pembelian",
-                accessorKey: "name_purchase",
-                cell: ({ row }: any) => <span>{row.name_purchase}</span>,
-            },
-            ...(role === 1
-                ? [
-                    {
-                        id: "sales",
-                        header: "Nama Sales",
-                        accessorKey: "sales",
-                        cell: ({ row }: any) => <span>{row.sales.name}</span>,
-                    },
-                ]
-                : []),
-            {
-                id: "created_at",
-                header: "Dibuat pada",
-                accessorKey: "created_at",
-                cell: ({ row }: any) => <span>{moment(row.created_at).format("DD MMM YYYY, HH:mm")}</span>,
-            },
-            {
-                id: "updated_at",
-                header: "Diubah pada",
-                accessorKey: "updated_at",
-                cell: ({ row }: any) => <span>{moment(row.updated_at).format("DD MMM YYYY, HH:mm")}</span>,
-            },
-        ];
-        return [...defaultColumns, ...columns.filter((col) => col.field !== "id" && col.field !== "hide_this_column_field")];
-    }, [columns, role]);
-
-    const getDataHistory = async () => {
-        setIsLoadingHistory(true);
-        const search = searchTerm.trim();;
-        const page = searchParams.get("page");
-        const perPageParam = searchParams.get("per_page");
-
-        const params: any = {
-            ...(search ? { search } : {}),
-            per_page: perPageParam ? Number(perPageParam) : perPage,
-            page: page ? Number(page) : currentPage,
-        };
-
-        try {
-            const response = await httpGet(
-                endpointUrl(`/customer/${id}/history`),
-                true,
-                params
-            );
-
-            const responseData = response.data.data.data;
-            setDataHistory(responseData);
-            setCount(response.data.data.page_info.total_record);
-            setLastPage(response.data.data.page_info.total_pages);
-        } catch (error) {
-            toast.error("Failed to fetch data");
-            setDataHistory([]);
-        } finally {
-            setIsLoadingHistory(false);
-        }
-    };
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
     };
+
     if (!data) {
         return <div className="text-center p-10">Loading customer data...</div>;
     }
@@ -201,78 +183,34 @@ export default function CustomerDetailPage() {
     return (
         <ComponentCard title={`Customer Detail: ${data.name}`}>
             <div className="space-y-6">
-
-                {/* --- Kartu Informasi Utama --- */}
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 shadow-sm">
                     <div className="flex items-center gap-4 mb-5">
                         <FaUserCircle className="w-8 h-8 text-blue-500" />
                         <div>
                             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{data.name} ({data.member_no})</h2>
-                            <div className={`mt-1 inline-flex items-center gap-2 text-sm font-semibold px-3 py-1 rounded-full ${data.status === '1'
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                }`}>
+                            <div className={`mt-1 inline-flex items-center gap-2 text-sm font-semibold px-3 py-1 rounded-full ${data.status === '1' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                 {data.status === '1' ? <FaCheckCircle /> : <FaTimesCircle />}
                                 {data.status === '1' ? 'Active' : 'Inactive'}
                             </div>
                         </div>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 dark:text-gray-300">
-                        <div className="flex items-start gap-3">
-                            <FaPhoneAlt className="w-4 h-4 mt-1 text-gray-400" />
-                            <div>
-                                <span className="block text-xs text-gray-500">No. Telp</span>
-                                <a href={`tel:${data.phone}`} className="font-semibold hover:underline">{data.phone || 'N/A'}</a>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <FaMapMarkerAlt className="w-4 h-4 mt-1 text-gray-400" />
-                            <div>
-                                <span className="block text-xs text-gray-500">Alamat</span>
-                                <p className="font-semibold">{data.address || 'N/A'}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <FaBirthdayCake className="w-5 h-5 text-pink-500" />
-                            <div>
-                                <span className="block text-xs text-gray-500">Tanggal Lahir</span>
-                                <span className="font-semibold">{formatDate(data.date_of_birth)}</span>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <FaGift className="w-5 h-5 text-red-500" />
-                            <div>
-                                <span className="block text-xs text-gray-500">Anniversary</span>
-                                <span className="font-semibold">{formatDate(data.date_anniv)}</span>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                            <FaInfoCircle className="w-4 h-4 mt-1 text-gray-400" />
-                            <div>
-                                <span className="block text-xs text-gray-500">Informasi Tambahan</span>
-                                <p className="text-gray-600 dark:text-gray-400 italic">
-                                    {data.detail_information || 'No additional information provided.'}
-                                </p>
-                                <div className="text-xs text-gray-400 dark:text-gray-500 mt-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                    <p>Data Dibuat: {formatDate(data.created_at)}</p>
-                                    <p>Terakhir Diperbarui: {formatDate(data.updated_at)}</p>
-                                </div>
-                            </div>
-                        </div>
+                        <div className="flex items-start gap-3"><FaPhoneAlt className="w-4 h-4 mt-1 text-gray-400" /><div><span className="block text-xs text-gray-500">No. Telp</span><a href={`tel:${data.phone}`} className="font-semibold hover:underline">{data.phone || 'N/A'}</a></div></div>
+                        <div className="flex items-start gap-3"><FaMapMarkerAlt className="w-4 h-4 mt-1 text-gray-400" /><div><span className="block text-xs text-gray-500">Alamat</span><p className="font-semibold">{data.address || 'N/A'}</p></div></div>
+                        <div className="flex items-center gap-3"><FaBirthdayCake className="w-5 h-5 text-pink-500" /><div><span className="block text-xs text-gray-500">Tanggal Lahir</span><span className="font-semibold">{formatDate(data.date_of_birth)}</span></div></div>
+                        <div className="flex items-center gap-3"><FaGift className="w-5 h-5 text-red-500" /><div><span className="block text-xs text-gray-500">Anniversary</span><span className="font-semibold">{formatDate(data.date_anniv)}</span></div></div>
+                        <div className="flex items-start gap-3 md:col-span-2"><FaInfoCircle className="w-4 h-4 mt-1 text-gray-400" /><div><span className="block text-xs text-gray-500">Informasi Tambahan</span><p className="text-gray-600 dark:text-gray-400 italic">{data.detail_information || 'N/A'}</p></div></div>
                     </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4">
                     <div className="flex justify-between items-center p-3">
-                        {/* Kiri */}
                         <div className="flex items-center gap-3">
                             <h3 className="text-lg font-bold text-gray-800 dark:text-white">
                                 Histori Transaksi
                             </h3>
                         </div>
 
-                        {/* Kanan */}
                         <div className="flex gap-2">
                             <input
                                 type="text"
@@ -286,18 +224,16 @@ export default function CustomerDetailPage() {
                         </div>
                     </div>
 
-
                     <Table
-                        data={dataHistory}
-                        columns={columnsNew}
+                        data={historyData}
+                        columns={historyColumns}
                         pagination={true}
-                        // selection={true}
                         lastPage={lastPage}
                         total={count}
                         loading={isLoadingHistory}
                         onPageChange={handlePageChange}
                         onPerPageChange={handlePerPageChange}
-                        onRowClick={(rowData) => router.push(`/transactions/${rowData.id}`)}
+                        onRowClick={(rowData: any) => router.push(`/transactions/${rowData.id}`)}
                     />
                 </div>
             </div>

@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Badge from "@/components/ui/badge/Badge";
-import { alertToast, endpointUrl, httpDelete, httpGet } from "@/../helpers";
+import { alertToast, endpointUrl, httpDelete, httpGet, httpPost } from "@/../helpers";
 import { useSearchParams } from "next/navigation";
 import moment from "moment";
 import { useRouter } from 'next/navigation';
@@ -13,8 +13,9 @@ import { toast } from "react-toastify";
 import DeactiveModal from "@/components/modal/deactive/Deactive";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import EditUserModal from "@/components/modal/edit/EditUserModal";
-
-
+import DynamicFilterCard from "@/components/filters/DynamicFilterCard";
+import { Filter, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 interface TableDataItem {
     id: number;
     email: string;
@@ -24,6 +25,7 @@ interface TableDataItem {
     created_at: string;
     updated_at: string;
 }
+
 
 export default function CustomerPage() {
     const searchParams = useSearchParams();
@@ -44,6 +46,9 @@ export default function CustomerPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedData, setSelectedData] = useState<any>(null);
     const [role, setRole] = useState<number | null>(null);
+    const [filterOptions, setFilterOptions] = useState<any[]>([]);
+    const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({});
+    const [showFilters, setShowFilters] = useState(false);
     useEffect(() => {
         getData();
         const storedRole = localStorage.getItem("role");
@@ -51,7 +56,19 @@ export default function CustomerPage() {
             setRole(parseInt(storedRole));
         }
 
-    }, [searchParams, currentPage, perPage, page, searchTerm]);
+    }, [searchParams, currentPage, perPage, page, searchTerm, appliedFilters]);
+
+    useEffect(() => {
+        const fetchFilterData = async () => {
+            try {
+                const response = await httpGet(endpointUrl('/data-filter'), true);
+                setFilterOptions(response.data.data);
+            } catch (error) {
+                toast.error("Failed to load filter options.");
+            }
+        };
+        fetchFilterData();
+    }, []);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -76,6 +93,8 @@ export default function CustomerPage() {
 
         return <span className={`px-3 py-1 rounded-md text-sm font-medium ${className}`}>{text}</span>;
     };
+
+    const activeFilterCount = Object.keys(appliedFilters).length;
 
     const columnsNew = useMemo(() => {
         const defaultColumns = [
@@ -130,7 +149,7 @@ export default function CustomerPage() {
                         );
                     }
                 },
-                minWidth: 160, // lebih lebar
+                minWidth: 160,
                 maxWidth: 220,
             },
             {
@@ -156,7 +175,31 @@ export default function CustomerPage() {
                 id: "name",
                 header: "Nama",
                 accessorKey: "name",
-                cell: ({ row }: any) => <span>{row.name}</span>,
+                cell: ({ row }: any) => {
+                    const name = row.name;
+                    const captionsString = row.captions;
+
+                    const showCaptions = activeFilterCount > 0 && captionsString;
+
+                    return (
+                        <div>
+                            <span
+                                className={`${showCaptions ? "font-semibold" : ""} text-gray-800 dark:text-white`}
+                            >
+                                {name}
+                            </span>
+
+                            {showCaptions && (
+                                <div
+                                    className="text-xs text-gray-500 mt-1 max-w-sm truncate"
+                                    title={captionsString} 
+                                >
+                                    {captionsString}
+                                </div>
+                            )}
+                        </div>
+                    );
+                },
             },
             {
                 id: "phone",
@@ -178,7 +221,7 @@ export default function CustomerPage() {
             },
         ];
         return [...defaultColumns, ...columns.filter((col) => col.field !== "id" && col.field !== "hide_this_column_field")];
-    }, [columns, role]);
+    }, [columns, role, activeFilterCount]);
 
     const getData = async () => {
         setIsLoading(true);
@@ -186,17 +229,18 @@ export default function CustomerPage() {
         const page = searchParams.get("page");
         const perPageParam = searchParams.get("per_page");
 
-        const params: any = {
+        const payload: any = {
             ...(search ? { search } : {}),
             per_page: perPageParam ? Number(perPageParam) : perPage,
             page: page ? Number(page) : currentPage,
+            filters: appliedFilters,
         };
 
         try {
-            const response = await httpGet(
-                endpointUrl("/customer"),
+            const response = await httpPost(
+                endpointUrl("/customer/list"),
+                payload,
                 true,
-                params
             );
 
             const responseData = response.data.data.data;
@@ -214,62 +258,133 @@ export default function CustomerPage() {
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
     };
+
+    const handleFilterChange = (label: string, value: string[]) => {
+        setAppliedFilters(prevFilters => {
+            const newFilters = { ...prevFilters };
+            if (value.length > 0) {
+                newFilters[label] = value;
+            } else {
+                delete newFilters[label];
+            }
+            return newFilters;
+        });
+        setCurrentPage(1);
+    };
+    const handleResetFilters = () => {
+        setAppliedFilters({});
+        setSearchTerm('');
+        setShowFilters(false);
+        setCurrentPage(1);
+    };
+    const handleRowClick = (rowData: TableDataItem) => {
+        const detailUrl = `/customers/${rowData.id}`;
+        
+        if (activeFilterCount > 0) {
+            window.open(detailUrl, '_blank');
+        } else {
+            router.push(detailUrl);
+        }
+    };
+
     return (
-        <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
-                <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    placeholder="Search..."
-                    className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+        <>
+            <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
+                    <button
+                        onClick={() => setShowFilters(prev => !prev)}
+                        className={`w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md flex items-center justify-center gap-2 transition-colors ${showFilters ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
+                    >
+                        <Filter className="w-4 h-4" />
+                        <span>Filter</span>
+                        {activeFilterCount > 0 && (
+                            <span className="bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                                {activeFilterCount}
+                            </span>
+                        )}
+                    </button>
+                    {activeFilterCount > 0 && (
+                        <button
+                            onClick={handleResetFilters}
+                            className="w-full sm:w-auto px-4 py-2 border border-red-500 text-red-500 rounded-md flex items-center justify-center gap-2 hover:bg-red-50 transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                            <span>Reset</span>
+                        </button>
+                    )}
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={handleSearch}
+                        placeholder="Search..."
+                        className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    />
+                    <button
+                        onClick={() => router.push("/customers/create")}
+                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                    >
+                        <span className="text-lg font-bold">+</span>
+                        Tambahkan Pelanggan
+                    </button>
+
+                </div>
+                <AnimatePresence>
+                    {showFilters && (
+                        <motion.div
+                            key="filters"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.25 }}
+                            className="relative z-[1000]"
+                        >
+                            <DynamicFilterCard
+                                filters={filterOptions}
+                                appliedFilters={appliedFilters}
+                                onFilterChange={handleFilterChange}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Table */}
+                <Table
+                    data={data}
+                    columns={columnsNew}
+                    pagination={true}
+                    // selection={true}
+                    lastPage={lastPage}
+                    total={count}
+                    loading={isLoading}
+                    checkedData={selectedRows}
+                    setCheckedData={setSelectedRows}
+                    onPageChange={handlePageChange}
+                    onPerPageChange={handlePerPageChange}
+                    onRowClick={handleRowClick}
                 />
-                <button
-                    onClick={() => router.push("/customers/create")}
-                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                >
-                    <span className="text-lg font-bold">+</span>
-                    Tambahkan Pelanggan
-                </button>
+
+                <DeactiveModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => {
+                        setIsDeleteModalOpen(false);
+                        setSelectedData(null);
+                    }}
+                    url={`customer/${selectedData?.id}/deactive`}
+                    itemName={selectedData?.name || ""}
+                    selectedData={selectedData}
+                    onSuccess={getData}
+                    message="Customer deleted successfully!"
+                />
+
+                <EditUserModal
+                    isOpen={isEditOpen}
+                    selectedId={selectedData?.id}
+                    onClose={() => setIsEditOpen(false)}
+                    onSuccess={getData}
+                />
             </div>
-
-            {/* Table */}
-            <Table
-                data={data}
-                columns={columnsNew}
-                pagination={true}
-                // selection={true}
-                lastPage={lastPage}
-                total={count}
-                loading={isLoading}
-                checkedData={selectedRows}
-                setCheckedData={setSelectedRows}
-                onPageChange={handlePageChange}
-                onPerPageChange={handlePerPageChange}
-                onRowClick={(rowData) => router.push(`/customers/${rowData.id}`)}
-
-            />
-
-            <DeactiveModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => {
-                    setIsDeleteModalOpen(false);
-                    setSelectedData(null);
-                }}
-                url={`customer/${selectedData?.id}/deactive`}
-                itemName={selectedData?.name || ""}
-                selectedData={selectedData}
-                onSuccess={getData}
-                message="Customer deleted successfully!"
-            />
-
-            <EditUserModal
-                isOpen={isEditOpen}
-                selectedId={selectedData?.id}
-                onClose={() => setIsEditOpen(false)}
-                onSuccess={getData}
-            />
-        </div>
+        </>
     );
 }
 

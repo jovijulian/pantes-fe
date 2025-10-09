@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Badge from "@/components/ui/badge/Badge";
-import { alertToast, endpointUrl, httpDelete, httpGet } from "@/../helpers";
+import { alertToast, endpointUrl, httpDelete, httpGet, httpPost } from "@/../helpers";
 import { useSearchParams } from "next/navigation";
 import moment from "moment";
 import { useRouter } from 'next/navigation';
@@ -13,7 +13,9 @@ import { toast } from "react-toastify";
 import DeactiveModal from "@/components/modal/deactive/Deactive";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import EditUserModal from "@/components/modal/edit/EditUserModal";
-
+import DynamicFilterCard from "@/components/filters/DynamicFilterCard";
+import { Filter, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface TableDataItem {
     id: number;
@@ -46,6 +48,9 @@ export default function SalesPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedData, setSelectedData] = useState<any>(null);
     const [role, setRole] = useState<number | null>(null);
+    const [filterOptions, setFilterOptions] = useState<any[]>([]);
+    const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({});
+    const [showFilters, setShowFilters] = useState(false);
     useEffect(() => {
         getData();
         const storedRole = localStorage.getItem("role");
@@ -53,7 +58,19 @@ export default function SalesPage() {
             setRole(parseInt(storedRole));
         }
 
-    }, [searchParams, currentPage, perPage, page, searchTerm, role]);
+    }, [searchParams, currentPage, perPage, page, searchTerm, role, appliedFilters]);
+
+    useEffect(() => {
+        const fetchFilterData = async () => {
+            try {
+                const response = await httpGet(endpointUrl('/data-filter'), true);
+                setFilterOptions(response.data.data);
+            } catch (error) {
+                toast.error("Failed to load filter options.");
+            }
+        };
+        fetchFilterData();
+    }, []);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -63,6 +80,8 @@ export default function SalesPage() {
         setPerPage(newPerPage);
         setCurrentPage(1);
     };
+
+    const activeFilterCount = Object.keys(appliedFilters).length;
 
     const columnsNew = useMemo(() => {
         const defaultColumns = [
@@ -125,7 +144,31 @@ export default function SalesPage() {
                 id: "name",
                 header: "Nama Pelanggan",
                 accessorKey: "name",
-                cell: ({ row }: any) => <span>{row.customer.name}</span>,
+                cell: ({ row }: any) => {
+                    const name = row.customer.name;
+                    const captionsString = row.captions;
+
+                    const showCaptions = activeFilterCount > 0 && captionsString;
+
+                    return (
+                        <div>
+                            <span
+                                className={`${showCaptions ? "font-semibold" : ""} text-gray-800 dark:text-white`}
+                            >
+                                {name}
+                            </span>
+
+                            {showCaptions && (
+                                <div
+                                    className="text-xs text-gray-500 mt-1 max-w-sm truncate"
+                                    title={captionsString}
+                                >
+                                    {captionsString}
+                                </div>
+                            )}
+                        </div>
+                    );
+                },
             },
             {
                 id: "phone",
@@ -166,7 +209,7 @@ export default function SalesPage() {
             },
         ];
         return [...defaultColumns, ...columns.filter((col) => col.field !== "id" && col.field !== "hide_this_column_field")];
-    }, [columns, role]);
+    }, [columns, role, activeFilterCount]);
 
     const getData = async () => {
         setIsLoading(true);
@@ -174,27 +217,28 @@ export default function SalesPage() {
         const page = searchParams.get("page");
         const perPageParam = searchParams.get("per_page");
 
-        const params: any = {
+        const payload: any = {
             ...(search ? { search } : {}),
             per_page: perPageParam ? Number(perPageParam) : perPage,
             page: page ? Number(page) : currentPage,
+            filters: appliedFilters,
         };
 
         let endpoint = '';
         if (role === 1) {
-            endpoint = endpointUrl(`/transaction`);
+            endpoint = endpointUrl(`/transaction/list`);
         } else if (role === 2) {
-            endpoint = endpointUrl(`/sales/transaction`);
+            endpoint = endpointUrl(`/sales/transaction/list`);
         } else {
             console.error("Unknown user role:", role);
             return;
         }
 
         try {
-            const response = await httpGet(
+            const response = await httpPost(
                 endpoint,
+                payload,
                 true,
-                params
             );
 
             const responseData = response.data.data.data;
@@ -212,9 +256,50 @@ export default function SalesPage() {
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
     };
+
+    const handleFilterChange = (label: string, value: string[]) => {
+        setAppliedFilters(prevFilters => {
+            const newFilters = { ...prevFilters };
+            if (value.length > 0) {
+                newFilters[label] = value;
+            } else {
+                delete newFilters[label];
+            }
+            return newFilters;
+        });
+        setCurrentPage(1);
+    };
+    const handleResetFilters = () => {
+        setAppliedFilters({});
+        setSearchTerm('');
+        setShowFilters(false);
+        setCurrentPage(1);
+    };
     return (
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
+                <button
+                    onClick={() => setShowFilters(prev => !prev)}
+                    className={`w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md flex items-center justify-center gap-2 transition-colors ${showFilters ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+                        }`}
+                >
+                    <Filter className="w-4 h-4" />
+                    <span>Filter</span>
+                    {activeFilterCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                            {activeFilterCount}
+                        </span>
+                    )}
+                </button>
+                {activeFilterCount > 0 && (
+                    <button
+                        onClick={handleResetFilters}
+                        className="w-full sm:w-auto px-4 py-2 border border-red-500 text-red-500 rounded-md flex items-center justify-center gap-2 hover:bg-red-50 transition-colors"
+                    >
+                        <X className="w-4 h-4" />
+                        <span>Reset</span>
+                    </button>
+                )}
                 <input
                     type="text"
                     value={searchTerm}
@@ -234,6 +319,25 @@ export default function SalesPage() {
                     )
                 }
             </div>
+
+            <AnimatePresence>
+                    {showFilters && (
+                        <motion.div
+                            key="filters"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.25 }}
+                            className="relative z-[1000]"
+                        >
+                            <DynamicFilterCard
+                                filters={filterOptions}
+                                appliedFilters={appliedFilters}
+                                onFilterChange={handleFilterChange}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
             {/* Table */}
             <Table

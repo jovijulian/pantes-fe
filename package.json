@@ -28,6 +28,7 @@
     "cookies-next": "^5.1.0",
     "flatpickr": "^4.6.13",
     "follow-redirects": "^1.15.9",
+    "framer-motion": "^12.23.22",
     "html2canvas": "^1.4.1",
     "jose": "^6.1.0",
     "jspdf": "^3.0.1",
