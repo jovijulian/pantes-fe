@@ -14,10 +14,8 @@ export default function CreatableSelect({ onCreateOption, ...props }: any) {
                 borderColor: '#d1d5db',
             }
         }),
-        menuPortal: (base: any) => ({
-            ...base,
-            zIndex: 9999 // A high z-index to ensure it's on top of everything
-        })
+        menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
+        menu: (base: any) => ({ ...base, zIndex: 9999 })
     };
 
     return (

@@ -75,6 +75,7 @@ export default function DynamicFilterCard({ filters, appliedFilters, onFilterCha
                         options={options}
                         value={value}
                         onChange={handleChange}
+                        menuPortalTarget={document.body}
                     />
                 );
 
@@ -101,20 +102,20 @@ export default function DynamicFilterCard({ filters, appliedFilters, onFilterCha
 
     return (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700 mb-4">
-            <div className="flex items-center gap-2 mb-4">
-                <Filter className="w-5 h-5 text-gray-500" />
-                <h3 className="text-lg font-semibold">Filters</h3>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto p-1">
-                {filters.map(filter => (
-                    <div key={filter.id}>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {filter.label}
-                        </label>
-                        {renderFilterInput(filter)}
-                    </div>
-                ))}
-            </div>
+        <div className="flex items-center gap-2 mb-4">
+            <Filter className="w-5 h-5 text-gray-500" />
+            <h3 className="text-lg font-semibold">Filters</h3>
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto overflow-x-visible p-1">
+            {filters.map(filter => (
+                <div key={filter.id} className="relative">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {filter.label}
+                    </label>
+                    {renderFilterInput(filter)}
+                </div>
+            ))}
+        </div>
+    </div>
     );
 }

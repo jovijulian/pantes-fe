@@ -162,9 +162,7 @@ export default function CustomerPage() {
                     return (
                         <button
                             className="text-blue-600 hover:underline"
-                            onClick={() => {
-                                router.push(`/customers/${data.id}`);
-                            }}
+                            onClick={() => handleRowClick}
                         >
                             {data.member_no}
                         </button>

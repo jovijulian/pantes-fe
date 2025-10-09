@@ -131,9 +131,7 @@ export default function SalesPage() {
                     return (
                         <button
                             className="text-blue-600 hover:underline"
-                            onClick={() => {
-                                router.push(`/transactions/${data.id}`);
-                            }}
+                            onClick={() => handleRowClick}
                         >
                             {moment(data.date).format("DD/MM/YYYY")}
                         </button>
@@ -195,6 +193,12 @@ export default function SalesPage() {
                     },
                 ]
                 : []),
+            {
+                id: "total_price",
+                header: "Total Harga",
+                accessorKey: "total_price",
+                cell: ({ row }: any) => <span className="font-semibold"> {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(row.total_price)}</span>,
+            },
             {
                 id: "created_at",
                 header: "Dibuat pada",
@@ -275,6 +279,16 @@ export default function SalesPage() {
         setShowFilters(false);
         setCurrentPage(1);
     };
+
+    const handleRowClick = (rowData: TableDataItem) => {
+        const detailUrl = `/transactions/${rowData.id}`;
+
+        if (activeFilterCount > 0) {
+            window.open(detailUrl, '_blank');
+        } else {
+            router.push(detailUrl);
+        }
+    };
     return (
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
@@ -321,23 +335,23 @@ export default function SalesPage() {
             </div>
 
             <AnimatePresence>
-                    {showFilters && (
-                        <motion.div
-                            key="filters"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.25 }}
-                            className="relative z-[1000]"
-                        >
-                            <DynamicFilterCard
-                                filters={filterOptions}
-                                appliedFilters={appliedFilters}
-                                onFilterChange={handleFilterChange}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                {showFilters && (
+                    <motion.div
+                        key="filters"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.25 }}
+                        className="relative z-[1000]"
+                    >
+                        <DynamicFilterCard
+                            filters={filterOptions}
+                            appliedFilters={appliedFilters}
+                            onFilterChange={handleFilterChange}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Table */}
             <Table
@@ -352,7 +366,7 @@ export default function SalesPage() {
                 setCheckedData={setSelectedRows}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
-                onRowClick={(rowData) => router.push(`/transactions/${rowData.id}`)}
+                onRowClick={handleRowClick}
             />
 
             <DeactiveModal
