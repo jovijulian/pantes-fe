@@ -76,6 +76,11 @@ export default function CustomerDetailPage() {
         }
     }, [searchParams, currentPage, perPage, page, searchTerm, id]);
 
+    const handleRowClick = (id: number) => {
+        const detailUrl = `/transactions/${id}`;
+        window.open(detailUrl, '_blank');
+    };
+    
     useEffect(() => {
         if (!id) return;
 
@@ -107,7 +112,6 @@ export default function CustomerDetailPage() {
                         cell: ({ row }: any) => (
                             <button
                                 className="text-blue-600 hover:underline"
-                                onClick={() => router.push(`/transactions/${row.id}`)}
                             >
                                 {moment(row.date).format("DD/MM/YYYY")}
                             </button>
@@ -147,6 +151,27 @@ export default function CustomerDetailPage() {
                             (d: any) => d.label === label
                         );
                         if (!relevantDetail) return "-";
+                        if (label === "Price (IDR)") {
+                            const prices = relevantDetail.value
+                                .split(", ")
+                                .map((v: string) => v.trim())
+                                .filter(Boolean); 
+                
+                            return (
+                                <div className="flex flex-col">
+                                    {prices.map((price: string, idx: number) => (
+                                        <span key={idx} className="font-semibold">
+                                            {new Intl.NumberFormat("id-ID", {
+                                                style: "currency",
+                                                currency: "IDR",
+                                                minimumFractionDigits: 0,
+                                            }).format(Number(price))}
+                                        </span>
+                                    ))}
+                                </div>
+                            );
+                        }
+
                         return parseAndFormatValue(relevantDetail.value);
                     }
                 }));
@@ -233,7 +258,7 @@ export default function CustomerDetailPage() {
                         loading={isLoadingHistory}
                         onPageChange={handlePageChange}
                         onPerPageChange={handlePerPageChange}
-                        onRowClick={(rowData: any) => router.push(`/transactions/${rowData.id}`)}
+                        onRowClick={(rowData: any) => handleRowClick(rowData.id)}
                     />
                 </div>
             </div>

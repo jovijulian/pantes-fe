@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { endpointUrl, httpPost } from "../../../helpers";
 
 import SummaryCards from "@/components/dashboard/SummaryCards";
+import TotalTransactionCard from "@/components/dashboard/TotalTransactionCard";
 import TransactionTrendChart from "@/components/dashboard/TransactionTrendChart";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import DateRangePicker from "@/components/common/DateRangePicker";
@@ -20,7 +21,7 @@ interface Transaction { id: number; date: string; name_purchase: string; custome
 
 interface DashboardData {
     customer: { count_all: number; count_new_this_month: number; leaderboard: LeaderboardItem[]; };
-    transaction: { count_all: number; list: Transaction[]; };
+    transaction: { count_all: number; list: Transaction[]; total_price_all: number; };
     sales: { count_all: number; leaderboard: LeaderboardItem[]; };
     grafik: { transaction: GrafikTransaction[]; };
     item_transaction: { leaderboard: any };
@@ -131,14 +132,12 @@ export default function DashboardPage() {
             </div>
             <hr className="my-8 border-t-2 border-gray-300 dark:border-gray-600" />
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Sepanjang Waktu</h3>
+            <SummaryCards data={dashboardData} role={role} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="h-full">
-                    <SummaryCards data={dashboardData} role={role} />
-
-                </div>
-                <div className="h-full">
-                    <ItemTransactionPieChart data={dashboardData.item_transaction.leaderboard} />
-                </div>
+                <TotalTransactionCard
+                    value={dashboardData.transaction.total_price_all || 0}
+                />
+                <ItemTransactionPieChart data={dashboardData.item_transaction.leaderboard} />
             </div>
 
             {role === "1" && (
