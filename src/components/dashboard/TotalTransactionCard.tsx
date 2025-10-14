@@ -35,7 +35,7 @@ export default function TotalTransactionCard({ value }: TotalTransactionCardProp
             </div>
             <div>
               <h3 className="text-xl font-bold text-slate-900">Total Nilai Transaksi</h3>
-              <p className="text-sm text-slate-500">Akumulasi seluruh transaksi yang pernah tercatat</p>
+              <p className="text-sm text-slate-500">Akumulasi seluruh transaksi pada periode</p>
             </div>
           </div>
         </div>

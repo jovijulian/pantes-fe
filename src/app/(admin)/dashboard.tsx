@@ -119,11 +119,13 @@ export default function DashboardPage() {
                 <DateRangePicker onDatesChange={handleDatesChange} initialStartDate={currentStartDate} initialEndDate={currentEndDate} />
             </div>
 
+            <TransactionTrendChart data={dashboardData.grafik.transaction} />
 
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 h-full">
-                    <TransactionTrendChart data={dashboardData.grafik.transaction} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className=" h-full">
+                    <TotalTransactionCard
+                        value={dashboardData.transaction.total_price_all || 0}
+                    />
                 </div>
                 <div className="space-y-6 h-full">
                     <RecentTransactions data={dashboardData.transaction.list} />
@@ -132,12 +134,21 @@ export default function DashboardPage() {
             </div>
             <hr className="my-8 border-t-2 border-gray-300 dark:border-gray-600" />
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Sepanjang Waktu</h3>
-            <SummaryCards data={dashboardData} role={role} />
+            {/* <SummaryCards data={dashboardData} role={role} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <TotalTransactionCard
                     value={dashboardData.transaction.total_price_all || 0}
                 />
                 <ItemTransactionPieChart data={dashboardData.item_transaction.leaderboard} />
+            </div> */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="h-full">
+                    <SummaryCards data={dashboardData} role={role} />
+
+                </div>
+                <div className="h-full">
+                    <ItemTransactionPieChart data={dashboardData.item_transaction.leaderboard} />
+                </div>
             </div>
 
             {role === "1" && (

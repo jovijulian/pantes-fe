@@ -18,7 +18,6 @@ export default function UpdateMasterFieldForm() {
     const params = useParams();
     const id = params.id as string;
 
-    // State for form fields
     const [step, setStep] = useState<number>(0);
     const [stepName, setStepName] = useState("");
     const [label, setLabel] = useState("");
@@ -26,11 +25,11 @@ export default function UpdateMasterFieldForm() {
     const [valueLength, setValueLength] = useState<number>(0);
     const [details, setDetails] = useState<DetailItem[]>([]);
 
-    // Loading states
+    const [newOptionValue, setNewOptionValue] = useState("");
+    const [isAddingOption, setIsAddingOption] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
     const [loading, setLoading] = useState(false);
 
-    // Fetch existing data when the component mounts
     useEffect(() => {
         if (!id) return;
 
@@ -39,13 +38,11 @@ export default function UpdateMasterFieldForm() {
                 const response = await httpGet(endpointUrl(`/master/field/${id}`), true);
                 const data = response.data.data;
 
-                // Populate the form with existing data
                 setStep(Number(data.step));
                 setStepName(data.step_name);
                 setLabel(data.details[0].label);
                 setValueType(Number(data.details[0].value_type));
                 setValueLength(Number(data.details[0].value_length));
-                // Also populate the options if they exist
                 if (data.details[0].field_value && Array.isArray(data.details[0].field_value)) {
                     setDetails(data.details[0].field_value);
                 }
@@ -60,6 +57,36 @@ export default function UpdateMasterFieldForm() {
 
         getFieldData();
     }, [id, router]);
+
+    const handleAddOption = async () => {
+        if (newOptionValue.trim() === "") {
+            toast.warn("Nilai opsi tidak boleh kosong.");
+            return;
+        }
+
+        setIsAddingOption(true);
+        const payload = { value: newOptionValue };
+
+        try {
+            const response = await httpPost(
+                endpointUrl(`/master/field/${id}/add-value`),
+                payload,
+                true
+            );
+
+            const newOption = response.data.data.field_value;
+
+            setDetails(prevDetails => [...prevDetails, newOption]);
+
+            setNewOptionValue(""); 
+            toast.success("Opsi berhasil ditambahkan!");
+
+        } catch (error) {
+            toast.error("Gagal menambahkan opsi.");
+        } finally {
+            setIsAddingOption(false);
+        }
+    };
 
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -148,18 +175,45 @@ export default function UpdateMasterFieldForm() {
                     />
                 </div>
 
-                {/* This section now just displays existing options */}
                 {valueType === 3 && (
                     <div className="p-4 border rounded-lg space-y-4">
-                        <h3 className="font-semibold">Opsi yang Ada</h3>
-                        <p className="text-sm text-gray-500">Pengelolaan opsi (tambah/hapus) harus dilakukan melalui fitur terpisah untuk menghindari perubahan data yang tidak disengaja.</p>
-                        <div className="space-y-2">
-                            {details.map((item) => (
-                                <div key={item.id} className="bg-gray-50 p-2 rounded">
-                                    <span>{item.value}</span>
-                                </div>
-                            ))}
+                        <h3 className="font-semibold">Kelola Opsi</h3>
 
+                        <div className="flex items-center gap-2 w-full">
+                            <Input
+                                type="text"
+                                placeholder="Opsi baru"
+                                value={newOptionValue}
+                                onChange={(e) => setNewOptionValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleAddOption();
+                                    }
+                                }}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleAddOption}
+                                disabled={isAddingOption}
+                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 shrink-0 disabled:opacity-50"
+                            >
+                                {isAddingOption ? "Menambahkan..." : "Tambah"}
+                            </button>
+                        </div>
+
+                        <div className="space-y-2 pt-2 border-t">
+                            <p className="text-sm font-medium text-gray-600">Opsi yang Tersedia:</p>
+                            {details.length > 0 ? (
+                                details.map((item) => (
+                                    <div key={item.id} className="bg-gray-100 dark:bg-gray-800 p-2 rounded flex justify-between items-center">
+                                        <span>{item.value}</span>
+
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-sm text-gray-500 text-center py-2">Belum ada opsi.</p>
+                            )}
                         </div>
                     </div>
                 )}

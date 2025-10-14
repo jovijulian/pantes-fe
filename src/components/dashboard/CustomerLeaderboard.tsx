@@ -1,9 +1,10 @@
 import React from 'react';
 import { Users, Phone, Trophy } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function CustomerLeaderboard({ data }: { data: any }) {
     const customers = data || [];
-
+    const router = useRouter();
 
     return (
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
@@ -19,7 +20,7 @@ export default function CustomerLeaderboard({ data }: { data: any }) {
 
             <div className="space-y-4">
                 {customers.length > 0 ? customers.map((customer: any, index: any) => (
-                    <div key={customer.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div key={customer.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-slate-100 hover:border-slate-200 transition-all duration-200 cursor-pointer transition-colors" onClick={() => router.push(`/customers/${customer.id}`)}>
                         <div className="flex items-center space-x-4">
                             <div className="flex items-center justify-center w-10 h-10 bg-blue-100 text-blue-600 rounded-full font-semibold">
                                 {index + 1}
