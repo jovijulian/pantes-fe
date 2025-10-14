@@ -75,7 +75,10 @@ const RenderModalField = React.memo(({
             const currentValue = isMulti ? options.filter(opt => (value || []).includes(opt.value)) : options.find(opt => opt.value === (value || '').toString()) || null;
             const handleSelectChange = (selection: any) => isMulti ? onChange(selection ? selection.map((opt: any) => opt.value) : []) : onChange(selection ? selection.value : null);
             const onCreate = (inputValue: string) => setModalState({ isOpen: true, title: `Add New ${field.label}`, message: `Are you sure you want to add "${inputValue}"?`, onConfirm: async () => { const newOption = await handleCreateOption(field.id, inputValue); if (newOption) { isMulti ? onChange([...(value || []), newOption.value]) : onChange(newOption.value); } } });
-            return <CreatableSelect placeholder={`Select or type ${field.label}`} options={options} value={currentValue} onChange={handleSelectChange} onCreateOption={onCreate} isMulti={isMulti} />;
+            return <CreatableSelect placeholder={`Select or type ${field.label}`} options={options} value={currentValue} 
+            onChange={handleSelectChange} 
+            // onCreateOption={onCreate} 
+            isMulti={isMulti} />;
         }
         case 4:
             return <SingleDatePicker placeholderText={`Select ${field.label}`} selectedDate={value ? new Date(value) : null} onChange={(date: Date | null) => onChange(date ? moment(date).format('YYYY-MM-DD') : null)} onClearFilter={() => onChange(null)} viewingMonthDate={value ? new Date(value) : new Date()} onMonthChange={() => { }} />;

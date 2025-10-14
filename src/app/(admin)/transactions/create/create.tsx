@@ -463,7 +463,7 @@ export default function DynamicCreateTransactionPage() {
                             options={[]}
                             value={null}
                             onChange={handleSelectChange}
-                            onCreateOption={onCreate}
+                            // onCreateOption={onCreate}
                         />
                     )
                 }
@@ -476,7 +476,7 @@ export default function DynamicCreateTransactionPage() {
                         options={options}
                         value={currentValue}
                         onChange={handleSelectChange}
-                        onCreateOption={onCreate}
+                        // onCreateOption={onCreate}
                     />
                 );
 

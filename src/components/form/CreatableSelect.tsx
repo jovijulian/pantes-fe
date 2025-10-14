@@ -3,7 +3,7 @@ import React from 'react';
 import Creatable from 'react-select/creatable';
 
 // Opsi props: options, value, onChange, onCreateOption, placeholder, disabled
-export default function CreatableSelect({ onCreateOption, ...props }: any) {
+export default function CreatableSelect({ isCreatable = false, onCreateOption, ...props }: any) {
     // Styling agar mirip dengan komponen Anda yang lain
     const customStyles = {
         control: (provided: any, state: any) => ({
@@ -17,11 +17,18 @@ export default function CreatableSelect({ onCreateOption, ...props }: any) {
         menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
         menu: (base: any) => ({ ...base, zIndex: 9999 })
     };
+    const handleCreateOption = (inputValue: string) => {
+        if (inputValue.trim() && onCreateOption) {
+            onCreateOption(inputValue);
+        }
+    };
 
     return (
         <Creatable
             {...props}
-            onCreateOption={onCreateOption}
+            
+            onCreateOption={isCreatable ? handleCreateOption : undefined}
+            isValidNewOption={isCreatable ? undefined : () => false}
             formatCreateLabel={(inputValue) => `Add new: "${inputValue}"`}
             styles={customStyles}
             isClearable

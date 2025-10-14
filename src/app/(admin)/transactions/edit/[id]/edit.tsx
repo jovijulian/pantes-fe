@@ -268,7 +268,11 @@ export default function DynamicEditTransactionPage() {
                 });
                 const handleSelectChange = (selection: any) => isMulti ? onChange(selection ? selection.map((opt: any) => opt.value) : []) : onChange(selection ? selection.value : null);
                 const currentValue = isMulti ? options.filter(opt => (value || []).includes(opt.value)) : options.find(opt => opt.value === (value || '').toString()) || null;
-                return <CreatableSelect {...commonProps} options={options} value={currentValue} onChange={handleSelectChange} onCreateOption={onCreate} isMulti={isMulti} />;
+                return <CreatableSelect {...commonProps} 
+                options={options} value={currentValue} 
+                onChange={handleSelectChange} 
+                // onCreateOption={onCreate} 
+                isMulti={isMulti} />;
             case 4: return <SingleDatePicker {...commonProps} placeholderText={`Select ${field.label}`} selectedDate={value ? new Date(value) : null} onChange={(date: Date | null) => onChange(date ? moment(date).format('YYYY-MM-DD') : null)} onClearFilter={() => onChange(null)} viewingMonthDate={value ? new Date(value) : new Date()} onMonthChange={() => { }} />;
             default: return <div className="text-red-500 text-sm">Unsupported field.</div>;
         }
