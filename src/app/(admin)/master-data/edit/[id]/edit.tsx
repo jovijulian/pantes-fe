@@ -7,6 +7,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { endpointUrl, httpGet, httpPost, httpPut } from "@/../helpers"; // Assuming httpPut exists
 import { toast } from "react-toastify";
+import { FaEdit, FaSave, FaTimes } from "react-icons/fa";
 
 interface DetailItem {
     id?: number; // Options from the DB will have an ID
@@ -29,6 +30,9 @@ export default function UpdateMasterFieldForm() {
     const [isAddingOption, setIsAddingOption] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [editingOptionId, setEditingOptionId] = useState<number | null>(null);
+    const [editingOptionValue, setEditingOptionValue] = useState("");
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -78,13 +82,56 @@ export default function UpdateMasterFieldForm() {
 
             setDetails(prevDetails => [...prevDetails, newOption]);
 
-            setNewOptionValue(""); 
+            setNewOptionValue("");
             toast.success("Opsi berhasil ditambahkan!");
 
         } catch (error) {
             toast.error("Gagal menambahkan opsi.");
         } finally {
             setIsAddingOption(false);
+        }
+    };
+
+    const handleStartEdit = (option: DetailItem) => {
+        setEditingOptionId(option.id!);
+        setEditingOptionValue(option.value);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingOptionId(null);
+        setEditingOptionValue("");
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editingOptionId || editingOptionValue.trim() === "") {
+            toast.warn("Nilai opsi tidak boleh kosong.");
+            return;
+        }
+
+        setIsSavingEdit(true);
+        const payload = { value: editingOptionValue };
+        const optionId = editingOptionId;
+
+        try {
+            await httpPost(
+                endpointUrl(`/master/field/value/${optionId}/update`),
+                payload,
+                true
+            );
+
+            setDetails(prevDetails =>
+                prevDetails.map(item =>
+                    item.id === optionId ? { ...item, value: editingOptionValue } : item
+                )
+            );
+
+            handleCancelEdit();
+            toast.success("Opsi berhasil diperbarui!");
+
+        } catch (error) {
+            toast.error("Gagal memperbarui opsi.");
+        } finally {
+            setIsSavingEdit(false);
         }
     };
 
@@ -96,7 +143,6 @@ export default function UpdateMasterFieldForm() {
             return;
         }
 
-        // Construct the payload as requested
         const payload = {
             step: String(step),
             step_name: stepName,
@@ -206,9 +252,52 @@ export default function UpdateMasterFieldForm() {
                             <p className="text-sm font-medium text-gray-600">Opsi yang Tersedia:</p>
                             {details.length > 0 ? (
                                 details.map((item) => (
-                                    <div key={item.id} className="bg-gray-100 dark:bg-gray-800 p-2 rounded flex justify-between items-center">
-                                        <span>{item.value}</span>
-
+                                    <div key={item.id} className="bg-gray-100 dark:bg-gray-800 p-2 rounded flex justify-between items-center gap-2">
+                                        {editingOptionId === item.id ? (
+                                            <>
+                                                <div className="flex items-center gap-2 w-full">
+                                                    <Input
+                                                        type="text"
+                                                        value={editingOptionValue}
+                                                        onChange={(e) => setEditingOptionValue(e.target.value)}
+                                                        className="flex-grow"
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') handleSaveEdit();
+                                                            if (e.key === 'Escape') handleCancelEdit();
+                                                        }}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleSaveEdit}
+                                                        disabled={isSavingEdit}
+                                                        className="p-1 text-green-600 hover:text-green-800 disabled:opacity-50 shrink-0" 
+                                                        title="Simpan Perubahan"
+                                                    >
+                                                        {isSavingEdit ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div> : <FaSave />}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleCancelEdit}
+                                                        className="p-1 text-red-600 hover:text-red-800 shrink-0"
+                                                        title="Batal"
+                                                    >
+                                                        <FaTimes />
+                                                    </button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className="flex-grow">{item.value}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleStartEdit(item)}
+                                                    className="p-1 text-blue-600 hover:text-blue-800"
+                                                    title="Edit Opsi"
+                                                >
+                                                    <FaEdit />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 ))
                             ) : (
