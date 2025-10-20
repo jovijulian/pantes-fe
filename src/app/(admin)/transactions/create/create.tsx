@@ -163,13 +163,12 @@ export default function DynamicCreateTransactionPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+        let purchaseName: string = '';
 
         const buildPayload = () => {
             const details: any[] = [];
             const customerInfoStepKey = generateKey('Customer Information');
             const customerInfoData = transactionData[customerInfoStepKey] || {};
-
             formTemplate.forEach(step => {
                 if (step.step_name === 'Items') {
                     transactionData.items.forEach(item => {
@@ -188,7 +187,7 @@ export default function DynamicCreateTransactionPage() {
             const finalPayload = {
                 customer_id: foundCustomerId,
                 date: customerInfoData[generateKey('Transaction Date')] || moment().format('YYYY-MM-DD'),
-                name_purchase: customerInfoData[generateKey('Name Purchase')] || '',
+                name_purchase: purchaseName[0],
                 description: customerInfoData[generateKey('Notes')] || '',
                 detail: details,
             };
@@ -234,6 +233,10 @@ export default function DynamicCreateTransactionPage() {
                     label: field.label,
                     value: valueArray,
                 });
+                if (field.label === 'Name Purchase') {
+                    purchaseName = valueFromState;
+                    console.log('Purchase Name set to:', purchaseName);
+                }
             }
         };
 
@@ -463,7 +466,7 @@ export default function DynamicCreateTransactionPage() {
                             options={[]}
                             value={null}
                             onChange={handleSelectChange}
-                            // onCreateOption={onCreate}
+                        // onCreateOption={onCreate}
                         />
                     )
                 }
@@ -476,7 +479,7 @@ export default function DynamicCreateTransactionPage() {
                         options={options}
                         value={currentValue}
                         onChange={handleSelectChange}
-                        // onCreateOption={onCreate}
+                    // onCreateOption={onCreate}
                     />
                 );
 

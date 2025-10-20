@@ -38,7 +38,7 @@ export default function SummaryCards({ data, role }: { data: any, role: any }) {
 
   const gridCols =
     filteredCards.length === 3
-      ? "lg:grid-cols-1"
+      ? "lg:grid-cols-3"
       : "lg:grid-cols-2";
 
   return (
