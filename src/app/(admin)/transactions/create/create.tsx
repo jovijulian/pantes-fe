@@ -600,7 +600,7 @@ export default function DynamicCreateTransactionPage() {
                                                 </label>
                                                 <div className="relative">
                                                     <Input
-                                                        type="tel"
+                                                        type="text"
                                                         placeholder="Enter member number to search..."
                                                         value={transactionData[customerStepKey]?.[generateKey(memberField.label)] || ''}
                                                         onChange={(e) => {
