@@ -25,7 +25,7 @@ export type NavItem = {
   name: string;
   icon: React.ReactNode;
   path: string;
-  roles: number[]; 
+  roles: number[];
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean, roles: number[] }[];
 };
 
@@ -34,7 +34,7 @@ export const menuConfig: Record<string, NavItem[]> = {
     {
       name: 'Dashboard',
       icon: <LayoutDashboard />,
-      path: '/',
+      path: '/dashboard',
       roles: [1, 2],
     },
     {
@@ -61,5 +61,11 @@ export const menuConfig: Record<string, NavItem[]> = {
       path: '/master-data',
       roles: [1],
     },
-  ], 
+    {
+      name: 'Menu',
+      icon: <Home />,
+      path: '/menus',
+      roles: [1],
+    }
+  ],
 };

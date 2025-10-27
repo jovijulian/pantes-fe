@@ -4,14 +4,9 @@ const publicRoutes = [
     '/signin',
 ];
 
-const homeRoutes: Record<string, string> = {
-    '1': '/',       
-    '2': '/',  
-};
-
 const rolePermissions: Record<string, string[]> = {
     '1': [
-        '/',
+        '/dashboard',
         '/sales-accounts',
         '/customers',
         '/transactions',
@@ -19,18 +14,25 @@ const rolePermissions: Record<string, string[]> = {
         '/profile'
     ],
     '2': [
-       '/',
+       '/dashboard',
        '/customers',
        '/transactions',
        '/profile'
     ],
+    
+};
+
+const homeRoutes: Record<string, string> = {
+    '1': '/menus',
+    '2': '/dashboard',
+    '3': '/menus',
 };
 
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
-    const token = request.cookies.get('cookieKey')?.value;
-    const role = request.cookies.get('role')?.value || '';
+    const tokenCookie = request.cookies.get('cookieKey');
+    const token = tokenCookie?.value;
 
     if (!token) {
         if (!publicRoutes.includes(pathname)) {
@@ -39,25 +41,34 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
-    const userHomeRoute = homeRoutes[role] || '/';
+   
+    const userRole = request.cookies.get('role')?.value || '3';
 
-    if (publicRoutes.includes(pathname)) {
+    const userHomeRoute = homeRoutes[userRole] || '/signin';
+
+    if (pathname === '/signin' || pathname === '/') {
         return NextResponse.redirect(new URL(userHomeRoute, request.url));
     }
 
-    const allowedRoutes = rolePermissions[role] || [];
-    const isAuthorized = allowedRoutes.some(allowedRoute => {
-        if (allowedRoute === '/') {
-            return pathname === '/';
+    if (pathname.startsWith('/menus')) {
+        if (userRole !== '1') {
+            return NextResponse.redirect(new URL(userHomeRoute, request.url));
         }
-        return pathname.startsWith(allowedRoute);
-    });
-
-    if (isAuthorized) {
         return NextResponse.next();
-    } else {
-        return NextResponse.redirect(new URL(userHomeRoute, request.url));
     }
+
+    if (!publicRoutes.includes(pathname)) {
+        const allowedRoutes = rolePermissions[userRole] || [];
+        const isAuthorized = allowedRoutes.some(route => pathname.startsWith(route));
+        
+        if (isAuthorized) {
+            return NextResponse.next();
+        } else {
+            return NextResponse.redirect(new URL(userHomeRoute, request.url));
+        }
+    }
+
+    return NextResponse.next();
 }
 
 export const config = {

@@ -84,7 +84,13 @@ const SignIn: React.FC = () => {
       localStorage.setItem("name", user.name);
       localStorage.setItem("email", user.email);
       localStorage.setItem("id", user.id);
-      window.location.href = "/";
+      if (user.role_id == "1") {
+        window.location.href = "/menus";
+      } else if (user.role_id == 2) {
+        window.location.href = "/dashboard";
+      } else if (user.role_id == 3) {
+        window.location.href = "/menus";
+      }
 
     } catch (error) {
       console.log(error);
