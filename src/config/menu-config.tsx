@@ -109,7 +109,7 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Menu',
       icon: <Home />,
       path: '/menus',
-      roles: [1, 3],
+      roles: [1],
     },
   ],
 };

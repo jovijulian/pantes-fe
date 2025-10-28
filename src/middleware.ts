@@ -20,13 +20,17 @@ const rolePermissions: Record<string, string[]> = {
        '/transactions',
        '/profile'
     ],
+    '3': [
+        '/purchasing/dashboard',
+        '/purchasing/master',
+     ],
     
 };
 
 const homeRoutes: Record<string, string> = {
     '1': '/menus',
     '2': '/dashboard',
-    '3': '/menus',
+    '3': '/purchasing/dashboard',
 };
 
 

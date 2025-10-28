@@ -89,7 +89,7 @@ const SignIn: React.FC = () => {
       } else if (user.role_id == 2) {
         window.location.href = "/dashboard";
       } else if (user.role_id == 3) {
-        window.location.href = "/menus";
+        window.location.href = "/purchasing/dashboard";
       }
 
     } catch (error) {
