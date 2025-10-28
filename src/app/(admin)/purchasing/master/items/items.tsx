@@ -11,13 +11,13 @@ import moment from "moment";
 import { useRouter } from 'next/navigation';
 import { toast } from "react-toastify";
 import DeactiveModal from "@/components/modal/deactive/DeactivePurchasing";
-import EditModal from "@/components/modal/edit/EditExpeditionModal";
+import EditModal from "@/components/modal/edit/EditItemModal";
 import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
 import DateRangePicker from "@/components/common/DateRangePicker";
 
 interface TableDataItem {
     id: number;
-    name: string;
+    name_item: string;
     created_at: string;
 }
 
@@ -94,10 +94,10 @@ export default function BankPage() {
                 maxWidth: "70px",
             },
             {
-                id: "name",
-                header: "Nama Ekspedisi",
-                accessorKey: "name",
-                cell: ({ row }: any) => <span>{row.name}</span>,
+                id: "name_item",
+                header: "Nama Barang",
+                accessorKey: "name_item",
+                cell: ({ row }: any) => <span>{row.name_item}</span>,
             },
             {
                 id: "status",
@@ -143,7 +143,7 @@ export default function BankPage() {
 
         try {
             const response = await httpGet(
-                endpointUrlv2("master/expedition"), true, params
+                endpointUrlv2("master/item"), true, params
             );
 
             const responseData = response.data.data.data;
@@ -176,7 +176,7 @@ export default function BankPage() {
                     />
 
                     <button
-                        onClick={() => router.push("/purchasing/master/expeditions/create")}
+                        onClick={() => router.push("/purchasing/master/items/create")}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
                         <span>+</span>
@@ -206,11 +206,11 @@ export default function BankPage() {
                     setIsDeleteModalOpen(false);
                     setSelectedData(null);
                 }}
-                url={`master/expedition/${selectedData?.id}/deactive`}
-                itemName={`${selectedData?.name}` || ""}
+                url={`master/item/${selectedData?.id}/deactive`}
+                itemName={`${selectedData?.name_item}` || ""}
                 selectedData={selectedData}
                 onSuccess={getData}
-                message="Ekspedisi berhasil dihapus!"
+                message="Barang berhasil dihapus!"
             />
 
             <EditModal
