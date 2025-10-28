@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   },
   env: {
     BASE_URL: "https://api-pantes.padmanagara.my.id/api/",
+    BASE_URL_DEV: "https://api-dev-pantes.padmanagara.my.id/api/",
   },
   experimental: {
     optimizePackageImports: [

@@ -18,7 +18,7 @@ export function endpointUrl(url = "") {
   return `${process.env.BASE_URL}${url.toString().replace(/^\//g, "")}`;
 }
 export function endpointUrlv2(url = "") {
-  return `${process.env.BASE_URL_V2}${url.toString().replace(/^\//g, "")}`;
+  return `${process.env.BASE_URL_DEV}${url.toString().replace(/^\//g, "")}`;
 }
 export function endpointUrlv2Cetak(url = "", appendToken = false) {
   let fullUrl = `${process.env.BASE_URL_V2}${url.toString().replace(/^\//g, "")}`;
