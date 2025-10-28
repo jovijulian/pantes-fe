@@ -5,7 +5,7 @@ import IndexPage from "./transactions"
 import React from "react";
 
 export const metadata: Metadata = {
-    title: "Transactions | CRM Pantes Gold",
+    title: "Transactions | Pantes Gold App",
 };
 
 export default function FormElements() {

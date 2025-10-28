@@ -2,7 +2,7 @@ import SignInForm from "@/components/auth/SignInForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Signin | CRM Pantes Gold",
+  title: "Signin | Pantes Gold App",
 };
 
 export default function SignIn() {

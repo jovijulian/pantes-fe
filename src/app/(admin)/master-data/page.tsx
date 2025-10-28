@@ -3,7 +3,7 @@ import IndexPage from "./master-data";
 import { Metadata } from "next";
 import React, { Suspense } from "react";
 export const metadata: Metadata = {
-    title: "Master Data | CRM Pantes Gold",
+    title: "Master Data | Pantes Gold App",
 };
 
 

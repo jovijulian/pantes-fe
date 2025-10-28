@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Account Setting | CRM Pantes Gold",
+  title: "Account Setting | Pantes Gold App",
 };
 
 export default function Profile() {

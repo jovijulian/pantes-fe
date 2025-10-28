@@ -5,7 +5,7 @@ import CreatePage from "./create"
 import React from "react";
 
 export const metadata: Metadata = {
-    title: "Create Customer Data | CRM Pantes Gold",
+    title: "Create Customer Data | Pantes Gold App",
 };
 
 export default function FormElements() {

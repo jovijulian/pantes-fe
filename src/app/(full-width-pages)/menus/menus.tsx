@@ -47,7 +47,7 @@ const menuItems: {
             title: "Purchasing",
             description: "Kelola pembelian dan pemasok Anda dengan efisien.",
             icon: ShoppingCart,
-            href: "/vehicles",
+            href: "/purchasing/dashboard",
             color: "green",
         },
     ];

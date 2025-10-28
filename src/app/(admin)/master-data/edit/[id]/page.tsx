@@ -5,7 +5,7 @@ import EditPage from "./edit"
 import React from "react";
 
 export const metadata: Metadata = {
-    title: "Edit Master | CRM Pantes Gold",
+    title: "Edit Master | Pantes Gold App",
 };
 
 export default function FormElements() {

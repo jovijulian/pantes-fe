@@ -18,13 +18,19 @@ import {
   Database,
   Receipt,
   CircleUserRound,
-  ShieldUser
+  ShieldUser,
+  Truck,
+  Building2,
+  Package,
+  CreditCard,
+  Navigation,
+  UserCog,
 } from 'lucide-react';
 
 export type NavItem = {
   name: string;
   icon: React.ReactNode;
-  path: string;
+  path?: string; 
   roles: number[];
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean, roles: number[] }[];
 };
@@ -67,5 +73,43 @@ export const menuConfig: Record<string, NavItem[]> = {
       path: '/menus',
       roles: [1],
     }
+  ],
+  menu_purchasing: [
+    {
+      name: 'Dashboard',
+      icon: <LayoutDashboard />,
+      path: '/purchasing/dashboard',
+      roles: [1, 3],
+    },
+    {
+      name: 'Order',
+      icon: <FileText />,
+      path: '/purchasing/orders',
+      roles: [1, 3],
+    },
+    {
+      name: 'Surat Jalan',
+      icon: <Truck />, 
+      path: '/purchasing/work-orders',
+      roles: [1, 3],
+    },
+    {
+      name: 'Master Data',
+      icon: <Database />, 
+      roles: [1, 3],
+      subItems: [
+        { name: 'Supplier', path: '/purchasing/master/suppliers', roles: [1, 3] },
+        { name: 'Barang', path: '/purchasing/master/items', roles: [1, 3] },
+        { name: 'Bank', path: '/purchasing/master/banks', roles: [1, 3] },
+        { name: 'Ekspedisi', path: '/purchasing/master/expeditions', roles: [1, 3] },
+        { name: 'Staff', path: '/purchasing/master/staffs', roles: [1, 3] },
+      ]
+    },
+    {
+      name: 'Menu',
+      icon: <Home />,
+      path: '/menus',
+      roles: [1, 3],
+    },
   ],
 };

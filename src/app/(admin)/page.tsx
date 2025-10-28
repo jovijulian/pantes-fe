@@ -10,7 +10,7 @@ import Dashboard from "./dashboard";
 
 export const metadata: Metadata = {
   title:
-    "Dashboard | CRM Pantes Gold",
+    "Dashboard | Pantes Gold App",
 };
 
 export default function Ecommerce() {

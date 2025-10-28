@@ -3,7 +3,7 @@ import IndexPage from "./customers";
 import { Metadata } from "next";
 import React, { Suspense } from "react";
 export const metadata: Metadata = {
-    title: "Customers | CRM Pantes Gold",
+    title: "Customers | Pantes Gold App",
 };
 
 

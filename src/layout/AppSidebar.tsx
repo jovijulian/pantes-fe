@@ -30,14 +30,21 @@ const AppSidebar: React.FC = () => {
   const activeNavItems = React.useMemo(() => {
     if (role === null) return [];
     let currentMenuKey: keyof typeof menuConfig | null = null;
-    currentMenuKey = 'menu';
+
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/customers') || pathname.startsWith('/transactions') || pathname.startsWith('/sales-accounts') || pathname.startsWith('/master-data') ) {
+      currentMenuKey = 'menu';
+    } else if (pathname.startsWith('/purchasing')) {
+      currentMenuKey = 'menu_purchasing';
+    }
 
     if (!currentMenuKey) {
       return [];
     }
-
     const menu = menuConfig[currentMenuKey];
-    return menu.filter(item => item.roles.includes(role));
+    const roleFilteredMenu = menu.filter(item => item.roles.includes(role));
+
+
+    return roleFilteredMenu;
   }, [pathname, role]);
 
   useEffect(() => {
@@ -179,7 +186,7 @@ const AppSidebar: React.FC = () => {
         </nav>
       </div>
 
-     
+
 
     </aside>
   );

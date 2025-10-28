@@ -2,7 +2,7 @@ import Menus from "./menus";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Menus | CRM Pantes Gold",
+  title: "Menus | Pantes Gold App",
 };
 
 export default function MenusPage() {
