@@ -11,9 +11,10 @@ import { Modal } from "@/components/ui/modal";
 import Label from "@/components/form/Label";
 import { useModal } from "@/hooks/useModal";
 
-interface ItemData {
+interface SupplierData {
     id: number;
-    name_item: string;
+    code: string;
+    name: string;
 }
 interface EditProps {
     isOpen: boolean;
@@ -22,15 +23,16 @@ interface EditProps {
     onSuccess?: () => void;
 }
 
-const EditItemModal: React.FC<EditProps> = ({
+const EditSupplierModal: React.FC<EditProps> = ({
     isOpen,
     selectedId,
     onClose,
     onSuccess,
 }) => {
-    const [formData, setFormData] = useState<ItemData>({
+    const [formData, setFormData] = useState<SupplierData>({
         id: 0,
-        name_item: "",
+        code: "",
+        name: "",
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -43,17 +45,18 @@ const EditItemModal: React.FC<EditProps> = ({
             setIsLoading(true);
             setError("");
             try {
-                const response = await httpGet(endpointUrlv2(`master/item/${selectedId}`), true);
+                const response = await httpGet(endpointUrlv2(`master/supplier/${selectedId}`), true);
                 const data = response.data.data;
 
                 setFormData({
                     id: data.id,
-                    name_item: data.name_item,
+                    code: data.code,
+                    name: data.name,
                 });
 
             } catch (err: any) {
-                toast.error(err?.response?.data?.message || "Failed to fetch item data.");
-                setError("Could not load item data.");
+                toast.error(err?.response?.data?.message || "Failed to fetch supplier data.");
+                setError("Could not load supplier data.");
             } finally {
                 setIsLoading(false);
             }
@@ -69,22 +72,24 @@ const EditItemModal: React.FC<EditProps> = ({
         setError("");
 
         const payload = {
-            name_item: formData.name_item,
+            code: formData.code,
+            name: formData.name,
         };
 
 
         try {
-            await httpPost(endpointUrlv2(`master/item/${selectedId}/update`), payload, true);
-            toast.success("Berhasil mengubah barang!");
+            await httpPost(endpointUrlv2(`master/supplier/${selectedId}/update`), payload, true);
+            toast.success("Berhasil mengubah supplier!");
             setFormData({
                 id: 0,
-                name_item: "",
+                code: "",
+                name: "",
             });
             onClose();
             onSuccess?.();
         } catch (error: any) {
             toast.error(error?.response?.data?.message);
-            setError(error?.response?.data?.message || "Gagal mengubah barang");
+            setError(error?.response?.data?.message || "Gagal mengubah supplier");
         }
 
 
@@ -94,7 +99,8 @@ const EditItemModal: React.FC<EditProps> = ({
         setError("");
         setFormData({
             id: 0,
-            name_item: "",
+            code: "",
+            name: "",
         });
     };
 
@@ -105,7 +111,7 @@ const EditItemModal: React.FC<EditProps> = ({
             <div className="no-scrollbar relative w-full max-w-[500px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-8">
                 <div className="pr-10">
                     <h4 className="mb-2 text-xl font-semibold text-gray-800 dark:text-white/90 lg:text-2xl">
-                        Edit Barang
+                        Edit Supplier
                     </h4>
                 </div>
                 <form
@@ -115,15 +121,31 @@ const EditItemModal: React.FC<EditProps> = ({
                     }}
                     className="flex flex-col"
                 >
-                    <div className="space-y-5 px-2 pb-3">
+                     <div className="space-y-5 px-2 pb-3">
                         <div>
-                            <Label htmlFor="name">Nama Barang</Label>
+                            <Label htmlFor="name">Kode Supplier</Label>
                             <Input
                                 type="text"
-                                id="name_item"
-                                name="name_item"
-                                defaultValue={formData.name_item}
-                                onChange={(e) => setFormData({ ...formData, name_item: e.target.value })}
+                                id="code"
+                                name="code"
+                                defaultValue={formData.code}
+                                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                                required
+                            />
+                        </div>
+                        {error && (
+                            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                        )}
+                    </div>
+                    <div className="space-y-5 px-2 pb-3">
+                        <div>
+                            <Label htmlFor="name">Nama Supplier</Label>
+                            <Input
+                                type="text"
+                                id="name"
+                                name="name"
+                                defaultValue={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 required
                             />
                         </div>
@@ -154,4 +176,4 @@ const EditItemModal: React.FC<EditProps> = ({
     );
 };
 
-export default EditItemModal;
+export default EditSupplierModal;
