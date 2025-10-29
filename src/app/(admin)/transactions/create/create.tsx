@@ -261,28 +261,57 @@ export default function DynamicCreateTransactionPage() {
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
+        
+        const customerStepKey = generateKey('Customer Information');
+        
+        const fieldsToClear = {
+            [generateKey('Customer Name')]: '',
+            [generateKey('Customer Phone Number')]: '',
+            [generateKey('Date of Birth')]: '',
+            [generateKey('Address')]: '',
+            [generateKey('Anniversary Date')]: '',
+            [generateKey('Customer Details')]: '',
+        };
 
+        const clearCustomerData = (
+            status: 'idle' | 'not_found' = 'idle',
+            numberToKeep: string 
+        ) => {
+            setFoundCustomerId(0);
+            setCustomerFoundStatus(status);
+            
+            setTransactionData(prev => ({
+                ...prev,
+                [customerStepKey]: {
+                    ...prev[customerStepKey],  
+                    ...fieldsToClear,         
+                    [generateKey('Customer Member Number')]: numberToKeep 
+                }
+            }));
+        };
+    
         if (!numberMember.trim()) {
-            setCustomerFoundStatus('idle');
+            clearCustomerData('idle', '');
             return;
         }
 
+    
         debounceTimeout.current = setTimeout(async () => {
-            if (numberMember.length < 4) {
-                setCustomerFoundStatus('idle');
-                return;
-            }
-
+            // if (numberMember.length < 9) {
+            //     clearCustomerData('idle'); 
+            //     return;
+            // }
+    
             setSearchingCustomer(true);
-            setCustomerFoundStatus('idle');
-
+            setCustomerFoundStatus('idle'); 
+    
             try {
                 const response = await httpPost(endpointUrl('customer/number-member'), { number_member: numberMember }, true);
-
+    
                 if (response.data && response.data.data) {
                     const customerData = response.data.data;
-                    const customerStepKey = generateKey('Customer Information');
                     setFoundCustomerId(customerData.id);
+    
                     const autofillData = {
                         [generateKey('Customer Member Number')]: customerData.member_no,
                         [generateKey('Customer Name')]: customerData.name,
@@ -292,28 +321,26 @@ export default function DynamicCreateTransactionPage() {
                         [generateKey('Anniversary Date')]: customerData.date_anniv ? moment(customerData.date_anniv).format('YYYY-MM-DD') : '',
                         [generateKey('Customer Details')]: customerData.detail_information,
                     };
-
+    
                     setTransactionData(prev => ({
                         ...prev,
                         [customerStepKey]: {
                             ...prev[customerStepKey],
-                            ...autofillData,
+                            ...autofillData
                         }
                     }));
                     setCustomerFoundStatus('found');
-
+    
                 } else {
-                    setFoundCustomerId(0);
-                    setCustomerFoundStatus('not_found');
+                    clearCustomerData('not_found', numberMember);
                 }
             } catch (error) {
-                setFoundCustomerId(0);
-                setCustomerFoundStatus('not_found');
+                clearCustomerData('not_found', numberMember);
                 console.error("Customer search error:", error);
             } finally {
                 setSearchingCustomer(false);
             }
-        }, 500);
+        }, 1500); 
     };
 
     const handleCreateOption = async (fieldId: number, newValue: string) => {
@@ -566,7 +593,7 @@ export default function DynamicCreateTransactionPage() {
                                 const customerStepKey = generateKey(customerStep.step_name);
                                 const memberField = customerStep.details.find(f => f.label.toLowerCase().includes('member'));
                                 const otherFields = customerStep.details.filter(f => !f.label.toLowerCase().includes('member') && f.label !== 'Name Purchase' && f.label !== 'Transaction Date' && f.label !== 'Notes');
-                                const isFormDisabled = customerFoundStatus === 'found';
+                                const isFormDisabled = customerFoundStatus === 'found' || customerFoundStatus === 'idle';
                                 const renderCustomerField = (label: string, fullWidth: boolean = false) => {
                                     const field = customerStep.details.find(f => f.label === label);
                                     if (!field) return null;
