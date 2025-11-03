@@ -1,13 +1,16 @@
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/modal';
 import { 
     FaCheckCircle, FaExclamationTriangle, 
-    FaInfoCircle, 
+    FaFileInvoiceDollar, 
     FaShieldAlt 
 } from 'react-icons/fa';
 import { Info, Loader2 } from 'lucide-react';
+import SingleDatePicker from "@/components/common/SingleDatePicker"; 
+import moment from "moment"; 
+import { toast } from 'react-toastify';
 
 interface ChangeStatusModalProps {
     isOpen: boolean;
@@ -15,10 +18,12 @@ interface ChangeStatusModalProps {
         id: number;
         status: string;
     } | null;
-    actionType: 'Validate' | 'Approve' | null; 
+    actionType: 'Validasi' | 'Disetujui' | 'Bayar' | null; 
     onClose: () => void;
     isSubmitting: boolean; 
-    onConfirm: () => void; 
+    onConfirm: (paymentDate?: string) => void; 
+    paymentDate: string;
+    setPaymentDate: (date: string) => void;
 }
 
 const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({ 
@@ -28,11 +33,15 @@ const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({
     onClose, 
     isSubmitting, 
     onConfirm,
+    paymentDate,
+    setPaymentDate
 }) => {
+    
+    const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
 
     const modalContent = useMemo(() => {
         switch(actionType) {
-            case 'Validate':
+            case 'Validasi':
                 return {
                     icon: <Info className="text-blue-500 text-4xl" />,
                     title: 'Validasi Order Ini?',
@@ -40,13 +49,21 @@ const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({
                     confirmText: 'Ya, Validasi',
                     confirmColor: 'bg-blue-600 hover:bg-blue-700',
                 };
-            case 'Approve':
+            case 'Disetujui':
                 return {
-                    icon: <Info className="text-green-500 text-4xl" />,
+                    icon: <Info className="text-green-500 text-4xl" />, 
                     title: 'Setujui Order Ini?',
                     message: `Apakah Anda yakin ingin menyetujui order ini? (Status akan berubah menjadi 'Approved')`,
                     confirmText: 'Ya, Setujui',
                     confirmColor: 'bg-green-600 hover:bg-green-700',
+                };
+            case 'Bayar':
+                return {
+                    icon: <FaFileInvoiceDollar className="text-purple-500 text-4xl" />,
+                    title: 'Konfirmasi Pembayaran?',
+                    message: `Status akan diubah menjadi 'Bayar'. Harap masukkan tanggal pembayaran.`,
+                    confirmText: 'Ya, Konfirmasi Bayar',
+                    confirmColor: 'bg-purple-600 hover:bg-purple-700',
                 };
             default:
                 return {
@@ -60,7 +77,11 @@ const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({
     }, [actionType]);
 
     const handleConfirm = () => {
-        onConfirm(); 
+        if (actionType === 'Bayar' && !paymentDate) {
+            toast.error("Tanggal Bayar wajib diisi.");
+            return;
+        }
+        onConfirm(paymentDate); 
     };
 
     if (!order || !actionType) return null;
@@ -69,7 +90,7 @@ const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({
         <Modal isOpen={isOpen} onClose={onClose} className="max-w-md">
             <div className="p-6">
                 <div className="flex justify-center mb-4">
-                    {modalContent.icon}
+                    {/* {modalContent.icon} */}
                 </div>
                 
                 <div className="text-center">
@@ -79,9 +100,22 @@ const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({
                     </p>
                 </div>
 
-                {/* Input Alasan Dihapus */}
+                {actionType === 'Bayar' && (
+                    <div className="mb-4">
+                        <label className="block font-medium mb-1">
+                            Tanggal Bayar <span className="text-red-400">*</span>
+                        </label>
+                        <SingleDatePicker
+                            placeholderText="Pilih tanggal"
+                            selectedDate={paymentDate ? new Date(paymentDate) : null}
+                            onChange={(date: any) => setPaymentDate(moment(date).format('YYYY-MM-DD'))}
+                            onClearFilter={() => setPaymentDate('')}
+                            viewingMonthDate={viewingMonthDate}
+                            onMonthChange={setViewingMonthDate}
+                        />
+                    </div>
+                )}
 
-                {/* Tombol Aksi */}
                 <div className="flex justify-center gap-4">
                     <button
                         onClick={onClose}

@@ -5,14 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import moment from "moment";
 import 'moment/locale/id';
-import { endpointUrl, httpGet, httpPut, alertToast, endpointUrlv2, httpPost } from "@/../helpers";
+import { endpointUrl, httpGet, httpPut, alertToast, endpointUrlv2 } from "@/../helpers";
 import ComponentCard from "@/components/common/ComponentCard";
 import {
-    Loader2, User, Building, Calendar, Hash, Info, Check, X,
-    FileText, DollarSign, Scale, UserCheck
+    Loader2, User, Building, Calendar, Info, Check, X,
+    FileText, DollarSign, Scale, UserCheck, Truck, PackagePlus
 } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
-import ChangeStatusOrderModal from "@/components/modal/ChangeStatusOrderModal";
+import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderModal";
+
 
 interface IUserSimple {
     id: number;
@@ -26,56 +27,47 @@ interface ISupplier {
     code: string;
 }
 
-interface IStaff {
+interface IExpedition {
     id: number;
     name: string;
-    email: string;
+    code: string;
 }
 
-interface IPaymentType {
-    id: number;
-    payment_type: string;
-    bank_id: string | null;
-    name: string | null;
-    nominal: string;
-    bank: { bank_name: string, account_name: string } | null;
-}
-
-interface IPurchaseOrderData {
+interface IPurchaseOrderSimple {
     id: number;
     no_order: string;
     date: string;
-    weight: string;
-    cokim: string;
     nominal: string;
-    status: "1" | "2" | "3" | "4" | string;
-    validated_date: string | null;
-    approved_date: string | null;
-    payment_date: string | null;
+    weight: string;
+}
+
+interface IWorkOrderData {
+    id: number;
+    no_work_order: string;
+    date: string;
+    receipt_date: string | null;
+    total_weight: string;
+    nominal: string;
+    status: "1" | "2" | string;
     created_at: string;
     created_by: IUserSimple;
     supplier: ISupplier;
-    staff: IStaff;
-    payment_types: IPaymentType[];
-    work_order_id: string | number | null;
-    work_order: { no_surat_jalan: string } | null;
+    expedition: IExpedition;
+    purchase_orders: IPurchaseOrderSimple[];
 }
 
-type ModalAction = 'Validasi' | 'Disetujui' | 'Bayar' | null;
 
-export default function PurchaseOrderDetailPage() {
-    const [data, setData] = useState<IPurchaseOrderData | null>(null);
+export default function WorkOrderDetailPage() {
+    const [data, setData] = useState<IWorkOrderData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
     const params = useParams();
     const id = Number(params.id);
     moment.locale('id');
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalAction, setModalAction] = useState<ModalAction | null>(null);
-    const [rejectionReason, setRejectionReason] = useState("");
+    const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [paymentDate, setPaymentDate] = useState(moment().format('YYYY-MM-DD'));
+
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
         return "Rp " + num.toLocaleString('id-ID');
@@ -92,16 +84,12 @@ export default function PurchaseOrderDetailPage() {
     };
 
     const getStatusBadge = (status: string) => {
-        let color: "success" | "error" | "warning" | "info" | "info";
+        let color: "success" | "warning";
         let label = "Unknown";
-
         switch (status) {
-            case '1': color = 'warning'; label = 'Baru'; break;
-            case '2': color = 'info'; label = 'Valid'; break;
-            case '3': color = 'success'; label = 'Disetujui'; break;
-            case '4': color = 'success'; label = 'Bayar'; break;
-            case '99': color = 'error'; label = 'Rejected'; break;
-            default: color = 'info'; label = `Status (${status})`; break;
+            case '1': color = 'warning'; label = 'WO Aktif'; break;
+            case '2': color = 'success'; label = 'Diterima'; break;
+            default: color = 'warning'; break;
         }
         return <Badge color={color}>{label}</Badge>;
     };
@@ -110,14 +98,17 @@ export default function PurchaseOrderDetailPage() {
         if (!id) return;
         setIsLoading(true);
         try {
-            const response = await httpGet(endpointUrlv2(`purchase/order/${id}`), true);
+            const response = await httpGet(endpointUrlv2(`work-order/${id}`), true);
+            if (!response.data.data.purchase_orders) {
+                response.data.data.purchase_orders = [];
+            }
             setData(response.data.data);
         } catch (error: any) {
             if (error.response?.status === 404 || error.response?.status === 403) {
-                toast.error("Purchase Order tidak ditemukan.");
-                router.push('/purchasing/orders');
+                toast.error("Surat Jalan tidak ditemukan.");
+                router.push('/purchasing/work-orders');
             } else {
-                toast.error("Gagal mengambil detail PO.");
+                toast.error("Gagal mengambil detail Surat Jalan.");
                 alertToast(error);
             }
             setData(null);
@@ -130,51 +121,22 @@ export default function PurchaseOrderDetailPage() {
         getDetail();
     }, [getDetail]);
 
-    const handleOpenModal = (order: IPurchaseOrderData, action: ModalAction) => {
-        setData(order);
-        setModalAction(action);
-        setPaymentDate(moment().format('YYYY-MM-DD'));
-        setIsModalOpen(true);
+    const handleOpenReceiptModal = () => {
+        setIsReceiptModalOpen(true);
     };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setModalAction(null);
-        setIsSubmitting(false);
-    };
-
-
-
-    const handleConfirmAction = async (date?: string) => {
-        if (!data || !modalAction) return;
+    const handleConfirmReceipt = async (receiptDate: string) => {
+        if (!data) return;
 
         setIsSubmitting(true);
-        const payload: any = { status: 0 };
-        let successMessage = "";
-
-        switch (modalAction) {
-            case 'Validasi':
-                payload.status = 2;
-                successMessage = "Order berhasil divalidasi!";
-                break;
-            case 'Disetujui':
-                payload.status = 3;
-                successMessage = "Order berhasil disetujui!";
-                break;
-            case 'Bayar':
-                payload.status = 4;
-                payload.payment_date = moment(date).format('YYYY-MM-DD');
-                successMessage = "Order berhasil dibayar!";
-                break;
-            default:
-                setIsSubmitting(false);
-                return;
-        }
+        const payload = {
+            receipt_date: receiptDate,
+        };
 
         try {
-            await httpPost(endpointUrlv2(`purchase/order/${data.id}/change-status`), payload, true);
-            toast.success(successMessage);
-            setIsModalOpen(false);
+            await httpPut(endpointUrlv2(`work-order/${data.id}/receipt`), payload, true);
+            toast.success("Surat Jalan berhasil ditandai 'Diterima'!");
+            setIsReceiptModalOpen(false);
             getDetail();
         } catch (error: any) {
             alertToast(error);
@@ -187,14 +149,14 @@ export default function PurchaseOrderDetailPage() {
     if (isLoading) return (
         <div className="flex justify-center items-center h-screen">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            <p className="ml-4 text-gray-700">Memuat detail Purchase Order...</p>
+            <p className="ml-4 text-gray-700">Memuat detail Surat Jalan...</p>
         </div>
     );
 
     if (!data) return (
         <div className="text-center mt-10 p-4">
-            <p className="text-red-600">Gagal memuat data atau PO tidak ditemukan.</p>
-            <button onClick={() => router.push('/purchasing/orders')} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            <p className="text-red-600">Gagal memuat data atau Surat Jalan tidak ditemukan.</p>
+            <button onClick={() => router.push('/purchasing/work-orders')} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
                 Kembali ke Daftar
             </button>
         </div>
@@ -202,11 +164,11 @@ export default function PurchaseOrderDetailPage() {
 
     return (
         <>
-            <ComponentCard title="Detail Purchase Order">
+            <ComponentCard title="Detail Surat Jalan">
                 <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6 pb-4 border-b">
                     <div>
-                        <span className="text-sm text-gray-500">Purchase Order</span>
-                        <h1 className="text-2xl font-bold text-gray-800">{data.no_order}</h1>
+                        <span className="text-sm text-gray-500">Surat Jalan</span>
+                        <h1 className="text-2xl font-bold text-gray-800">{data.no_work_order}</h1>
                     </div>
                     <div className="flex items-center gap-3">
                         {getStatusBadge(data.status)}
@@ -214,38 +176,40 @@ export default function PurchaseOrderDetailPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <DetailItem icon={<User />} label="Staff" value={data.staff.name} />
                     <DetailItem icon={<Building />} label="Supplier" value={data.supplier.name} />
-                    <DetailItem icon={<Calendar />} label="Tanggal PO" value={moment(data.date).format('DD MMMM YYYY')} />
+                    <DetailItem icon={<Truck />} label="Ekspedisi" value={data.expedition.name} />
+                    <DetailItem icon={<Calendar />} label="Tanggal Surat Jalan" value={formatDate(data.date)} />
                     <DetailItem icon={<UserCheck />} label="Dibuat Oleh" value={data.created_by.name} />
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                     <div className="lg:col-span-3 space-y-6">
-                        <Section title="Detail Transaksi" icon={<DollarSign />}>
-                            <InfoRow label="Berat" value={formatGram(data.weight)} />
-                            <InfoRow label="Cokim" value={formatRupiah(data.cokim)} />
+                        <Section title="Detail Total" icon={<DollarSign />}>
+                            <InfoRow label="Total Berat" value={formatGram(data.total_weight)} />
                             <InfoRow label="Total Nominal" value={formatRupiah(data.nominal)} isTotal />
                         </Section>
 
-                        <Section title="Rincian Pembayaran" icon={<FileText />}>
+                        <Section title="Daftar Purchase Order" icon={<FileText />}>
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
                                         <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Atas Nama</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Info Bank</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Pesanan (PO)</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
-                                        {data.payment_types.map((payment) => (
-                                            <tr key={payment.id}>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.payment_type}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.bank_id ? `${payment.bank?.account_name}` : "-"}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.bank_id ? `${payment.bank?.bank_name}` : "-"}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(payment.nominal)}</td>
+                                        {data.purchase_orders.length === 0 && (
+                                            <tr><td colSpan={4} className="text-center p-3 italic text-gray-500">Tidak ada PO terlampir.</td></tr>
+                                        )}
+                                        {data.purchase_orders.map((po) => (
+                                            <tr key={po.id}>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{po.no_order}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm">{formatDate(po.date)}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(po.weight)}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(po.nominal)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -261,11 +225,9 @@ export default function PurchaseOrderDetailPage() {
                             </h4>
                             <div className="space-y-3">
                                 <InfoRow label="Status" value={getStatusBadge(data.status)} />
-                                <InfoRow label="Dibuat" value={`${formatDate(data.created_at)}`} />
-                                <InfoRow label="Tanggal Validasi" value={formatDate(data.validated_date)} />
-                                <InfoRow label="Tanggal Approval" value={formatDate(data.approved_date)} />
-                                <InfoRow label="Tanggal Bayar" value={formatDate(data.payment_date)} />
-                                <InfoRow label="No. Surat Jalan" value={data.work_order?.no_surat_jalan || data.work_order_id || "-"} />
+                                <InfoRow label="Dibuat" value={formatDate(data.created_at)} />
+                                <InfoRow label="Tanggal Srt. Jalan" value={formatDate(data.date)} />
+                                <InfoRow label="Tanggal Diterima" value={formatDate(data.receipt_date)} />
                             </div>
                         </div>
                     </div>
@@ -276,48 +238,44 @@ export default function PurchaseOrderDetailPage() {
                         <>
                             <button
                                 className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-                                onClick={() => handleOpenModal(data, 'Validasi')}
+                                onClick={() => router.push(`/purchasing/work-orders/edit/${data.id}`)}
                             >
                                 <Check className="w-4 h-4 inline-block -mt-1 mr-1" />
-                                Validasi
+                                Edit
+                            </button>
+                            <button
+                                className="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
+                                onClick={handleOpenReceiptModal}
+                            >
+                                <Check className="w-4 h-4 inline-block -mt-1 mr-1" />
+                                Tandai Diterima
                             </button>
                         </>
                     )}
                     {data.status === "2" && (
                         <>
                             <button
-                                className="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
-                                onClick={() => handleOpenModal(data, 'Disetujui')}
-                            >
-                                <Check className="w-4 h-4 inline-block -mt-1 mr-1" />
-                                Approve
-                            </button>
-                        </>
-                    )}
-                    {data.status === "3" && (
-                        <>
-                            <button
                                 className="px-5 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"
-                                onClick={() => handleOpenModal(data, 'Bayar')}
+                                // onClick={() => ... } 
+                                title="Tambah Barang"
                             >
-                                <DollarSign className="w-4 h-4 inline-block -mt-1 mr-1" />
-                                Bayar
+                                <PackagePlus className="w-4 h-4 inline-block -mt-1 mr-1" />
+                                Tambahkan Barang
                             </button>
                         </>
                     )}
                 </div>
             </ComponentCard>
 
-            <ChangeStatusOrderModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                order={data}
-                actionType={modalAction}
-                isSubmitting={isSubmitting}
-                onConfirm={handleConfirmAction}
-                paymentDate={paymentDate}
-                setPaymentDate={setPaymentDate}
-            />
+            {data && (
+                <ChangeStatusWorkOrderModal
+                    isOpen={isReceiptModalOpen}
+                    onClose={() => setIsReceiptModalOpen(false)}
+                    workOrder={{ id: data.id, no_work_order: data.no_work_order, status: data.status }}
+                    isSubmitting={isSubmitting}
+                    onConfirm={handleConfirmReceipt}
+                />
+            )}
         </>
     );
 }
@@ -350,4 +308,3 @@ const InfoRow = ({ label, value, isTotal = false }: { label: string, value: stri
         </span>
     </div>
 );
-

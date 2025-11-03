@@ -3,71 +3,73 @@
 import Table from "@/components/tables/Table";
 import React, { useState, useEffect, useMemo } from "react";
 import Badge from "@/components/ui/badge/Badge";
-import { alertToast, endpointUrlv2, httpGet, httpPut } from "@/../helpers";
+import { alertToast, endpointUrlv2, httpGet, httpPost, httpPut } from "@/../helpers";
 import { useSearchParams, useRouter } from 'next/navigation';
 import moment from "moment";
 import { toast } from "react-toastify";
-import ChangeStatusOrderModal from "@/components/modal/ChangeStatusOrderModal";
 import {
-    FaEdit, FaEye, FaCheck,
-    FaCheckCircle, FaFileInvoiceDollar
+    FaCheckCircle,
+    FaEdit, FaEye,
 } from "react-icons/fa";
 import Select from '@/components/form/Select-custom';
 import _ from "lodash";
-import { DollarSign, Loader2 } from "lucide-react";
+import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderModal";
+import { Loader2 } from "lucide-react";
 
-interface IPurchaseOrder {
+interface IWorkOrder {
     id: number;
-    no_order: string;
-    staff_id: string;
+    no_work_order: string;
     supplier_id: string;
+    supplier: { name: string };
+    expedition_id: string;
+    expedition: { name: string };
     date: string;
+    tanggal_terima: string | null;
     nominal: string;
-    status: "1" | "2" | "3" | "4" | string; // 1:New, 2:Valid, 3:Approved, 4:PO
+    total_weight: string;
+    status: "1" | "2" | "3" | string;
     created_at: string;
+    updated_at: string;
 }
-
-type ModalAction = 'Validasi' | 'Disetujui' | 'Bayar' | null;
 
 const statusOptions = [
     { value: "", label: "Semua Status" },
-    { value: "1", label: "Baru" },
-    { value: "2", label: "Valid" },
-    { value: "3", label: "Disetujui" },
-    { value: "4", label: "Bayar" },
+    { value: "1", label: "WO Aktif" },
+    { value: "2", label: "Diterima" },
 ];
 
-export default function PurchaseOrdersPage() {
+export default function WorkOrdersPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const [data, setData] = useState<IPurchaseOrder[]>([]);
+    const [data, setData] = useState<IWorkOrder[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-
+    const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedWorkOrder, setSelectedWorkOrder] = useState<IWorkOrder | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
     const [lastPage, setLastPage] = useState(1);
     const [count, setCount] = useState(0);
     const [statusFilter, setStatusFilter] = useState<string>("");
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState<IPurchaseOrder | null>(null);
-    const [modalAction, setModalAction] = useState<ModalAction>(null);
-    const [paymentDate, setPaymentDate] = useState(moment().format('YYYY-MM-DD'));
+
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
         return "Rp " + num.toLocaleString('id-ID');
     };
 
+    const formatGram = (value: string | number | null): string => {
+        const num = Number(value || 0);
+        return num.toLocaleString('id-ID') + " gr";
+    };
+
     const getStatusBadge = (status: string) => {
-        let color: "success" | "error" | "warning" | "info";
+        let color: "success" | "warning" | "info";
         let label = "Unknown";
         switch (status) {
-            case '1': color = 'warning'; label = 'Baru'; break;
-            case '2': color = 'info'; label = 'Valid'; break;
-            case '3': color = 'success'; label = 'Disetujui'; break;
-            case '4': color = 'success'; label = 'Bayar'; break;
+            case '1': color = 'warning'; label = 'WO Aktif'; break;
+            case '2': color = 'success'; label = 'Diterima'; break;
             default: color = 'warning'; break;
         }
         return <Badge color={color}>{label}</Badge>;
@@ -87,7 +89,7 @@ export default function PurchaseOrdersPage() {
         };
 
         try {
-            const response = await httpGet(endpointUrlv2("purchase/order"), true, params);
+            const response = await httpGet(endpointUrlv2("work-order"), true, params);
             const responseData = response.data.data.data;
             setData(responseData);
             setCount(response.data.data.page_info.total_record);
@@ -116,53 +118,34 @@ export default function PurchaseOrdersPage() {
         setSearchTerm(e.target.value);
     };
 
-    const handleOpenModal = (order: IPurchaseOrder, action: ModalAction) => {
-        setSelectedOrder(order);
-        setModalAction(action);
-        setPaymentDate(moment().format('YYYY-MM-DD'));
-        setIsModalOpen(true);
+    const handleRowClick = (rowData: IWorkOrder) => {
+        const detailUrl = `/purchasing/work-orders/${rowData.id}`;
+        router.push(detailUrl);
     };
 
-    const handleConfirmStatusChange = async (date?: string) => {
-        if (!selectedOrder || !modalAction) return;
+    const handleOpenReceiptModal = (workOrder: IWorkOrder) => {
+        setSelectedWorkOrder(workOrder);
+        setIsReceiptModalOpen(true);
+    };
+
+    const handleConfirmReceipt = async (receiptDate: string) => {
+        if (!selectedWorkOrder) return;
 
         setIsSubmitting(true);
-        const payload: any = { status: 0 };
-        let successMessage = "";
-
-        switch (modalAction) {
-            case 'Validasi':
-                payload.status = 2;
-                successMessage = "Order berhasil divalidasi!";
-                break;
-            case 'Disetujui':
-                payload.status = 3;
-                successMessage = "Order berhasil disetujui!";
-                break;
-            case 'Bayar':
-                payload.status = 4;
-                payload.payment_date = moment(date).format('YYYY-MM-DD');
-                successMessage = "Order berhasil dibayar!";
-                break;
-            default:
-                setIsSubmitting(false);
-                return;
-        }
+        const payload = {
+            receipt_date: receiptDate,
+        };
 
         try {
-            await httpPut(endpointUrlv2(`purchase/order/${selectedOrder.id}/change-status`), payload, true);
-            toast.success(successMessage);
-            setIsModalOpen(false);
+            await httpPost(endpointUrlv2(`work-order/${selectedWorkOrder.id}/receipt`), payload, true);
+            toast.success("Surat Jalan berhasil ditandai 'Diterima'!");
+            setIsReceiptModalOpen(false);
             getData();
         } catch (error: any) {
             alertToast(error);
         } finally {
             setIsSubmitting(false);
         }
-    };
-    const handleRowClick = (rowData: IPurchaseOrder) => {
-        const detailUrl = `/purchasing/orders/${rowData.id}`;
-        router.push(detailUrl);
     };
 
     const columnsNew = useMemo(() => {
@@ -177,7 +160,7 @@ export default function PurchaseOrdersPage() {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    router.push(`/purchasing/orders/${row.id}`)
+                                    router.push(`/purchasing/work-orders/${row.id}`)
                                 }}
                                 title="Lihat Detail"
                                 className="p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -189,52 +172,12 @@ export default function PurchaseOrdersPage() {
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        router.push(`/purchasing/orders/edit/${row.id}`)
+                                        handleOpenReceiptModal(row);
                                     }}
-                                    title="Edit"
-                                    className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
-                                >
-                                    <FaEdit className="w-4 h-4" />
-                                </button>
-                            )}
-
-
-                            {status === '1' && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenModal(row, 'Validasi')
-                                    }}
-                                    title="Validasi"
-                                    className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
-                                >
-                                    <FaCheck className="w-4 h-4" />
-                                </button>
-                            )}
-
-                            {status === '2' && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenModal(row, 'Disetujui')
-                                    }}
-                                    title="Disetujui"
+                                    title="Tandai Diterima"
                                     className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
                                 >
                                     <FaCheckCircle className="w-4 h-4" />
-                                </button>
-                            )}
-
-                            {status === '3' && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleOpenModal(row, 'Bayar')
-                                    }}
-                                    title="Bayar"
-                                    className="p-2 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
-                                >
-                                    <DollarSign className="w-4 h-4" />
                                 </button>
                             )}
                         </div>
@@ -242,33 +185,46 @@ export default function PurchaseOrdersPage() {
                 },
             },
             {
-                id: "no_order",
-                header: "No. Order",
-                accessorKey: "no_order",
-                cell: ({ row }: any) => <span className="font-medium">{row.no_order}</span>,
+                id: "no_work_order",
+                header: "No. Surat Jalan",
+                accessorKey: "no_work_order",
+                cell: ({ row }: any) => <span className="font-medium">{row.no_work_order}</span>,
             },
             {
                 id: "date",
-                header: "Tanggal PO",
+                header: "Tgl. Srt. Jalan",
                 accessorKey: "date",
                 cell: ({ row }: any) => <span>{moment(row.date).format("DD MMM YYYY")}</span>,
             },
             {
-                id: "nominal",
-                header: "Nominal",
-                accessorKey: "nominal",
-                cell: ({ row }: any) => <span>{formatRupiah(row.nominal)}</span>,
+                id: "tanggal_terima",
+                header: "Tgl. Terima",
+                accessorKey: "tanggal_terima",
+                cell: ({ row }: any) => <span>{row.tanggal_terima ? moment(row.tanggal_terima).format("DD MMM YYYY") : "-"}</span>,
             },
             {
-                id: "supplier_id",
+                id: "supplier",
                 header: "Supplier",
-                cell: ({ row }: any) => <span>{row.supplier?.name}</span>,
+                accessorKey: "supplier.name",
+                cell: ({ row }: any) => <span>{row.supplier.name}</span>,
             },
             {
-                id: "staff_id",
-                header: "Staff",
-                accessorKey: "staff_id",
-                cell: ({ row }: any) => <span>{row.staff?.name}</span>,
+                id: "expedition",
+                header: "Ekspedisi",
+                accessorKey: "expedition.name",
+                cell: ({ row }: any) => <span>{row.expedition.name}</span>,
+            },
+            {
+                id: "total_weight",
+                header: "Total Berat",
+                accessorKey: "total_weight",
+                cell: ({ row }: any) => <span className="text-right block">{formatGram(row.total_weight)}</span>,
+            },
+            {
+                id: "nominal",
+                header: "Total Nominal",
+                accessorKey: "nominal",
+                cell: ({ row }: any) => <span className="text-right block">{formatRupiah(row.nominal)}</span>,
             },
             {
                 id: "status",
@@ -309,15 +265,15 @@ export default function PurchaseOrdersPage() {
                         type="text"
                         value={searchTerm}
                         onChange={handleSearch}
-                        placeholder="Cari No. Order..."
+                        placeholder="Cari No. Surat Jalan..."
                         className="px-3  border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <button
-                        onClick={() => router.push("/purchasing/orders/create")}
+                        onClick={() => router.push("/purchasing/work-orders/create")} // Ganti path
                         className="px-4  bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
                         <span>+</span>
-                        Tambah Order
+                        Tambah Surat Jalan
                     </button>
                 </div>
             </div>
@@ -334,15 +290,12 @@ export default function PurchaseOrdersPage() {
                 onRowClick={handleRowClick}
             />
 
-            <ChangeStatusOrderModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                order={selectedOrder}
-                actionType={modalAction}
+            <ChangeStatusWorkOrderModal
+                isOpen={isReceiptModalOpen}
+                onClose={() => setIsReceiptModalOpen(false)}
+                workOrder={selectedWorkOrder}
                 isSubmitting={isSubmitting}
-                onConfirm={handleConfirmStatusChange}
-                paymentDate={paymentDate}
-                setPaymentDate={setPaymentDate}
+                onConfirm={handleConfirmReceipt}
             />
         </div>
     );
