@@ -17,6 +17,7 @@ import DateRangePicker from "@/components/common/DateRangePicker";
 
 interface TableDataItem {
     id: number;
+    code: string;
     name_item: string;
     created_at: string;
 }
@@ -92,6 +93,12 @@ export default function BankPage() {
                 },
                 minWidth: "50px",
                 maxWidth: "70px",
+            },
+            {
+                id: "cide",
+                header: "Kode Barang",
+                accessorKey: "cide",
+                cell: ({ row }: any) => <span>{row.name_item}</span>,
             },
             {
                 id: "name_item",

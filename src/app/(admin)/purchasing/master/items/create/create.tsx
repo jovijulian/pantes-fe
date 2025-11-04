@@ -10,25 +10,28 @@ import { alertToast, endpointUrl, endpointUrlv2, httpPost } from "@/../helpers";
 import { toast } from "react-toastify";
 
 interface CreateData {
+    code: string;
     name_item: string;
 }
 
 export default function CreateForm() {
     const router = useRouter();
     const [formData, setFormData] = useState<CreateData>({
+        code: "",
         name_item: "",
     });
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.name_item ) {
+        if (!formData.name_item || !formData.code) {
             toast.error("Please fill all required fields");
             return;
         }
         try {
             setLoading(true);
             const data: CreateData = {
+                code: formData.code,
                 name_item: formData.name_item,
             }
 
@@ -49,6 +52,17 @@ export default function CreateForm() {
     return (
         <ComponentCard title="Data Barang">
             <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                    <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
+                        Kode Barang<span className="text-red-400 ml-1">*</span>
+                    </label>
+                    <Input
+                        type="text"
+                        defaultValue={formData.code}
+                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                        required
+                    />
+                </div>
                 <div>
                     <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
                         Nama Barang<span className="text-red-400 ml-1">*</span>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactSelect from "react-select";
 import {
   components,
@@ -54,6 +54,12 @@ function Select(props: {
     );
   };
 
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalTarget(document.body); 
+  }, []);
+
   return (
     <>
       <ReactSelect
@@ -80,6 +86,11 @@ function Select(props: {
             <IoInformationCircle className="inline text-lg fill-red-500" /> pilihan tidak ditemukan
           </span>
         )}
+        menuPortalTarget={portalTarget}
+        styles={{
+          menuPortal: (base) => ({ ...base, zIndex: 999999 }), 
+          menu: (base: any) => ({ ...base, zIndex: 99999999 }), 
+        }}
         onChange={props.onValueChange}
         className={`select-r ${props.invalid ? "is-invalid" : ""}`}
       />

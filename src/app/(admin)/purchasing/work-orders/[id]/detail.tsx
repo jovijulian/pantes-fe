@@ -1,18 +1,21 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, Fragment } from "react";
+import React, { useEffect, useState, useCallback, Fragment, useMemo } from "react"; // <-- TAMBAHKAN useMemo
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import moment from "moment";
 import 'moment/locale/id';
-import { endpointUrl, httpGet, httpPut, alertToast, endpointUrlv2 } from "@/../helpers";
+import { endpointUrl, httpGet, httpPut, alertToast, endpointUrlv2, httpPost } from "@/../helpers";
 import ComponentCard from "@/components/common/ComponentCard";
 import {
     Loader2, User, Building, Calendar, Info, Check, X,
-    FileText, DollarSign, Scale, UserCheck, Truck, PackagePlus
+    FileText, DollarSign, Scale, UserCheck, Truck, PackagePlus, Package, Edit, Trash2
 } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
 import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderModal";
+import AddItemWorkOrderModal from "@/components/modal/AddItemWorkOrderModal";
+import EditItemWorkOrderModal from "@/components/modal/edit/EditItemWorkOrderModal";
+import DeleteConfirmationModal from "@/components/modal//deactive/DeleteItemWorkOrderConfirmationModal";
 
 
 interface IUserSimple {
@@ -39,6 +42,7 @@ interface IPurchaseOrderSimple {
     date: string;
     nominal: string;
     weight: string;
+    cokim: string;
 }
 
 interface IWorkOrderData {
@@ -53,7 +57,25 @@ interface IWorkOrderData {
     created_by: IUserSimple;
     supplier: ISupplier;
     expedition: IExpedition;
-    purchase_orders: IPurchaseOrderSimple[];
+    orders: IPurchaseOrderSimple[];
+    items: IWorkOrderItem[];
+}
+
+interface IWorkOrderItem {
+    id: number;
+    item_id: number;
+    pcs: string;
+    kadar: string;
+    bruto: string;
+    disc: string;
+    sg: string;
+    scope: string;
+    xray: string;
+    netto: string;
+    item_type: string;
+    item: {
+        name: string;
+    };
 }
 
 
@@ -67,7 +89,10 @@ export default function WorkOrderDetailPage() {
 
     const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedItem, setSelectedItem] = useState<IWorkOrderItem | null>(null);
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
         return "Rp " + num.toLocaleString('id-ID');
@@ -76,6 +101,16 @@ export default function WorkOrderDetailPage() {
     const formatGram = (value: string | number | null): string => {
         const num = Number(value || 0);
         return num.toLocaleString('id-ID') + " gram";
+    };
+
+    const formatPersen = (value: string | number | null): string => {
+        const num = Number(value || 0);
+        return num.toLocaleString('id-ID') + "%";
+    };
+    
+    const formatNumber = (value: string | number | null): string => {
+        const num = Number(value || 0);
+        return num.toLocaleString('id-ID');
     };
 
     const formatDate = (dateStr: string | null): string => {
@@ -101,6 +136,9 @@ export default function WorkOrderDetailPage() {
             const response = await httpGet(endpointUrlv2(`work-order/${id}`), true);
             if (!response.data.data.purchase_orders) {
                 response.data.data.purchase_orders = [];
+            }
+            if (!response.data.data.items) {
+                response.data.data.items = [];
             }
             setData(response.data.data);
         } catch (error: any) {
@@ -134,7 +172,7 @@ export default function WorkOrderDetailPage() {
         };
 
         try {
-            await httpPut(endpointUrlv2(`work-order/${data.id}/receipt`), payload, true);
+            await httpPost(endpointUrlv2(`work-order/${data.id}/receipt`), payload, true);
             toast.success("Surat Jalan berhasil ditandai 'Diterima'!");
             setIsReceiptModalOpen(false);
             getDetail();
@@ -144,6 +182,75 @@ export default function WorkOrderDetailPage() {
             setIsSubmitting(false);
         }
     };
+    const calculateModalNetto = useCallback((item: IWorkOrderItem): number => {
+        const bruto = Number(item.bruto) || 0;
+        const kadar = Number(item.kadar) || 0;
+        return bruto * (kadar / 100);
+    }, []);
+
+    const calculateBayar = useCallback((item: IWorkOrderItem): number => {
+        const nominal = Number(data?.nominal) || 0; 
+        const pcs = Number(item.pcs) || 0;     
+        const bruto = Number(item.bruto) || 0;    
+        const disc = Number(item.disc) || 0;       
+        
+        const netto = calculateModalNetto(item);
+        
+        let finalBayar = 0;
+        if (bruto > 0) {
+            finalBayar = (nominal * (netto / bruto)) * pcs / bruto;
+            if (disc > 0) {
+                finalBayar = finalBayar - (finalBayar * disc / 100);
+            }
+        }
+        return finalBayar;
+    }, [data?.nominal, calculateModalNetto]);
+
+
+    const { totalWeightDiterima, totalBayar } = useMemo(() => {
+        let weight = 0;
+        let bayar = 0;
+
+        if (data?.items) {
+            data.items.forEach(item => {
+                weight += Number(item.pcs);
+                bayar += calculateBayar(item); 
+            });
+        }
+        
+        return { totalWeightDiterima: weight, totalBayar: bayar };
+    }, [data?.items, calculateBayar, calculateModalNetto]);
+
+    const handleOpenEditModal = (item: IWorkOrderItem) => {
+        setSelectedItem(item);
+        setIsEditModalOpen(true);
+    };
+
+    const handleOpenDeleteModal = (item: IWorkOrderItem) => {
+        setSelectedItem(item);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!selectedItem || !data) return;
+        
+        setIsSubmitting(true);
+        const payload = {
+            work_order_item_id: selectedItem.id
+        };
+        try {
+            await httpPost(endpointUrlv2(`work-order/${data.id}/delete-item`), payload, true);
+            toast.success("Barang berhasil dihapus.");
+            setIsDeleteModalOpen(false);
+            setSelectedItem(null);
+            getDetail(); // Refresh data
+        } catch (error: any) {
+            alertToast(error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
 
 
     if (isLoading) return (
@@ -188,7 +295,6 @@ export default function WorkOrderDetailPage() {
                             <InfoRow label="Total Berat" value={formatGram(data.total_weight)} />
                             <InfoRow label="Total Nominal" value={formatRupiah(data.nominal)} isTotal />
                         </Section>
-
                         <Section title="Daftar Purchase Order" icon={<FileText />}>
                             <div className="overflow-x-auto">
                                 <table className="min-w-full divide-y divide-gray-200">
@@ -197,22 +303,96 @@ export default function WorkOrderDetailPage() {
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Pesanan (PO)</th>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cokim</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
-                                        {data.purchase_orders.length === 0 && (
-                                            <tr><td colSpan={4} className="text-center p-3 italic text-gray-500">Tidak ada PO terlampir.</td></tr>
+                                        {data.orders.length === 0 && (
+                                            <tr><td colSpan={5} className="text-center p-3 italic text-gray-500">Tidak ada PO terlampir.</td></tr>
                                         )}
-                                        {data.purchase_orders.map((po) => (
+                                        {data.orders.map((po) => (
                                             <tr key={po.id}>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{po.no_order}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm">{formatDate(po.date)}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(po.weight)}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(po.cokim)}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(po.nominal)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
+                                </table>
+                            </div>
+                        </Section>
+
+                        <Section title="Data Barang Diterima" icon={<Package />}>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Barang</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bruto (gr)</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat (gr)</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Kadar (%)</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Disc (%)</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Netto (gr)</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bayar</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">SG</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Scope</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">X-Ray</th>
+                                        </tr>
+                                    </thead>
+                                    
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {data.items.length === 0 && (
+                                            <tr><td colSpan={11} className="text-center p-3 italic text-gray-500">Belum ada barang yang ditambahkan.</td></tr>
+                                        )}
+                                        {data.items.map((item) => {
+                                            const nettoValue = calculateModalNetto(item);
+                                            const bayarValue = calculateBayar(item); 
+                                            
+                                            return (
+                                                <tr key={item.id}>
+                                                    {/* Kolom Aksi Baru */}
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                                        <div className="flex items-center gap-1">
+                                                            <button 
+                                                                onClick={() => handleOpenEditModal(item)}
+                                                                className="p-1 text-blue-600 hover:bg-blue-100 rounded" title="Edit">
+                                                                <Edit className="w-4 h-4" />
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleOpenDeleteModal(item)}
+                                                                className="p-1 text-red-600 hover:bg-red-100 rounded" title="Hapus">
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{item.item_type}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(item.bruto)}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(item.pcs)}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatPersen(item.kadar)}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatPersen(item.disc)}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatGram(nettoValue)}</td> 
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(bayarValue)}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatNumber(item.sg)}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatNumber(item.scope)}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatNumber(item.xray)}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                    
+                                    <tfoot className="bg-gray-100 border-t-2 border-gray-300">
+                                        <tr>
+                                            <td colSpan={3} className="px-4 py-3 text-left text-sm font-bold uppercase">Total</td>
+                                            <td className="px-4 py-3 text-right text-sm font-bold">{formatGram(totalWeightDiterima)}</td>
+                                            <td colSpan={3}></td>
+                                            <td className="px-4 py-3 text-right text-sm font-bold">{formatRupiah(totalBayar)}</td>
+                                            <td colSpan={4}></td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </Section>
@@ -226,7 +406,7 @@ export default function WorkOrderDetailPage() {
                             <div className="space-y-3">
                                 <InfoRow label="Status" value={getStatusBadge(data.status)} />
                                 <InfoRow label="Dibuat" value={formatDate(data.created_at)} />
-                                <InfoRow label="Tanggal Srt. Jalan" value={formatDate(data.date)} />
+                                <InfoRow label="Tanggal Surat Jalan" value={formatDate(data.date)} />
                                 <InfoRow label="Tanggal Diterima" value={formatDate(data.receipt_date)} />
                             </div>
                         </div>
@@ -236,13 +416,6 @@ export default function WorkOrderDetailPage() {
                 <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
                     {data.status === "1" && (
                         <>
-                            <button
-                                className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-                                onClick={() => router.push(`/purchasing/work-orders/edit/${data.id}`)}
-                            >
-                                <Check className="w-4 h-4 inline-block -mt-1 mr-1" />
-                                Edit
-                            </button>
                             <button
                                 className="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
                                 onClick={handleOpenReceiptModal}
@@ -256,7 +429,7 @@ export default function WorkOrderDetailPage() {
                         <>
                             <button
                                 className="px-5 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"
-                                // onClick={() => ... } 
+                                onClick={() => setIsAddItemModalOpen(true)}
                                 title="Tambah Barang"
                             >
                                 <PackagePlus className="w-4 h-4 inline-block -mt-1 mr-1" />
@@ -276,10 +449,53 @@ export default function WorkOrderDetailPage() {
                     onConfirm={handleConfirmReceipt}
                 />
             )}
+            {data && data.status === "2" && (
+                <AddItemWorkOrderModal
+                    isOpen={isAddItemModalOpen}
+                    onClose={() => setIsAddItemModalOpen(false)}
+                    workOrderId={data.id}
+                    onSuccess={getDetail}
+                    baseNominal={Number(data.nominal) || 0}
+                    baseTotalWeight={Number(data.total_weight) || 0}
+                    existingItems={data.items || []}
+                />
+            )}
+            {data && selectedItem && (
+                <EditItemWorkOrderModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => {
+                        setIsEditModalOpen(false);
+                        setSelectedItem(null);
+                    }}
+                    workOrderId={data.id}
+                    itemToEdit={selectedItem}
+                    baseNominal={Number(data.nominal) || 0}
+                    onSuccess={() => {
+                        setIsEditModalOpen(false);
+                        setSelectedItem(null);
+                        getDetail(); 
+                    }}
+                />
+            )}
+            
+            {data && selectedItem && (
+                <DeleteConfirmationModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => {
+                        setIsDeleteModalOpen(false);
+                        setSelectedItem(null);
+                    }}
+                    onConfirm={handleConfirmDelete}
+                    isSubmitting={isSubmitting}
+                    itemName={selectedItem.item_type || 'barang ini'}
+                />
+            )}
         </>
     );
 }
 
+
+// --- Helper Components (Tidak berubah) ---
 
 const Section: React.FC<{ title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ title, icon, children }) => (
     <div className="bg-white border rounded-lg p-5">

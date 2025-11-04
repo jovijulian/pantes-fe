@@ -14,7 +14,7 @@ import {
 import Select from '@/components/form/Select-custom';
 import _ from "lodash";
 import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderModal";
-import { Loader2 } from "lucide-react";
+import { Loader2, PackagePlus } from "lucide-react";
 
 interface IWorkOrder {
     id: number;
@@ -157,7 +157,7 @@ export default function WorkOrdersPage() {
                     const status = row.status;
                     return (
                         <div className="flex items-center gap-2">
-                            <button
+                            {/* <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     router.push(`/purchasing/work-orders/${row.id}`)
@@ -166,18 +166,30 @@ export default function WorkOrdersPage() {
                                 className="p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
                             >
                                 <FaEye className="w-4 h-4" />
-                            </button>
+                            </button> */}
 
                             {status === '1' && (
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleOpenReceiptModal(row);
+                                        router.push('/purchasing/work-orders/' + row.id);
                                     }}
                                     title="Tandai Diterima"
                                     className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
                                 >
                                     <FaCheckCircle className="w-4 h-4" />
+                                </button>
+                            )}
+                            {status === '2' && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        router.push('/purchasing/work-orders/' + row.id);
+                                    }}
+                                    title="Tambah Barang"
+                                    className="p-2 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                >
+                                  <PackagePlus className="w-4 h-4" />
                                 </button>
                             )}
                         </div>
@@ -188,11 +200,21 @@ export default function WorkOrdersPage() {
                 id: "no_work_order",
                 header: "No. Surat Jalan",
                 accessorKey: "no_work_order",
-                cell: ({ row }: any) => <span className="font-medium">{row.no_work_order}</span>,
+                cell: ({ row }: any) => {
+                    const data = row;
+                    return (
+                        <button
+                            className="text-blue-600 hover:underline"
+                            onClick={() => router.push(`/purchasing/work-orders/${data.id}`)}
+                        >
+                            {data.no_work_order}
+                        </button>
+                    );
+                }
             },
             {
                 id: "date",
-                header: "Tgl. Srt. Jalan",
+                header: "Tgl. Surat Jalan",
                 accessorKey: "date",
                 cell: ({ row }: any) => <span>{moment(row.date).format("DD MMM YYYY")}</span>,
             },

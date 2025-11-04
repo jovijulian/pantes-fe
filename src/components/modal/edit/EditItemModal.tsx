@@ -13,6 +13,7 @@ import { useModal } from "@/hooks/useModal";
 
 interface ItemData {
     id: number;
+    code: string;
     name_item: string;
 }
 interface EditProps {
@@ -30,6 +31,7 @@ const EditItemModal: React.FC<EditProps> = ({
 }) => {
     const [formData, setFormData] = useState<ItemData>({
         id: 0,
+        code: "",
         name_item: "",
     });
 
@@ -48,6 +50,7 @@ const EditItemModal: React.FC<EditProps> = ({
 
                 setFormData({
                     id: data.id,
+                    code: data.code,
                     name_item: data.name_item,
                 });
 
@@ -69,6 +72,7 @@ const EditItemModal: React.FC<EditProps> = ({
         setError("");
 
         const payload = {
+            code: formData.code,
             name_item: formData.name_item,
         };
 
@@ -78,6 +82,7 @@ const EditItemModal: React.FC<EditProps> = ({
             toast.success("Berhasil mengubah barang!");
             setFormData({
                 id: 0,
+                code: "",
                 name_item: "",
             });
             onClose();
@@ -94,6 +99,7 @@ const EditItemModal: React.FC<EditProps> = ({
         setError("");
         setFormData({
             id: 0,
+            code: "",
             name_item: "",
         });
     };
@@ -115,6 +121,22 @@ const EditItemModal: React.FC<EditProps> = ({
                     }}
                     className="flex flex-col"
                 >
+                    <div className="space-y-5 px-2 pb-3">
+                        <div>
+                            <Label htmlFor="name">Kode Barang</Label>
+                            <Input
+                                type="text"
+                                id="code"
+                                name="code"
+                                defaultValue={formData.code}
+                                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                                required
+                            />
+                        </div>
+                        {error && (
+                            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                        )}
+                    </div>
                     <div className="space-y-5 px-2 pb-3">
                         <div>
                             <Label htmlFor="name">Nama Barang</Label>

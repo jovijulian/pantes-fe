@@ -127,7 +127,7 @@ const SignIn: React.FC = () => {
         <div className="w-full md:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
           <div className="mb-8">
             <Link href="/" className="flex items-center">
-              <span className="text-gray-800 dark:text-white font-bold text-xl sm:text-2xl">CRM Toko Mas Pantes</span>
+              <span className="text-gray-800 dark:text-white font-bold text-xl sm:text-2xl">Toko Mas Pantes App</span>
             </Link>
             <h1 className="font-bold text-2xl text-slate-800 mt-4">Log in</h1>
             <p className="text-slate-500 text-sm">Silakan masuk menggunakan akun Anda yang terdaftar.</p>

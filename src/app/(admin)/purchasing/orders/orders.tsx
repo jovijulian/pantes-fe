@@ -3,7 +3,7 @@
 import Table from "@/components/tables/Table";
 import React, { useState, useEffect, useMemo } from "react";
 import Badge from "@/components/ui/badge/Badge";
-import { alertToast, endpointUrlv2, httpGet, httpPut } from "@/../helpers";
+import { alertToast, endpointUrlv2, httpGet, httpPost, httpPut } from "@/../helpers";
 import { useSearchParams, useRouter } from 'next/navigation';
 import moment from "moment";
 import { toast } from "react-toastify";
@@ -150,7 +150,7 @@ export default function PurchaseOrdersPage() {
         }
 
         try {
-            await httpPut(endpointUrlv2(`purchase/order/${selectedOrder.id}/change-status`), payload, true);
+            await httpPost(endpointUrlv2(`purchase/order/${selectedOrder.id}/change-status`), payload, true);
             toast.success(successMessage);
             setIsModalOpen(false);
             getData();
