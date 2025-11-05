@@ -8,73 +8,68 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import moment from "moment";
 import { toast } from "react-toastify";
 import {
-    FaCheckCircle,
-    FaEdit, FaEye,
+    FaEdit, FaEye, FaCheck, FaCheckCircle, FaDollarSign 
 } from "react-icons/fa";
 import Select from '@/components/form/Select-custom';
 import _ from "lodash";
-import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderModal";
-import { Loader2, PackagePlus } from "lucide-react";
-
-interface IWorkOrder {
+import ChangeStatusDepositModal from "@/components/modal/ChangeStatusDepositModal";
+import { Loader2 } from "lucide-react";
+interface IDeposit {
     id: number;
-    no_work_order: string;
+    no_payment: string; 
+    employee_id: string;
+    employee: { name: string };
     supplier_id: string;
     supplier: { name: string };
-    expedition_id: string;
-    expedition: { name: string };
     date: string;
-    tanggal_terima: string | null;
-    nominal: string;
-    total_weight: string;
-    status: "1" | "2" | "3" | string;
+    notes: string | null;
+    status: "1" | "2" | "3" | "4" | null; 
     created_at: string;
     updated_at: string;
 }
-
+type ModalAction = 'Validasi' | 'Setor' | 'Lunas' | null;
 const statusOptions = [
     { value: "", label: "Semua Status" },
-    { value: "1", label: "WO Aktif" },
-    { value: "2", label: "Diterima" },
+    { value: "1", label: "Baru" },
+    { value: "2", label: "Valid" },
+    { value: "3", label: "Setor" },
+    { value: "4", label: "Lunas" },
 ];
 
-export default function WorkOrdersPage() {
+export default function DepositsPage() { 
     const searchParams = useSearchParams();
     const router = useRouter();
 
-    const [data, setData] = useState<IWorkOrder[]>([]);
+    const [data, setData] = useState<IDeposit[]>([]); 
     const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedWorkOrder, setSelectedWorkOrder] = useState<IWorkOrder | null>(null);
+
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
     const [lastPage, setLastPage] = useState(1);
     const [count, setCount] = useState(0);
     const [statusFilter, setStatusFilter] = useState<string>("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [selectedDeposit, setSelectedDeposit] = useState<IDeposit | null>(null);
+    const [modalAction, setModalAction] = useState<ModalAction>(null);
+    const [paymentDate, setPaymentDate] = useState(moment().format('YYYY-MM-DD')); 
+    const getStatusBadge = (status: string | null) => {
+        if (status === null) {
+            status = "1";
+        }
 
-    const formatRupiah = (value: string | number | null): string => {
-        const num = Number(value || 0);
-        return "Rp " + num.toLocaleString('id-ID');
-    };
-
-    const formatGram = (value: string | number | null): string => {
-        const num = Number(value || 0);
-        return num.toLocaleString('id-ID') + " gr";
-    };
-
-    const getStatusBadge = (status: string) => {
         let color: "success" | "warning" | "info";
         let label = "Unknown";
         switch (status) {
-            case '1': color = 'warning'; label = 'WO Aktif'; break;
-            case '2': color = 'success'; label = 'Diterima'; break;
-            default: color = 'warning'; break;
+            case '1': color = 'warning'; label = 'Baru'; break;
+            case '2': color = 'info'; label = 'Valid'; break;
+            case '3': color = 'info'; label = 'Setor'; break;
+            case '4': color = 'success'; label = 'Lunas'; break;
+            default: color = 'warning'; label = 'Baru'; break;
         }
         return <Badge color={color}>{label}</Badge>;
     };
-
     const getData = async () => {
         setIsLoading(true);
         const search = searchTerm.trim();
@@ -89,7 +84,7 @@ export default function WorkOrdersPage() {
         };
 
         try {
-            const response = await httpGet(endpointUrlv2("work-order"), true, params);
+            const response = await httpGet(endpointUrlv2("deposit"), true, params);
             const responseData = response.data.data.data;
             setData(responseData);
             setCount(response.data.data.page_info.total_record);
@@ -118,78 +113,101 @@ export default function WorkOrdersPage() {
         setSearchTerm(e.target.value);
     };
 
-    const handleRowClick = (rowData: IWorkOrder) => {
-        const detailUrl = `/purchasing/work-orders/${rowData.id}`;
+    const handleRowClick = (rowData: IDeposit) => { 
+        const detailUrl = `/purchasing/deposits/${rowData.id}`; 
         router.push(detailUrl);
     };
-
-    const handleOpenReceiptModal = (workOrder: IWorkOrder) => {
-        setSelectedWorkOrder(workOrder);
-        setIsReceiptModalOpen(true);
+    const handleOpenModal = (deposit: IDeposit, action: ModalAction) => {
+        setSelectedDeposit(deposit);
+        setModalAction(action);
+        setPaymentDate(moment().format('YYYY-MM-DD'));
+        setIsModalOpen(true);
     };
 
-    const handleConfirmReceipt = async (receiptDate: string) => {
-        if (!selectedWorkOrder) return;
+    const handleConfirmStatusChange = async (date?: string) => {
+        if (!selectedDeposit || !modalAction) return;
 
         setIsSubmitting(true);
-        const payload = {
-            receipt_date: receiptDate,
-        };
+        const payload: any = { status: "" };
+        let successMessage = "";
+
+        switch (modalAction) {
+            case 'Validasi':
+                payload.status = "2";
+                payload.validated_date = moment(date).format('YYYY-MM-DD'); 
+                successMessage = "Setor berhasil divalidasi!";
+                break;
+            case 'Setor':
+                payload.status = "3";
+                payload.deposit_date = moment(date).format('YYYY-MM-DD'); 
+                successMessage = "Setor berhasil di-setor!";
+                break;
+            case 'Lunas':
+                payload.status = "4";
+                payload.paid_off_date = moment(date).format('YYYY-MM-DD'); 
+                successMessage = "Setor berhasil dilunasi!";
+                break;
+            default:
+                setIsSubmitting(false);
+                return;
+        }
 
         try {
-            await httpPost(endpointUrlv2(`work-order/${selectedWorkOrder.id}/receipt`), payload, true);
-            toast.success("Surat Jalan berhasil ditandai 'Diterima'!");
-            setIsReceiptModalOpen(false);
-            getData();
+            await httpPost(endpointUrlv2(`deposit/${selectedDeposit.id}/change-status`), payload, true);
+            toast.success(successMessage);
+            setIsModalOpen(false);
+            getData(); 
         } catch (error: any) {
             alertToast(error);
         } finally {
             setIsSubmitting(false);
         }
     };
-
     const columnsNew = useMemo(() => {
         return [
             {
                 id: "action",
                 header: "Aksi",
                 cell: ({ row }: { row: any }) => {
-                    const status = row.status;
+                    const status = row.status || "1"; 
                     return (
                         <div className="flex items-center gap-2">
-                            {/* <button
+                            <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    router.push(`/purchasing/work-orders/${row.id}`)
+                                    router.push(`/purchasing/deposits/${row.id}`)
                                 }}
                                 title="Lihat Detail"
                                 className="p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
                             >
                                 <FaEye className="w-4 h-4" />
-                            </button> */}
+                            </button>
 
                             {status === '1' && (
                                 <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        router.push('/purchasing/work-orders/' + row.id);
-                                    }}
-                                    title="Tandai Diterima"
+                                    onClick={(e) => { e.stopPropagation(); handleOpenModal(row, 'Validasi'); }}
+                                    title="Validasi"
+                                    className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                >
+                                    <FaCheck className="w-4 h-4" />
+                                </button>
+                            )}
+                            {status === '2' && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleOpenModal(row, 'Setor'); }}
+                                    title="Setor"
                                     className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
                                 >
                                     <FaCheckCircle className="w-4 h-4" />
                                 </button>
                             )}
-                            {status === '2' && (
+                            {status === '3' && (
                                 <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        router.push('/purchasing/work-orders/' + row.id);
-                                    }}
-                                    title="Tambah Barang"
+                                    onClick={(e) => { e.stopPropagation(); handleOpenModal(row, 'Lunas'); }}
+                                    title="Lunas"
                                     className="p-2 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
                                 >
-                                  <PackagePlus className="w-4 h-4" />
+                                    <FaDollarSign className="w-4 h-4" />
                                 </button>
                             )}
                         </div>
@@ -197,56 +215,28 @@ export default function WorkOrdersPage() {
                 },
             },
             {
-                id: "no_work_order",
-                header: "No. Surat Jalan",
-                accessorKey: "no_work_order",
-                cell: ({ row }: any) => {
-                    const data = row;
-                    return (
-                        <button
-                            className="text-blue-600 hover:underline"
-                            onClick={() => router.push(`/purchasing/work-orders/${data.id}`)}
-                        >
-                            {data.no_work_order}
-                        </button>
-                    );
-                }
+                id: "no_payment",
+                header: "No. Pembayaran",
+                accessorKey: "no_payment",
+                cell: ({ row }: any) => <span className="font-medium">{row.no_payment}</span>,
             },
             {
                 id: "date",
-                header: "Tgl. Surat Jalan",
+                header: "Tanggal",
                 accessorKey: "date",
                 cell: ({ row }: any) => <span>{moment(row.date).format("DD MMM YYYY")}</span>,
-            },
-            {
-                id: "tanggal_terima",
-                header: "Tgl. Terima",
-                accessorKey: "tanggal_terima",
-                cell: ({ row }: any) => <span>{row.tanggal_terima ? moment(row.tanggal_terima).format("DD MMM YYYY") : "-"}</span>,
             },
             {
                 id: "supplier",
                 header: "Supplier",
                 accessorKey: "supplier.name",
-                cell: ({ row }: any) => <span>{row.supplier.name}</span>,
+                cell: ({ row }: any) => <span>{row.supplier?.name || 'N/A'}</span>,
             },
             {
-                id: "expedition",
-                header: "Ekspedisi",
-                accessorKey: "expedition.name",
-                cell: ({ row }: any) => <span>{row.expedition.name}</span>,
-            },
-            {
-                id: "total_weight",
-                header: "Total Berat",
-                accessorKey: "total_weight",
-                cell: ({ row }: any) => <span className="text-right block">{formatGram(row.total_weight)}</span>,
-            },
-            {
-                id: "nominal",
-                header: "Total Nominal",
-                accessorKey: "nominal",
-                cell: ({ row }: any) => <span className="text-right block">{formatRupiah(row.nominal)}</span>,
+                id: "employee",
+                header: "Yang Menyerahkan",
+                accessorKey: "employee.name",
+                cell: ({ row }: any) => <span>{row.employee?.name || 'N/A'}</span>,
             },
             {
                 id: "status",
@@ -271,7 +261,8 @@ export default function WorkOrdersPage() {
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-end items-center">
+            <div className="flex justify-between items-center">
+                <h1 className="text-xl font-semibold">Data Setor</h1>
                 <div className="flex gap-2">
                     <div className="w-48">
                         <Select
@@ -287,15 +278,15 @@ export default function WorkOrdersPage() {
                         type="text"
                         value={searchTerm}
                         onChange={handleSearch}
-                        placeholder="Cari No. Surat Jalan..."
+                        placeholder="Cari No. Pembayaran..." 
                         className="px-3  border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <button
-                        onClick={() => router.push("/purchasing/work-orders/create")} 
+                        onClick={() => router.push("/purchasing/deposits/create")} 
                         className="px-4  bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
                         <span>+</span>
-                        Tambah Surat Jalan
+                        Tambah Setor
                     </button>
                 </div>
             </div>
@@ -312,12 +303,15 @@ export default function WorkOrdersPage() {
                 onRowClick={handleRowClick}
             />
 
-            <ChangeStatusWorkOrderModal
-                isOpen={isReceiptModalOpen}
-                onClose={() => setIsReceiptModalOpen(false)}
-                workOrder={selectedWorkOrder}
+            <ChangeStatusDepositModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                deposit={selectedDeposit}
+                actionType={modalAction}
                 isSubmitting={isSubmitting}
-                onConfirm={handleConfirmReceipt}
+                onConfirm={handleConfirmStatusChange}
+                paymentDate={paymentDate}
+                setPaymentDate={setPaymentDate}
             />
         </div>
     );

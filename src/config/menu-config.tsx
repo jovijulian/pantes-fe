@@ -25,6 +25,10 @@ import {
   CreditCard,
   Navigation,
   UserCog,
+  Archive,
+  Gem,
+  Coins,
+  Diamond,
 } from 'lucide-react';
 
 export type NavItem = {
@@ -82,15 +86,39 @@ export const menuConfig: Record<string, NavItem[]> = {
       roles: [1, 3],
     },
     {
-      name: 'Order',
-      icon: <FileText />,
-      path: '/purchasing/orders',
+      name: 'CT',
+      icon: <Gem />, 
       roles: [1, 3],
+      subItems: [
+        { name: 'Pembelian', path: '/purchasing/orders', roles: [1, 3] },
+        { name: 'Surat Jalan', path: '/purchasing/work-orders', roles: [1, 3] },
+      ]
     },
     {
-      name: 'Surat Jalan',
-      icon: <Truck />, 
-      path: '/purchasing/work-orders',
+      name: 'LM',
+      icon: <Diamond />, 
+      roles: [1, 3],
+      subItems: [
+        { name: 'Pembelian', path: '/purchasing/orders-lm', roles: [1, 3] },
+        { name: 'Surat Jalan', path: '/purchasing/work-orders-lm', roles: [1, 3] },
+      ]
+    },
+    // {
+    //   name: 'Pembelian CT',
+    //   icon: <FileText />,
+    //   path: '/purchasing/orders',
+    //   roles: [1, 3],
+    // },
+    // {
+    //   name: 'Surat Jalan CT',
+    //   icon: <Truck />, 
+    //   path: '/purchasing/work-orders',
+    //   roles: [1, 3],
+    // },
+    {
+      name: 'Setor Barang',
+      icon: <Archive />, 
+      path: '/purchasing/deposits',
       roles: [1, 3],
     },
     {

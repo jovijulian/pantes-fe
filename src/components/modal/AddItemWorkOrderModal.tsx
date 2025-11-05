@@ -490,7 +490,6 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
     );
 };
 
-// ... (Helper CurrencyInput, tidak berubah) ...
 const CurrencyInput: React.FC<{
     value: number;
     onValueChange: (value: number) => void;
@@ -528,7 +527,6 @@ const CurrencyInput: React.FC<{
     );
 };
 
-// ... (Helper CurrencyDisplay, tidak berubah) ...
 const CurrencyDisplay: React.FC<{ title: string; value: number; unit: string; color?: string }> = ({ title, value, unit, color = 'text-gray-900' }) => (
     <div>
       <span className="text-sm text-gray-500">{title}</span>

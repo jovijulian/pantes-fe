@@ -23,6 +23,9 @@ const rolePermissions: Record<string, string[]> = {
     '3': [
         '/purchasing/dashboard',
         '/purchasing/master',
+        '/purchasing/deposits',
+        '/purchasing/work-orders',
+        '/purchasing/orders',
      ],
     
 };

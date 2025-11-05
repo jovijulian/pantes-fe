@@ -15,7 +15,7 @@ import Badge from "@/components/ui/badge/Badge";
 import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderModal";
 import AddItemWorkOrderModal from "@/components/modal/AddItemWorkOrderModal";
 import EditItemWorkOrderModal from "@/components/modal/edit/EditItemWorkOrderModal";
-import DeleteConfirmationModal from "@/components/modal//deactive/DeleteItemWorkOrderConfirmationModal";
+import DeleteConfirmationModal from "@/components/modal/deactive/DeleteItemWorkOrderConfirmationModal";
 
 
 interface IUserSimple {
