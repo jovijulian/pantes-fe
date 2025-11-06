@@ -130,6 +130,7 @@ export const menuConfig: Record<string, NavItem[]> = {
         { name: 'Barang', path: '/purchasing/master/items', roles: [1, 3] },
         { name: 'Bank', path: '/purchasing/master/banks', roles: [1, 3] },
         { name: 'Ekspedisi', path: '/purchasing/master/expeditions', roles: [1, 3] },
+        { name: 'Karyawan', path: '/purchasing/master/employees', roles: [1, 3] },
         { name: 'Staff', path: '/purchasing/master/staffs', roles: [1, 3] },
       ]
     },
