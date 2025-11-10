@@ -171,14 +171,14 @@ export default function DepositsPage() {
                 cell: ({ row }: { row: any }) => {
                     const status = row.status || "1"; 
                     return (
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     router.push(`/purchasing/deposits/${row.id}`)
                                 }}
                                 title="Lihat Detail"
-                                className="p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                className="p-3 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
                             >
                                 <FaEye className="w-4 h-4" />
                             </button>
@@ -187,7 +187,7 @@ export default function DepositsPage() {
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleOpenModal(row, 'Validasi'); }}
                                     title="Validasi"
-                                    className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                    className="p-3 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
                                 >
                                     <FaCheck className="w-4 h-4" />
                                 </button>
@@ -196,7 +196,7 @@ export default function DepositsPage() {
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleOpenModal(row, 'Setor'); }}
                                     title="Setor"
-                                    className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
+                                    className="p-3 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
                                 >
                                     <FaCheckCircle className="w-4 h-4" />
                                 </button>
@@ -205,7 +205,7 @@ export default function DepositsPage() {
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleOpenModal(row, 'Lunas'); }}
                                     title="Lunas"
-                                    className="p-2 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                    className="p-3 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
                                 >
                                     <FaDollarSign className="w-4 h-4" />
                                 </button>
@@ -261,10 +261,8 @@ export default function DepositsPage() {
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h1 className="text-xl font-semibold">Data Setor</h1>
-                <div className="flex gap-2">
-                    <div className="w-48">
+            <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
+                    <div className="w-48 w-full sm:w-auto">
                         <Select
                             options={statusOptions}
                             value={_.find(statusOptions, { value: statusFilter })}
@@ -279,16 +277,15 @@ export default function DepositsPage() {
                         value={searchTerm}
                         onChange={handleSearch}
                         placeholder="Cari No. Pembayaran..." 
-                        className="px-3  border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <button
                         onClick={() => router.push("/purchasing/deposits/create")} 
-                        className="px-4  bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
                         <span>+</span>
                         Tambah Setor
                     </button>
-                </div>
             </div>
 
             <Table

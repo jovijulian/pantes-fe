@@ -9,14 +9,14 @@ import { endpointUrl, httpGet, httpPut, alertToast, endpointUrlv2, httpPost } fr
 import ComponentCard from "@/components/common/ComponentCard";
 import {
     Loader2, User, Building, Calendar, Info, Check, X,
-    FileText, DollarSign, Scale, UserCheck, Truck, PackagePlus, Package, Edit, Trash2
+    FileText, DollarSign, Scale, UserCheck, Truck, PackagePlus, Package, Edit, Trash2, Download
 } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
 import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderModal";
 import AddItemWorkOrderModal from "@/components/modal/AddItemWorkOrderModal";
 import EditItemWorkOrderModal from "@/components/modal/edit/EditItemWorkOrderModal";
 import DeleteConfirmationModal from "@/components/modal/deactive/DeleteItemWorkOrderConfirmationModal";
-
+import axios from "axios";
 
 interface IUserSimple {
     id: number;
@@ -93,6 +93,7 @@ export default function WorkOrderDetailPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<IWorkOrderItem | null>(null);
+    const [isDownloadLoading, setIsDownloadLoading] = useState(false);
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
         return "Rp " + num.toLocaleString('id-ID');
@@ -251,6 +252,91 @@ export default function WorkOrderDetailPage() {
         }
     };
 
+    const handleExport = async () => {
+        if (!data) return;
+        setIsDownloadLoading(true);
+
+        try {
+            const response = await axios.get(endpointUrlv2(`work-order/${data.id}/export`), {
+                responseType: 'blob',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
+
+            const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `surat_jalan-${moment().format("YYYY-MM-DD")}.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            link.href = blobUrl;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } catch (error) {
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
+        } finally {
+            setIsDownloadLoading(false);
+        }
+    };
+
+    const handleExportReceiptItem = async () => {
+        if (!data) return;
+        setIsDownloadLoading(true);
+
+        try {
+            const response = await axios.get(endpointUrlv2(`work-order/${data.id}/export-item`), {
+                responseType: 'blob',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            console.log(response.headers['content-disposition'])
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
+
+            const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `surat_jalan.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            link.href = blobUrl;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } catch (error) {
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
+        } finally {
+            setIsDownloadLoading(false);
+        }
+    };
 
 
     if (isLoading) return (
@@ -277,8 +363,41 @@ export default function WorkOrderDetailPage() {
                         <span className="text-sm text-gray-500">Surat Jalan</span>
                         <h1 className="text-2xl font-bold text-gray-800">{data.no_work_order}</h1>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-end gap-3">
                         {getStatusBadge(data.status)}
+                        <>
+                        {data.status === "1" && (
+                            <button
+                                type="button"
+                                disabled={isDownloadLoading}
+                                onClick={handleExport}
+                                className="flex items-center gap-2 px-5 py-2.5 rounded-lg 
+                                bg-gradient-to-r from-blue-500 to-indigo-600 
+                                text-white font-medium shadow-md hover:shadow-lg 
+                                hover:from-blue-600 hover:to-indigo-700 
+                                transition-all duration-200"
+                            >
+                                <Download className="w-4 h-4" />
+                                <span>Export Surat Jalan</span>
+                            </button>
+                        )}
+                         {data.status === "2" && (
+                            <button
+                                type="button"
+                                disabled={isDownloadLoading}
+                                onClick={handleExportReceiptItem}
+                                className="flex items-center gap-2  px-5 py-2.5 rounded-lg 
+                                bg-gradient-to-r from-purple-500 to-violet-600 
+                                text-white font-medium shadow-md hover:shadow-lg 
+                                hover:from-purple-600 hover:to-violet-700 
+                                transition-all duration-200"
+                            >
+                                <Download className="w-4 h-4" />
+                                <span>Export Barang Diterima</span>
+                            </button>
+                        )}
+                            
+                        </>
                     </div>
                 </div>
 

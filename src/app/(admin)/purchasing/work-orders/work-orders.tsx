@@ -14,7 +14,8 @@ import {
 import Select from '@/components/form/Select-custom';
 import _ from "lodash";
 import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderModal";
-import { Loader2, PackagePlus } from "lucide-react";
+import { Download, Loader2, PackagePlus } from "lucide-react";
+import axios from "axios";
 
 interface IWorkOrder {
     id: number;
@@ -53,7 +54,7 @@ export default function WorkOrdersPage() {
     const [lastPage, setLastPage] = useState(1);
     const [count, setCount] = useState(0);
     const [statusFilter, setStatusFilter] = useState<string>("");
-
+    const [isDownloadLoading, setIsDownloadLoading] = useState(false);
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
         return "Rp " + num.toLocaleString('id-ID');
@@ -148,6 +149,90 @@ export default function WorkOrdersPage() {
         }
     };
 
+    const handleExport = async (id: number) => {
+        setIsDownloadLoading(true);
+
+        try {
+            const response = await axios.get(endpointUrlv2(`work-order/${id}/export`), {
+                responseType: 'blob',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            console.log(response.headers['content-disposition'])
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
+
+            const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `surat_jalan.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            link.href = blobUrl;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } catch (error) {
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
+        } finally {
+            setIsDownloadLoading(false);
+        }
+    };
+
+    const handleExportReceiptItem = async (id: number) => {
+        setIsDownloadLoading(true);
+
+        try {
+            const response = await axios.get(endpointUrlv2(`work-order/${id}/export-item`), {
+                responseType: 'blob',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            console.log(response.headers['content-disposition'])
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
+
+            const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `surat_jalan.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            link.href = blobUrl;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } catch (error) {
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
+        } finally {
+            setIsDownloadLoading(false);
+        }
+    };
+
     const columnsNew = useMemo(() => {
         return [
             {
@@ -156,7 +241,7 @@ export default function WorkOrdersPage() {
                 cell: ({ row }: { row: any }) => {
                     const status = row.status;
                     return (
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap gap-2">
                             {/* <button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -169,28 +254,64 @@ export default function WorkOrdersPage() {
                             </button> */}
 
                             {status === '1' && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        router.push('/purchasing/work-orders/' + row.id);
-                                    }}
-                                    title="Tandai Diterima"
-                                    className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
-                                >
-                                    <FaCheckCircle className="w-4 h-4" />
-                                </button>
+                                <>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            router.push('/purchasing/work-orders/' + row.id);
+                                        }}
+                                        title="Tandai Diterima"
+                                        className="p-3 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
+                                    >
+                                        <FaCheckCircle className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={isDownloadLoading}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleExport(row.id);
+                                        }}
+                                        title="Export Surat Jalan"
+                                        className="flex items-center gap-2 p-3 rounded-lg 
+                                         bg-gradient-to-r from-blue-500 to-indigo-600 
+                                         text-white font-medium shadow-md hover:shadow-lg 
+                                         hover:from-blue-600 hover:to-indigo-700 
+                                         transition-all duration-200"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                    </button>
+                                </>
                             )}
                             {status === '2' && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        router.push('/purchasing/work-orders/' + row.id);
-                                    }}
-                                    title="Tambah Barang"
-                                    className="p-2 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
-                                >
-                                  <PackagePlus className="w-4 h-4" />
-                                </button>
+                                <>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            router.push('/purchasing/work-orders/' + row.id);
+                                        }}
+                                        title="Tambah Barang"
+                                        className="p-3 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                    >
+                                        <PackagePlus className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={isDownloadLoading}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleExportReceiptItem(row.id);
+                                        }}
+                                        title="Export Barang Diterima"
+                                        className="flex items-center gap-2 p-3 rounded-lg 
+                                            bg-gradient-to-r from-purple-500 to-violet-600 
+                                            text-white font-medium shadow-md hover:shadow-lg 
+                                            hover:from-purple-600 hover:to-violet-700 
+                                            transition-all duration-200"
+                                        >
+                                        <Download className="w-4 h-4" />
+                                    </button>
+                                </>
                             )}
                         </div>
                     );
@@ -222,7 +343,7 @@ export default function WorkOrdersPage() {
                 id: "tanggal_terima",
                 header: "Tgl. Terima",
                 accessorKey: "tanggal_terima",
-                cell: ({ row }: any) => <span>{row.tanggal_terima ? moment(row.tanggal_terima).format("DD MMM YYYY") : "-"}</span>,
+                cell: ({ row }: any) => <span>{row.receipt_date ? moment(row.receipt_date).format("DD MMM YYYY") : "-"}</span>,
             },
             {
                 id: "supplier",
@@ -271,33 +392,31 @@ export default function WorkOrdersPage() {
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-end items-center">
-                <div className="flex gap-2">
-                    <div className="w-48">
-                        <Select
-                            options={statusOptions}
-                            value={_.find(statusOptions, { value: statusFilter })}
-                            onValueChange={(opt) =>
-                                setStatusFilter(opt ? opt.value : "")
-                            }
-                            placeholder="Filter Status..."
-                        />
-                    </div>
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={handleSearch}
-                        placeholder="Cari No. Surat Jalan..."
-                        className="px-3  border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
+                <div className="w-48 w-full sm:w-auto">
+                    <Select
+                        options={statusOptions}
+                        value={_.find(statusOptions, { value: statusFilter })}
+                        onValueChange={(opt) =>
+                            setStatusFilter(opt ? opt.value : "")
+                        }
+                        placeholder="Filter Status..."
                     />
-                    <button
-                        onClick={() => router.push("/purchasing/work-orders/create")} 
-                        className="px-4  bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                    >
-                        <span>+</span>
-                        Tambah Surat Jalan
-                    </button>
                 </div>
+                <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    placeholder="Cari No. Surat Jalan..."
+                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                    onClick={() => router.push("/purchasing/work-orders/create")}
+                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                >
+                    <span>+</span>
+                    Tambah Surat Jalan
+                </button>
             </div>
 
             <Table

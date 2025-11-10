@@ -116,32 +116,41 @@ export default function CustomTable({
     if (!pagination) return null;
 
     return (
-      <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-white/[0.05]">
+      <div className="
+        flex flex-col sm:flex-row  /* + Stacks vertically on mobile, horizontal on sm+ */
+        items-center justify-between 
+        gap-4                      /* + Adds spacing when stacked */
+        px-6 py-4 
+        border-t border-gray-200 dark:border-white/[0.05]
+      ">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500 dark:text-gray-400">Show</span>
+          <span className="text-sm hidden sm:inline text-gray-500 dark:text-gray-400">Show</span>
+
           <select
             value={perPage}
             onChange={(e) => handlePerPageChange(Number(e.target.value))}
-            className="ml-1 px-2 py-1 text-sm border border-gray-300 rounded dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+            className="px-2 py-1 text-sm border border-gray-300 rounded dark:border-gray-600 dark:bg-gray-800 dark:text-white"
           >
             <option value={20}>20</option>
             <option value={40}>40</option>
             <option value={60}>60</option>
             <option value={80}>80</option>
           </select>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+
+          <span className="text-sm hidden sm:inline text-gray-500 dark:text-gray-400">
             from {total} rows
           </span>
         </div>
 
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-2 sm:gap-4"> 
+          <span className="text-sm hidden sm:inline text-gray-500 dark:text-gray-400">
             Page {page} from {lastPage}
           </span>
+
           <button
             onClick={() => handlePageChange(page - 1)}
             disabled={page == 1}
-            className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200"
+            className="px-4 sm:px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200"
           >
             &lt;
           </button>
@@ -149,7 +158,7 @@ export default function CustomTable({
           <button
             onClick={() => handlePageChange(page + 1)}
             disabled={page == lastPage}
-            className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200"
+            className="px-4 sm:px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200"
           >
             &gt;
           </button>

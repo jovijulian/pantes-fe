@@ -14,7 +14,8 @@ import {
 } from "react-icons/fa";
 import Select from '@/components/form/Select-custom';
 import _ from "lodash";
-import { DollarSign, Loader2 } from "lucide-react";
+import { DollarSign, Download, Loader2 } from "lucide-react";
+import axios from "axios";
 
 interface IPurchaseOrder {
     id: number;
@@ -55,6 +56,7 @@ export default function PurchaseOrdersPage() {
     const [selectedOrder, setSelectedOrder] = useState<IPurchaseOrder | null>(null);
     const [modalAction, setModalAction] = useState<ModalAction>(null);
     const [paymentDate, setPaymentDate] = useState(moment().format('YYYY-MM-DD'));
+    const [isDownloadLoading, setIsDownloadLoading] = useState(false);
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
         return "Rp " + num.toLocaleString('id-ID');
@@ -165,6 +167,48 @@ export default function PurchaseOrdersPage() {
         router.push(detailUrl);
     };
 
+    const handleExport = async (id: number) => {
+        setIsDownloadLoading(true);
+
+        try {
+            const response = await axios.get(endpointUrlv2(`purchase/order/${id}/export`), {
+                responseType: 'blob',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            console.log(response.headers['content-disposition'])
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
+
+            const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `purchase_order.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            link.href = blobUrl;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } catch (error) {
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
+        } finally {
+            setIsDownloadLoading(false);
+        }
+    };
+
     const columnsNew = useMemo(() => {
         return [
             {
@@ -173,14 +217,14 @@ export default function PurchaseOrdersPage() {
                 cell: ({ row }: { row: any }) => {
                     const status = row.status;
                     return (
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     router.push(`/purchasing/orders/${row.id}`)
                                 }}
                                 title="Lihat Detail"
-                                className="p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                className="p-3 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
                             >
                                 <FaEye className="w-4 h-4" />
                             </button>
@@ -192,7 +236,7 @@ export default function PurchaseOrdersPage() {
                                         router.push(`/purchasing/orders/edit/${row.id}`)
                                     }}
                                     title="Edit"
-                                    className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                    className="p-3 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
                                 >
                                     <FaEdit className="w-4 h-4" />
                                 </button>
@@ -206,7 +250,7 @@ export default function PurchaseOrdersPage() {
                                         handleOpenModal(row, 'Validasi')
                                     }}
                                     title="Validasi"
-                                    className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                    className="p-3 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
                                 >
                                     <FaCheck className="w-4 h-4" />
                                 </button>
@@ -219,7 +263,7 @@ export default function PurchaseOrdersPage() {
                                         handleOpenModal(row, 'Disetujui')
                                     }}
                                     title="Disetujui"
-                                    className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
+                                    className="p-3 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
                                 >
                                     <FaCheckCircle className="w-4 h-4" />
                                 </button>
@@ -232,10 +276,30 @@ export default function PurchaseOrdersPage() {
                                         handleOpenModal(row, 'Bayar')
                                     }}
                                     title="Bayar"
-                                    className="p-2 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                    className="p-3 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
                                 >
                                     <DollarSign className="w-4 h-4" />
                                 </button>
+                            )}
+                            {(status === '3' || status === '4') && (
+                                <>
+                                    <button
+                                        type="button"
+                                        disabled={isDownloadLoading}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleExport(row.id);
+                                        }}
+                                        title="Export"
+                                        className="flex items-center gap-2 p-3 rounded-lg 
+                                            bg-gradient-to-r from-blue-500 to-indigo-600 
+                                            text-white font-medium shadow-md hover:shadow-lg 
+                                            hover:from-blue-600 hover:to-indigo-700 
+                                            transition-all duration-200"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                    </button>
+                                </>
                             )}
                         </div>
                     );
@@ -293,33 +357,31 @@ export default function PurchaseOrdersPage() {
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-end items-center">
-                <div className="flex gap-2">
-                    <div className="w-48">
-                        <Select
-                            options={statusOptions}
-                            value={_.find(statusOptions, { value: statusFilter })}
-                            onValueChange={(opt) =>
-                                setStatusFilter(opt ? opt.value : "")
-                            }
-                            placeholder="Filter Status..."
-                        />
-                    </div>
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={handleSearch}
-                        placeholder="Cari No. Order..."
-                        className="px-3  border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
+                <div className="w-48 w-full sm:w-auto">
+                    <Select
+                        options={statusOptions}
+                        value={_.find(statusOptions, { value: statusFilter })}
+                        onValueChange={(opt) =>
+                            setStatusFilter(opt ? opt.value : "")
+                        }
+                        placeholder="Filter Status..."
                     />
-                    <button
-                        onClick={() => router.push("/purchasing/orders/create")}
-                        className="px-4  bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                    >
-                        <span>+</span>
-                        Tambah Order
-                    </button>
                 </div>
+                <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    placeholder="Cari No. Order..."
+                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                    onClick={() => router.push("/purchasing/orders/create")}
+                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                >
+                    <span>+</span>
+                    Tambah Order
+                </button>
             </div>
 
             <Table

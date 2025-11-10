@@ -147,9 +147,10 @@ export default function CreatePurchaseOrderPage() {
 
         (payment[field] as any) = value;
 
-        if (field === 'payment_type' && value !== 'BANK TRANSFER') {
+        if (field === 'payment_type' && (value !== 'BANK TRANSFER' || value !== 'SETOR TUNAI')) {
             payment.bank_id = null;
         }
+
 
         setFormData(prev => ({ ...prev, payment_type: newPayments }));
     };
@@ -200,8 +201,8 @@ export default function CreatePurchaseOrderPage() {
                 toast.error("Nominal di setiap baris pembayaran harus lebih besar dari 0.");
                 return false;
             }
-            if (p.payment_type === "BANK TRANSFER" && !p.bank_id) {
-                toast.error("Untuk Bank Transfer, harap pilih Bank.");
+            if ((p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") && !p.bank_id) {
+                toast.error("Untuk Bank Transfer / Setor Tunai, harap pilih Bank.");
                 return false;
             }
         }
@@ -221,7 +222,7 @@ export default function CreatePurchaseOrderPage() {
 
         const paymentPayload: PaymentPayload[] = formData.payment_type.map(p => ({
             payment_type: p.payment_type,
-            bank_id: p.payment_type === "BANK TRANSFER" ? Number(p.bank_id) : null,
+            bank_id: (p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") ? Number(p.bank_id) : null,
             nominal: p.nominal 
         }));
 
@@ -346,7 +347,7 @@ export default function CreatePurchaseOrderPage() {
                                                     />
                                                 </td>
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[500px]">
-                                                    {payment.payment_type === "BANK TRANSFER" && (
+                                                {(payment.payment_type === "BANK TRANSFER" || payment.payment_type === "SETOR TUNAI") && (
                                                         <Select
                                                             options={bankOptions} 
                                                             value={_.find(bankOptions, { value: payment.bank_id?.toString() })}

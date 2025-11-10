@@ -182,7 +182,7 @@ export default function EditPurchaseOrderPage() {
         const newPayments = [...formData.payment_type];
         const payment = newPayments[index];
         (payment[field] as any) = value;
-        if (field === 'payment_type' && value !== 'BANK TRANSFER') {
+        if (field === 'payment_type' && (value !== 'BANK TRANSFER' || value !== 'SETOR TUNAI')) {
             payment.bank_id = null;
         }
         setFormData(prev => ({ ...prev, payment_type: newPayments }));
@@ -234,8 +234,8 @@ export default function EditPurchaseOrderPage() {
             if (p.nominal <= 0) {
                 toast.error("Nominal di setiap baris pembayaran harus lebih besar dari 0."); return false;
             }
-            if (p.payment_type === "BANK TRANSFER" && !p.bank_id) {
-                toast.error("Untuk Bank Transfer, harap pilih Bank."); return false;
+            if ((p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") && !p.bank_id) {
+                toast.error("Untuk Bank Transfer / Setor Tunai, harap pilih Bank."); return false;
             }
         }
         return true;
@@ -418,7 +418,7 @@ export default function EditPurchaseOrderPage() {
                                                 />
                                             </td>
                                             <td className="px-4 py-2 whitespace-nowrap min-w-[500px]">
-                                                {payment.payment_type === "BANK TRANSFER" && (
+                                                {(payment.payment_type === "BANK TRANSFER" || payment.payment_type == "SETOR TUNAI") && (
                                                     <Select
                                                         options={bankOptions}
                                                         value={_.find(bankOptions, { value: payment.bank_id?.toString() })}

@@ -9,11 +9,11 @@ import { endpointUrl, httpGet, httpPut, alertToast, endpointUrlv2, httpPost } fr
 import ComponentCard from "@/components/common/ComponentCard";
 import {
     Loader2, User, Building, Calendar, Hash, Info, Check, X,
-    FileText, DollarSign, Scale, UserCheck
+    FileText, DollarSign, Scale, UserCheck, Download
 } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
 import ChangeStatusOrderModal from "@/components/modal/ChangeStatusOrderModal";
-
+import axios from "axios";
 interface IUserSimple {
     id: number;
     name: string;
@@ -70,7 +70,7 @@ export default function PurchaseOrderDetailPage() {
     const params = useParams();
     const id = Number(params.id);
     moment.locale('id');
-
+    const [isDownloadLoading, setIsDownloadLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalAction, setModalAction] = useState<ModalAction | null>(null);
     const [rejectionReason, setRejectionReason] = useState("");
@@ -143,6 +143,49 @@ export default function PurchaseOrderDetailPage() {
         setIsSubmitting(false);
     };
 
+    const handleExport = async () => {
+        if (!data) return;
+        setIsDownloadLoading(true);
+
+        try {
+            const response = await axios.get(endpointUrlv2(`purchase/order/${data.id}/export`), {
+                responseType: 'blob',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
+
+            const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `purchase_order-${moment().format("YYYY-MM-DD")}.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            link.href = blobUrl;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } catch (error) {
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
+        } finally {
+            setIsDownloadLoading(false);
+        }
+    };
+
 
 
     const handleConfirmAction = async (date?: string) => {
@@ -208,9 +251,25 @@ export default function PurchaseOrderDetailPage() {
                         <span className="text-sm text-gray-500">Purchase Order</span>
                         <h1 className="text-2xl font-bold text-gray-800">{data.no_order}</h1>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex justify-end items-center gap-3">
                         {getStatusBadge(data.status)}
+                        <>
+                            <button
+                                type="button"
+                                disabled={isDownloadLoading}
+                                onClick={handleExport}
+                                className="flex items-center gap-2 px-5 py-2.5 rounded-lg 
+                                bg-gradient-to-r from-blue-500 to-indigo-600 
+                                text-white font-medium shadow-md hover:shadow-lg 
+                                hover:from-blue-600 hover:to-indigo-700 
+                                transition-all duration-200"
+                            >
+                                <Download className="w-4 h-4" />
+                                <span>Export</span>
+                            </button>
+                        </>
                     </div>
+
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
