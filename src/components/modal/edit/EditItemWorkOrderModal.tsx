@@ -22,22 +22,26 @@ interface IWorkOrderItem {
     xray: string;
     item_type: string;
     item: { name: string; };
+    order_id: number;
+    order?: { no_order: string; };
 }
 
 interface IItemFormState {
+    order_id: number | null;
     item_id: number | null;
-    weight: number; 
-    kadar: number; 
+    weight: number;
+    kadar: number;
     bruto: number;
-    disc: number; 
+    disc: number;
     sg: number;
     scope: number;
     xray: number;
 }
 
 interface IItemPayload {
-    work_order_item_id: number; 
-    item_id?: number; 
+    work_order_item_id: number;
+    order_id?: number;
+    item_id?: number;
     weight: number;
     kadar: number;
     bruto: number;
@@ -52,27 +56,29 @@ interface EditItemModalProps {
     onClose: () => void;
     workOrderId: number;
     itemToEdit: IWorkOrderItem;
-    baseNominal: number; 
+    baseNominal: number;
     onSuccess: () => void;
 }
 
-const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({ 
-    isOpen, 
-    onClose, 
+const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
+    isOpen,
+    onClose,
     workOrderId,
     itemToEdit,
     baseNominal,
     onSuccess
 }) => {
     const [itemOptions, setItemOptions] = useState<SelectOption[]>([]);
+    const [itemPOOptions, setItemPOOptions] = useState<SelectOption[]>([]);
     const [loadingOptions, setLoadingOptions] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [form, setForm] = useState<IItemFormState>(initialFormState());
     const [calculatedNetto, setCalculatedNetto] = useState(0);
-    const [calculatedBayarNett, setCalculatedBayarNett] = useState(0); 
+    const [calculatedBayarNett, setCalculatedBayarNett] = useState(0);
     useEffect(() => {
         if (itemToEdit) {
             setForm({
+                order_id: itemToEdit.order_id,
                 item_id: itemToEdit.item_id,
                 weight: Number(itemToEdit.pcs) || 0,
                 kadar: Number(itemToEdit.kadar) || 0,
@@ -83,7 +89,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
                 xray: Number(itemToEdit.xray) || 0,
             });
         }
-    }, [itemToEdit, isOpen]); 
+    }, [itemToEdit, isOpen]);
 
     useEffect(() => {
         if (isOpen) {
@@ -101,35 +107,51 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
                     setLoadingOptions(false);
                 }
             };
+            const fetchOrder = async () => {
+                setLoadingOptions(true);
+                try {
+                    const res = await httpGet(endpointUrlv2(`work-order/${workOrderId}/get-order`), true);
+                    setItemPOOptions(res.data.data.map((i: any) => ({
+                        value: i.id.toString(),
+                        label: `${i.no_order}`,
+                    })));
+                } catch (error) {
+                    toast.error("Gagal memuat order.");
+                } finally {
+                    setLoadingOptions(false);
+                }
+            }
             fetchItems();
+            fetchOrder();
+            setLoadingOptions
         }
     }, [isOpen]);
 
     useEffect(() => {
-        const pcs = form.weight || 0; 
+        const pcs = form.weight || 0;
         const bruto = form.bruto || 0;
         const kadar = form.kadar || 0;
         const disc = form.disc || 0;
-        const nominal = baseNominal || 0; 
-    
+        const nominal = baseNominal || 0;
+
         const netto = bruto * (kadar / 100);
         setCalculatedNetto(netto);
-    
+
         let finalBayar = 0;
         if (bruto > 0) {
             finalBayar = (nominal * (netto / bruto)) * pcs / bruto;
             if (disc > 0) {
                 finalBayar = finalBayar - (finalBayar * disc / 100);
             }
-        } 
+        }
         setCalculatedBayarNett(finalBayar);
-    
+
     }, [form.weight, form.bruto, form.kadar, form.disc, baseNominal]);
 
     function initialFormState(): IItemFormState {
         return {
             item_id: null, weight: 0, kadar: 0, bruto: 0, disc: 0,
-            sg: 0, scope: 0, xray: 0,
+            sg: 0, scope: 0, xray: 0, order_id: null,
         };
     }
 
@@ -138,6 +160,9 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
     };
 
     const validateItem = (): boolean => {
+        if (!form.order_id) {
+            toast.error("No Pesanan wajib diisi."); return false;
+        }
         if (!form.item_id) {
             toast.error("Jenis Barang wajib diisi."); return false;
         }
@@ -159,7 +184,8 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
         setIsSubmitting(true);
 
         const finalPayload: IItemPayload = {
-            work_order_item_id: itemToEdit.id, 
+            work_order_item_id: itemToEdit.id,
+            order_id: Number(form.order_id),
             weight: form.weight,
             kadar: form.kadar,
             bruto: form.bruto,
@@ -200,6 +226,16 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
                                     <div className="p-4 border rounded-lg space-y-4">
                                         <h4 className="font-semibold">Input Barang</h4>
                                         <div className="relative z-30">
+                                            <label className="block font-medium mb-1">No. Pesanan<span className="text-red-400">*</span></label>
+                                            <Select
+                                                options={itemPOOptions}
+                                                value={form.order_id ? _.find(itemPOOptions, { value: form.order_id.toString() }) : null}
+                                                onValueChange={(opt) => handleFormChange('order_id', opt ? parseInt(opt.value) : null)}
+                                                placeholder="Pilih No Pesanan..."
+                                                disabled={true}
+                                            />
+                                        </div>
+                                        <div className="relative z-30">
                                             <label className="block font-medium mb-1">Jenis Barang<span className="text-red-400">*</span></label>
                                             <Select
                                                 options={itemOptions}
@@ -212,7 +248,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block font-medium mb-1">Bruto (gr)<span className="text-red-400">*</span></label>
-                                                <CurrencyInput value={form.bruto } onValueChange={v => handleFormChange('bruto', v)} placeholder="0" />
+                                                <CurrencyInput value={form.bruto} onValueChange={v => handleFormChange('bruto', v)} placeholder="0" />
                                             </div>
                                             <div>
                                                 <label className="block font-medium mb-1">Berat Terima (gr)<span className="text-red-400">*</span></label>
@@ -229,7 +265,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
                                                 <CurrencyInput value={form.disc} onValueChange={v => handleFormChange('disc', v)} placeholder="0" />
                                             </div>
                                         </div>
-                                        
+
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block font-medium mb-1">Netto (gr)</label>
@@ -247,7 +283,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="p-4 border rounded-lg space-y-4">
                                         <h4 className="font-semibold">Analisa</h4>
                                         <div className="grid grid-cols-3 gap-4">
@@ -266,7 +302,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="mt-6 flex justify-end gap-3 border-t pt-4">
                                     <button
                                         type="button"
@@ -305,12 +341,12 @@ const CurrencyInput: React.FC<{
 
     const format = (num: number) => {
         if (num === 0) return "";
-        return num.toLocaleString('id-ID'); 
+        return num.toLocaleString('id-ID');
     };
 
     const parse = (str: string): number => {
         if (!str) return 0;
-        const numOnly = str.replace(/[^\d]/g, ''); 
+        const numOnly = str.replace(/[^\d]/g, '');
         return parseInt(numOnly, 10) || 0;
     };
 

@@ -47,6 +47,8 @@ interface IPurchaseOrderSimple {
 
 interface IWorkOrderData {
     id: number;
+    no_order: string;
+    order_id: number;
     no_work_order: string;
     date: string;
     receipt_date: string | null;
@@ -63,6 +65,8 @@ interface IWorkOrderData {
 
 interface IWorkOrderItem {
     id: number;
+    no_order: string;
+    order_id: number;
     item_id: number;
     pcs: string;
     kadar: string;
@@ -108,7 +112,7 @@ export default function WorkOrderDetailPage() {
         const num = Number(value || 0);
         return num.toLocaleString('id-ID') + "%";
     };
-    
+
     const formatNumber = (value: string | number | null): string => {
         const num = Number(value || 0);
         return num.toLocaleString('id-ID');
@@ -190,13 +194,13 @@ export default function WorkOrderDetailPage() {
     }, []);
 
     const calculateBayar = useCallback((item: IWorkOrderItem): number => {
-        const nominal = Number(data?.nominal) || 0; 
-        const pcs = Number(item.pcs) || 0;     
-        const bruto = Number(item.bruto) || 0;    
-        const disc = Number(item.disc) || 0;       
-        
+        const nominal = Number(data?.nominal) || 0;
+        const pcs = Number(item.pcs) || 0;
+        const bruto = Number(item.bruto) || 0;
+        const disc = Number(item.disc) || 0;
+
         const netto = calculateModalNetto(item);
-        
+
         let finalBayar = 0;
         if (bruto > 0) {
             finalBayar = (nominal * (netto / bruto)) * pcs / bruto;
@@ -215,10 +219,10 @@ export default function WorkOrderDetailPage() {
         if (data?.items) {
             data.items.forEach(item => {
                 weight += Number(item.pcs);
-                bayar += calculateBayar(item); 
+                bayar += calculateBayar(item);
             });
         }
-        
+
         return { totalWeightDiterima: weight, totalBayar: bayar };
     }, [data?.items, calculateBayar, calculateModalNetto]);
 
@@ -234,7 +238,7 @@ export default function WorkOrderDetailPage() {
 
     const handleConfirmDelete = async () => {
         if (!selectedItem || !data) return;
-        
+
         setIsSubmitting(true);
         const payload = {
             work_order_item_id: selectedItem.id
@@ -366,37 +370,37 @@ export default function WorkOrderDetailPage() {
                     <div className="flex items-center justify-end gap-3">
                         {getStatusBadge(data.status)}
                         <>
-                        {data.status === "1" && (
-                            <button
-                                type="button"
-                                disabled={isDownloadLoading}
-                                onClick={handleExport}
-                                className="flex items-center gap-2 px-5 py-2.5 rounded-lg 
+                            {data.status === "1" && (
+                                <button
+                                    type="button"
+                                    disabled={isDownloadLoading}
+                                    onClick={handleExport}
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg 
                                 bg-gradient-to-r from-blue-500 to-indigo-600 
                                 text-white font-medium shadow-md hover:shadow-lg 
                                 hover:from-blue-600 hover:to-indigo-700 
                                 transition-all duration-200"
-                            >
-                                <Download className="w-4 h-4" />
-                                <span>Export Surat Jalan</span>
-                            </button>
-                        )}
-                         {data.status === "2" && (
-                            <button
-                                type="button"
-                                disabled={isDownloadLoading}
-                                onClick={handleExportReceiptItem}
-                                className="flex items-center gap-2  px-5 py-2.5 rounded-lg 
+                                >
+                                    <Download className="w-4 h-4" />
+                                    <span>Export Surat Jalan</span>
+                                </button>
+                            )}
+                            {data.status === "2" && (
+                                <button
+                                    type="button"
+                                    disabled={isDownloadLoading}
+                                    onClick={handleExportReceiptItem}
+                                    className="flex items-center gap-2  px-5 py-2.5 rounded-lg 
                                 bg-gradient-to-r from-purple-500 to-violet-600 
                                 text-white font-medium shadow-md hover:shadow-lg 
                                 hover:from-purple-600 hover:to-violet-700 
                                 transition-all duration-200"
-                            >
-                                <Download className="w-4 h-4" />
-                                <span>Export Barang Diterima</span>
-                            </button>
-                        )}
-                            
+                                >
+                                    <Download className="w-4 h-4" />
+                                    <span>Export Barang Diterima</span>
+                                </button>
+                            )}
+
                         </>
                     </div>
                 </div>
@@ -450,6 +454,7 @@ export default function WorkOrderDetailPage() {
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Pesanan</th>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Barang</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bruto (gr)</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat (gr)</th>
@@ -462,38 +467,39 @@ export default function WorkOrderDetailPage() {
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">X-Ray</th>
                                         </tr>
                                     </thead>
-                                    
+
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {data.items.length === 0 && (
                                             <tr><td colSpan={11} className="text-center p-3 italic text-gray-500">Belum ada barang yang ditambahkan.</td></tr>
                                         )}
                                         {data.items.map((item) => {
                                             const nettoValue = calculateModalNetto(item);
-                                            const bayarValue = calculateBayar(item); 
-                                            
+                                            const bayarValue = calculateBayar(item);
+
                                             return (
                                                 <tr key={item.id}>
                                                     {/* Kolom Aksi Baru */}
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm">
                                                         <div className="flex items-center gap-1">
-                                                            <button 
+                                                            <button
                                                                 onClick={() => handleOpenEditModal(item)}
                                                                 className="p-1 text-blue-600 hover:bg-blue-100 rounded" title="Edit">
                                                                 <Edit className="w-4 h-4" />
                                                             </button>
-                                                            <button 
+                                                            <button
                                                                 onClick={() => handleOpenDeleteModal(item)}
                                                                 className="p-1 text-red-600 hover:bg-red-100 rounded" title="Hapus">
                                                                 <Trash2 className="w-4 h-4" />
                                                             </button>
                                                         </div>
                                                     </td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{item.no_order}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{item.item_type}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(item.bruto)}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(item.pcs)}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatPersen(item.kadar)}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatPersen(item.disc)}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatGram(nettoValue)}</td> 
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatGram(nettoValue)}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(bayarValue)}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatNumber(item.sg)}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatNumber(item.scope)}</td>
@@ -502,7 +508,7 @@ export default function WorkOrderDetailPage() {
                                             );
                                         })}
                                     </tbody>
-                                    
+
                                     <tfoot className="bg-gray-100 border-t-2 border-gray-300">
                                         <tr>
                                             <td colSpan={3} className="px-4 py-3 text-left text-sm font-bold uppercase">Total</td>
@@ -592,11 +598,11 @@ export default function WorkOrderDetailPage() {
                     onSuccess={() => {
                         setIsEditModalOpen(false);
                         setSelectedItem(null);
-                        getDetail(); 
+                        getDetail();
                     }}
                 />
             )}
-            
+
             {data && selectedItem && (
                 <DeleteConfirmationModal
                     isOpen={isDeleteModalOpen}

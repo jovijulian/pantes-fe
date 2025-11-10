@@ -26,12 +26,18 @@ interface IItemFormState {
     sg: number;
     scope: number;
     xray: number;
+    order_id: number | null;
+    order?: {
+        id: number;
+        no_order: string;
+    };
 }
 interface IItemInList extends IItemFormState {
     id: string; 
     item_name: string;
     netto: number; 
     bayar_nett: number; 
+    order_no_order: string;
 }
 interface IItemPayload {
     item_id: number;
@@ -42,6 +48,7 @@ interface IItemPayload {
     sg: number;
     scope: number;
     xray: number;
+    order_id: number;
 }
 interface AddItemModalProps {
     isOpen: boolean;
@@ -64,6 +71,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
 }) => {
     
     const [itemOptions, setItemOptions] = useState<SelectOption[]>([]);
+    const [itemPOOptions, setItemPOOptions] = useState<SelectOption[]>([]);
     const [loadingOptions, setLoadingOptions] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [form, setForm] = useState<IItemFormState>(initialFormState());
@@ -139,7 +147,23 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
                     setLoadingOptions(false);
                 }
             };
+
+            const fetchOrder = async () => {
+                setLoadingOptions(true);
+                try {
+                    const res = await httpGet(endpointUrlv2(`work-order/${workOrderId}/get-order` ), true);
+                    setItemPOOptions(res.data.data.map((i: any) => ({
+                        value: i.id.toString(),
+                        label: `${i.no_order}`,
+                    })));
+                } catch (error) {
+                    toast.error("Gagal memuat order.");
+                } finally {
+                    setLoadingOptions(false);
+                }
+            }
             fetchItems();
+            fetchOrder();
         } else {
             setItemsList([]);
             setForm(initialFormState());
@@ -168,6 +192,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
 
     function initialFormState(): IItemFormState {
         return {
+            order_id: null,
             item_id: null,
             weight: 0,
             kadar: 0,
@@ -184,6 +209,9 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
     };
 
     const validateItem = (): boolean => {
+        if (!form.order_id) {
+            toast.error("No Pesanan wajib diisi."); return false;
+        }
         if (!form.item_id) {
             toast.error("Jenis Barang wajib diisi."); return false;
         }
@@ -203,7 +231,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
         if (!validateItem()) return;
 
         const selectedOption = itemOptions.find(opt => opt.value === form.item_id?.toString());
-
+        const selectedOrderOption = itemPOOptions.find(opt => opt.value === form.order_id?.toString());
         const newItem: IItemInList = {
             ...form,
             id: `item-${Date.now()}`,
@@ -211,7 +239,11 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
             netto: calculatedNetto,
             bayar_nett: calculatedBayarNett,
             item_id: Number(form.item_id),
+            order_id: Number(form.order_id),
+            order_no_order: selectedOrderOption?.label || 'N/A',
         };
+
+        
 
         setItemsList(prev => [...prev, newItem]);
         setForm(initialFormState()); 
@@ -236,6 +268,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
         setIsSubmitting(true);
 
         const itemsPayload: IItemPayload[] = itemsList.map(item => ({
+            order_id: item.order_id!,
             item_id: item.item_id!,
             weight: item.weight,
             kadar: item.kadar,
@@ -280,6 +313,16 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                                     <div className="p-4 border rounded-lg space-y-4">
                                         <h4 className="font-semibold">Input Barang</h4>
+                                        <div className="relative z-30">
+                                            <label className="block font-medium mb-1">No Pesanan<span className="text-red-400">*</span></label>
+                                            <Select
+                                                options={itemPOOptions}
+                                                value={form.order_id ? _.find(itemPOOptions, { value: form.order_id.toString() }) : null}
+                                                onValueChange={(opt) => handleFormChange('order_id', opt ? parseInt(opt.value) : null)}
+                                                placeholder="Pilih order..."
+                                                disabled={loadingOptions}
+                                            />
+                                        </div>
                                         <div className="relative z-30">
                                             <label className="block font-medium mb-1">Jenis Barang<span className="text-red-400">*</span></label>
                                             <Select
@@ -417,6 +460,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
                                         <table className="min-w-full divide-y divide-gray-200">
                                             <thead className="bg-gray-50 sticky top-0 z-10">
                                                 <tr>
+                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. pesanan</th>
                                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Barang</th>
                                                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bruto</th>
                                                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat Diterima</th>
@@ -432,10 +476,11 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
                                                 {itemsList.length === 0 && (
-                                                    <tr><td colSpan={11} className="text-center p-4 text-gray-500 italic">Belum ada barang di list.</td></tr>
+                                                    <tr><td colSpan={12} className="text-center p-4 text-gray-500 italic">Belum ada barang di list.</td></tr>
                                                 )}
                                                 {itemsList.map((item) => (
                                                     <tr key={item.id}>
+                                                        <td className="px-4 py-2 font-medium">{item.order_no_order}</td>
                                                         <td className="px-4 py-2 font-medium">{item.item_name}</td>
                                                         <td className="px-4 py-2 text-right">{item.bruto.toLocaleString('id-ID')} gr</td>
                                                         <td className="px-4 py-2 text-right">{item.weight.toLocaleString('id-ID')} gr</td>
