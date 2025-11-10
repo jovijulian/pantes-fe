@@ -266,7 +266,7 @@ export default function PurchaseOrdersPage() {
             },
             {
                 id: "staff_id",
-                header: "Staff",
+                header: "Pemesan",
                 accessorKey: "staff_id",
                 cell: ({ row }: any) => <span>{row.staff?.name}</span>,
             },

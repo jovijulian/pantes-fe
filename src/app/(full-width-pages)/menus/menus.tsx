@@ -50,6 +50,13 @@ const menuItems: {
             href: "/purchasing/dashboard",
             color: "green",
         },
+        {
+            title: "Admin Panel",
+            description: "Kelola pengaturan dan pengguna sistem Anda.",
+            icon: ShieldCheck,
+            href: "/admin-panel",
+            color: "gray",
+        },
     ];
 
 interface MenuCardProps {
@@ -125,7 +132,7 @@ export default function MenusPage() {
                         </p>
                     </div>
 
-                    <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+                    <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {menuItems.map((item) => (
                             <MenuCard key={item.href} {...item} userRole={userRole} />
                         ))}

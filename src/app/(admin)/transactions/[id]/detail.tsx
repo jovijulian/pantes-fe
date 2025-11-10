@@ -245,7 +245,7 @@ export default function TransactionDetailPage() {
         const getDetail = async (transactionId: number) => {
             try {
                 let endpoint = '';
-                if (role === 1) {
+                if (role === 1 || role === 4) {
                     endpoint = endpointUrl(`/customer/history/${transactionId}`);
                 } else if (role === 2) {
                     endpoint = endpointUrl(`/sales/transaction/${transactionId}`);

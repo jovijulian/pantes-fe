@@ -11,21 +11,21 @@ import moment from "moment";
 import { useRouter } from 'next/navigation';
 import { toast } from "react-toastify";
 import DeactiveModal from "@/components/modal/deactive/DeactivePurchasing";
-import EditModal from "@/components/modal/edit/EditStaffModal";
-import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
-import DateRangePicker from "@/components/common/DateRangePicker";
+import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import EditAdminModal from "@/components/modal/edit/EditAdminModal";
+
 
 interface TableDataItem {
     id: number;
-    name: string;
     email: string;
+    name: string;
     phone: string;
-    code: string;
+    status: string;
     created_at: string;
+    updated_at: string;
 }
 
-
-export default function StaffPage() {
+export default function Adminpage() {
     const searchParams = useSearchParams();
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage, setPerPage] = useState(20);
@@ -43,7 +43,6 @@ export default function StaffPage() {
     const [columns, setColumns] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedData, setSelectedData] = useState<any>(null);
-
     useEffect(() => {
         getData();
     }, [searchParams, currentPage, perPage, page, searchTerm]);
@@ -57,6 +56,20 @@ export default function StaffPage() {
         setCurrentPage(1);
     };
 
+    const statusText = (status: number) => {
+        let className = "";
+        let text = "";
+
+        if (status == 1) {
+            className = "text-sky-500 bg-sky-50";
+            text = "Active";
+        } else {
+            className = "text-red-500 bg-red-50";
+            text = "Inactive";
+        }
+
+        return <span className={`px-3 py-1 rounded-md text-sm font-medium ${className}`}>{text}</span>;
+    };
 
     const columnsNew = useMemo(() => {
         const defaultColumns = [
@@ -66,47 +79,49 @@ export default function StaffPage() {
                 accessorKey: "action",
                 cell: ({ row }: any) => {
                     return (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3 w-[100px]">
                             {/* Edit */}
                             <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     setSelectedData(row);
                                     setIsEditOpen(true);
                                 }}
                                 title="Edit"
-                                className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
+                                className="px-3 py-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
                             >
                                 <FaEdit className="w-4 h-4" />
                             </button>
 
                             {/* Delete */}
                             <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     setSelectedData(row);
                                     setIsDeleteModalOpen(true);
                                 }}
                                 title="Delete"
-                                className="p-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+                                className="px-3 py-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
                             >
                                 <FaTrash className="w-4 h-4" />
                             </button>
                         </div>
                     );
                 },
-                minWidth: "50px",
-                maxWidth: "70px",
-            },
-            {
-                id: "code",
-                header: "Kode",
-                accessorKey: "code",
-                cell: ({ row }: any) => <span>{row.code}</span>,
+                minWidth: 160, 
+                maxWidth: 220,
             },
             {
                 id: "name",
-                header: "Nama Pemesan",
+                header: "Nama",
                 accessorKey: "name",
                 cell: ({ row }: any) => <span>{row.name}</span>,
+            },
+            {
+                id: "phone",
+                header: "No. Telp",
+                accessorKey: "phone",
+                cell: ({ row }: any) => <span>{row.phone}</span>,
             },
             {
                 id: "email",
@@ -115,35 +130,57 @@ export default function StaffPage() {
                 cell: ({ row }: any) => <span>{row.email}</span>,
             },
             {
-                id: "phone",
-                header: "No. Telepon",
-                accessorKey: "phone",
-                cell: ({ row }: any) => <span>{row.phone}</span>,
+                id: "role_id",
+                header: "Role",
+                accessorKey: "role_id",
+                cell: ({ row }: any) => {
+                    const roleId = row.role_id;
+
+                    let roleText = '';
+                    let className = '';
+
+                    if (roleId == 4) {
+                        roleText = 'Admin Sales';
+                        className = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                    } else if (roleId == 5) {
+                        roleText = 'Admin Purchasing';
+                        className = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+                    } else {
+                        roleText = `Unknown Role (${roleId})`;
+                        className = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+                    }
+                    return (
+                        <span
+                            className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${className}`}
+                        >
+                            {roleText}
+                        </span>
+                    );
+                },
             },
             {
                 id: "status",
                 header: "Status",
-                accessorFn: (row: any) => row.status,
-                cell: ({ row }: { row: any }) => {
-                    const status = row.status === '1' ? 'Aktif' : row.status === '0' ? 'Tidak Aktif' : 'Tidak Diketahui';
-                    const color = row.status === '1' ? 'success' : row.status === '0' ? 'error' : 'warning';
-
-                    return (
-                        <Badge color={color}>{status}</Badge>
-                    );
+                accessorKey: "status",
+                accessorFn: (row: any) => {
+                    const status = row.status;
+                    if (status == 1) return "Active";
+                    if (status == 2) return "Inactive";
+                    return "Unknown";
                 },
+                cell: ({ row }: any) => <span>{statusText(row.status)}</span>,
             },
             {
                 id: "created_at",
                 header: "Dibuat pada",
                 accessorKey: "created_at",
-                cell: ({ row }: any) => <span>{moment(row.created_at).format("DD-MMM-YYYY, HH:mm")}</span>,
+                cell: ({ row }: any) => <span>{moment(row.created_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
             {
                 id: "updated_at",
                 header: "Diubah pada",
                 accessorKey: "updated_at",
-                cell: ({ row }: any) => <span>{moment(row.updated_at).format("DD-MMM-YYYY, HH:mm")}</span>,
+                cell: ({ row }: any) => <span>{moment(row.updated_at).format("DD MMM YYYY, HH:mm")}</span>,
             },
         ];
         return [...defaultColumns, ...columns.filter((col) => col.field !== "id" && col.field !== "hide_this_column_field")];
@@ -161,10 +198,11 @@ export default function StaffPage() {
             page: page ? Number(page) : currentPage,
         };
 
-
         try {
             const response = await httpGet(
-                endpointUrlv2("staff-purchasing"), true, params
+                endpointUrlv2("/admin"),
+                true,
+                params
             );
 
             const responseData = response.data.data.data;
@@ -172,20 +210,18 @@ export default function StaffPage() {
             setCount(response.data.data.page_info.total_record);
             setLastPage(response.data.data.page_info.total_pages);
         } catch (error) {
-            console.log(error)
             toast.error("Failed to fetch data");
             setData([]);
         } finally {
             setIsLoading(false);
         }
     };
+
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
     };
     return (
         <div className="space-y-4">
-
-            {/* Action Buttons */}
             <div className="flex justify-end items-center">
                 <div className="flex gap-2">
                     <input
@@ -195,22 +231,22 @@ export default function StaffPage() {
                         placeholder="Search..."
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
-
                     <button
-                        onClick={() => router.push("/purchasing/master/staffs/create")}
+                        onClick={() => router.push("/admin-panel/create")}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
-                        <span>+</span>
-                        Tambah
+                        <span className="text-lg font-bold">+</span>
+                        Tambahkan Admin
                     </button>
-
                 </div>
             </div>
 
+            {/* Table */}
             <Table
                 data={data}
                 columns={columnsNew}
                 pagination={true}
+                // selection={true}
                 lastPage={lastPage}
                 total={count}
                 loading={isLoading}
@@ -218,7 +254,6 @@ export default function StaffPage() {
                 setCheckedData={setSelectedRows}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
-
             />
 
             <DeactiveModal
@@ -227,14 +262,14 @@ export default function StaffPage() {
                     setIsDeleteModalOpen(false);
                     setSelectedData(null);
                 }}
-                url={`staff-purchasing/${selectedData?.id}/deactive`}
-                itemName={`${selectedData?.name}` || ""}
+                url={`admin/${selectedData?.id}/deactive`}
+                itemName={selectedData?.name || ""}
                 selectedData={selectedData}
                 onSuccess={getData}
-                message="Pemesan berhasil dihapus!"
+                message="Admin deleted successfully!"
             />
 
-            <EditModal
+            <EditAdminModal
                 isOpen={isEditOpen}
                 selectedId={selectedData?.id}
                 onClose={() => setIsEditOpen(false)}
@@ -243,3 +278,5 @@ export default function StaffPage() {
         </div>
     );
 }
+
+

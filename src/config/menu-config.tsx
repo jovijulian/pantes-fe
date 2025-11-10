@@ -45,31 +45,31 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Dashboard',
       icon: <LayoutDashboard />,
       path: '/dashboard',
-      roles: [1, 2],
+      roles: [1, 2, 4],
     },
     {
       name: 'Transaksi',
       icon: <Receipt />,
       path: '/transactions',
-      roles: [1, 2],
+      roles: [1, 2, 4],
     },
     {
       name: 'Pelanggan',
       icon: <Users />,
       path: '/customers',
-      roles: [1, 2],
+      roles: [1, 2, 4],
     },
     {
       name: 'Akun Sales',
       icon: <ShieldUser />,
       path: '/sales-accounts',
-      roles: [1],
+      roles: [1, 4],
     },
     {
       name: 'Manajemen Data Master',
       icon: <Database />,
       path: '/master-data',
-      roles: [1],
+      roles: [1, 4],
     },
     {
       name: 'Menu',
@@ -83,24 +83,24 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Dashboard',
       icon: <LayoutDashboard />,
       path: '/purchasing/dashboard',
-      roles: [1, 3],
+      roles: [1, 3, 5],
     },
     {
       name: 'CT',
       icon: <Gem />, 
-      roles: [1, 3],
+      roles: [1, 3, 5],
       subItems: [
-        { name: 'Pembelian', path: '/purchasing/orders', roles: [1, 3] },
-        { name: 'Surat Jalan', path: '/purchasing/work-orders', roles: [1, 3] },
+        { name: 'Pembelian', path: '/purchasing/orders', roles: [1, 3, 5] },
+        { name: 'Surat Jalan', path: '/purchasing/work-orders', roles: [1, 3, 5] },
       ]
     },
     {
       name: 'LM',
       icon: <Diamond />, 
-      roles: [1, 3],
+      roles: [1, 3, 5],
       subItems: [
-        { name: 'Pembelian', path: '/purchasing/orders-lm', roles: [1, 3] },
-        { name: 'Surat Jalan', path: '/purchasing/work-orders-lm', roles: [1, 3] },
+        { name: 'Pembelian', path: '/purchasing/orders-lm', roles: [1, 3, 5] },
+        { name: 'Surat Jalan', path: '/purchasing/work-orders-lm', roles: [1, 3, 5] },
       ]
     },
     // {
@@ -119,19 +119,19 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Setor Barang',
       icon: <Archive />, 
       path: '/purchasing/deposits',
-      roles: [1, 3],
+      roles: [1, 3, 5],
     },
     {
       name: 'Master Data',
       icon: <Database />, 
-      roles: [1, 3],
+      roles: [1, 3, 5],
       subItems: [
-        { name: 'Supplier', path: '/purchasing/master/suppliers', roles: [1, 3] },
-        { name: 'Barang', path: '/purchasing/master/items', roles: [1, 3] },
-        { name: 'Bank', path: '/purchasing/master/banks', roles: [1, 3] },
-        { name: 'Ekspedisi', path: '/purchasing/master/expeditions', roles: [1, 3] },
-        { name: 'Karyawan', path: '/purchasing/master/employees', roles: [1, 3] },
-        { name: 'Staff', path: '/purchasing/master/staffs', roles: [1, 3] },
+        { name: 'Supplier', path: '/purchasing/master/suppliers', roles: [1, 3, 5] },
+        { name: 'Barang', path: '/purchasing/master/items', roles: [1, 3, 5] },
+        { name: 'Bank', path: '/purchasing/master/banks', roles: [1, 3, 5] },
+        { name: 'Ekspedisi', path: '/purchasing/master/expeditions', roles: [1, 3, 5] },
+        { name: 'Karyawan', path: '/purchasing/master/employees', roles: [1, 3, 5] },
+        { name: 'Pemesan', path: '/purchasing/master/staffs', roles: [1, 3, 5] },
       ]
     },
     {
@@ -140,5 +140,13 @@ export const menuConfig: Record<string, NavItem[]> = {
       path: '/menus',
       roles: [1],
     },
+  ],
+  menu_admin: [
+    {
+      name: 'Menu',
+      icon: <Home />,
+      path: '/menus',
+      roles: [1],
+    }
   ],
 };

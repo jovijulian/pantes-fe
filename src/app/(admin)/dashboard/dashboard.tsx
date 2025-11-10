@@ -122,7 +122,7 @@ export default function DashboardPage() {
             </div>
 
             <TransactionTrendChart data={dashboardData.grafik.transaction} />
-            {role === "1" && (
+            {role === "1" || role == "4" &&(
                 <>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className=" h-full">
@@ -154,7 +154,7 @@ export default function DashboardPage() {
             )}
             <hr className="my-8 border-t-2 border-gray-300 dark:border-gray-600" />
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Sepanjang Waktu</h3>
-            {role === "1" && (
+            {role === "1" || role == "4" &&(
                 <>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="h-full">
@@ -180,7 +180,7 @@ export default function DashboardPage() {
                     </div>
                 </>
             )}
-            {role === "1" && (
+           {role === "1" || role == "4" &&(
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt--2">
                     <CustomerLeaderboard data={dashboardData.customer.leaderboard} />
                     <SalesLeaderbord data={dashboardData.sales.leaderboard} />

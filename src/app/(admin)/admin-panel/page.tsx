@@ -1,16 +1,16 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import IndexPage from "./staffs";
+import IndexPage from "./admin-panel";
 import { Metadata } from "next";
 import React, { Suspense } from "react";
 export const metadata: Metadata = {
-    title: "Master Pemesan | Pantes Gold App",
+    title: "Admin Panel | Pantes Gold App",
 };
 
 
 export default function BasicTables() {
     return (
         <div>
-            <PageBreadcrumb pageTitle="Kelola Master Pemesan" />
+            <PageBreadcrumb pageTitle="Kelola Akun Admin" />
             <div className="space-y-6">
                 <div
                     className={`rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]`}

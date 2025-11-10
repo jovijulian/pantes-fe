@@ -35,6 +35,8 @@ const AppSidebar: React.FC = () => {
       currentMenuKey = 'menu';
     } else if (pathname.startsWith('/purchasing')) {
       currentMenuKey = 'menu_purchasing';
+    } else if (pathname.startsWith('/admin-panel')) {
+      currentMenuKey = 'menu_admin';
     }
 
     if (!currentMenuKey) {

@@ -10,66 +10,53 @@ import { FaEdit, FaSave, FaTimes } from "react-icons/fa";
 import { Modal } from "@/components/ui/modal";
 import Label from "@/components/form/Label";
 import { useModal } from "@/hooks/useModal";
+import _ from "lodash";
 
-interface StaffData {
-    id: number;
-    code: string;
-    name: string;
-    email: string;
-    phone: string;
-}
-interface EditProps {
+interface EditAdminModalProps {
     isOpen: boolean;
     selectedId: number;
     onClose: () => void;
     onSuccess?: () => void;
 }
 
-const EditStaffModal: React.FC<EditProps> = ({
+const EditAdminModal: React.FC<EditAdminModalProps> = ({
     isOpen,
     selectedId,
     onClose,
     onSuccess,
 }) => {
-    const [formData, setFormData] = useState<StaffData>({
-        id: 0,
-        code: "",
-        name: "",
-        email: "",
-        phone: "",
-    });
-
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("");
+    const [role, setRole] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchUserData = async () => {
             if (!selectedId) return;
 
             setIsLoading(true);
             setError("");
             try {
-                const response = await httpGet(endpointUrlv2(`staff-purchasing/${selectedId}`), true);
-                const data = response.data.data;
+                const response = await httpGet(endpointUrlv2(`admin/${selectedId}`), true);
+                const userData = response.data.data;
 
-                setFormData({
-                    id: data.id,
-                    code: data.code,
-                    name: data.name,
-                    email: data.email,
-                    phone: data.phone,
-                });
+                setName(userData.name || "");
+                setEmail(userData.email || "");
+                setPhone(userData.phone || "");
+                setRole(userData.role_id || "");
 
             } catch (err: any) {
-                toast.error(err?.response?.data?.message || "Failed to fetch staff data.");
-                setError("Could not load staff data.");
+                toast.error(err?.response?.data?.message || "Gagal mengambil data akun admin.");
+                setError("Tidak dapat memuat data akun admin.");
             } finally {
                 setIsLoading(false);
             }
         };
 
         if (isOpen) {
-            fetchData();
+            fetchUserData();
         } else {
             handleCancel();
         }
@@ -78,28 +65,25 @@ const EditStaffModal: React.FC<EditProps> = ({
         setError("");
 
         const payload = {
-            code: formData.code,
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
+            name,
+            email,
+            phone,
+            role_id: role
         };
 
 
         try {
-            await httpPost(endpointUrlv2(`staff-purchasing/${selectedId}/update`), payload, true);
-            toast.success("Berhasil mengubah pemesan!");
-            setFormData({
-                id: 0,
-                code: "",
-                name: "",
-                email: "",
-                phone: "",
-            });
+            await httpPost(endpointUrlv2(`admin/${selectedId}/update`), payload, true);
+            toast.success("Akun admin berhasil diperbarui!");
+            setName("");
+            setPhone("");
+            setEmail("");
+            setRole("");
             onClose();
             onSuccess?.();
         } catch (error: any) {
             toast.error(error?.response?.data?.message);
-            setError(error?.response?.data?.message || "Gagal mengubah pemesan");
+            setError(error?.response?.data?.message || "Failed to change admin account.");
         }
 
 
@@ -107,14 +91,15 @@ const EditStaffModal: React.FC<EditProps> = ({
     const handleCancel = () => {
         onClose();
         setError("");
-        setFormData({
-            id: 0,
-            code: "",
-            name: "",
-            email: "",
-            phone: "",
-        });
+        setName("");
+        setPhone("");
+        setEmail("");
+        setRole("");
     };
+    const roleOptions = [
+        { label: "Admin Sales", value: "4" },
+        { label: "Admin Purchasing", value: "5" },
+    ];
 
     if (!isOpen) return null;
 
@@ -123,7 +108,7 @@ const EditStaffModal: React.FC<EditProps> = ({
             <div className="no-scrollbar relative w-full max-w-[500px] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-8">
                 <div className="pr-10">
                     <h4 className="mb-2 text-xl font-semibold text-gray-800 dark:text-white/90 lg:text-2xl">
-                        Edit Pemesan
+                        Edit Akun Admin
                     </h4>
                 </div>
                 <form
@@ -133,71 +118,58 @@ const EditStaffModal: React.FC<EditProps> = ({
                     }}
                     className="flex flex-col"
                 >
-                     <div className="space-y-5 px-2 pb-3">
-                        <div>
-                            <Label htmlFor="name">Kode Pemesan</Label>
-                            <Input
-                                type="text"
-                                id="code"
-                                name="code"
-                                defaultValue={formData.code}
-                                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                                required
-                            />
-                        </div>
-                        {error && (
-                            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-                        )}
-                    </div>
                     <div className="space-y-5 px-2 pb-3">
                         <div>
-                            <Label htmlFor="name">Nama Pemesan</Label>
+                            <Label htmlFor="name">Nama</Label>
                             <Input
                                 type="text"
                                 id="name"
                                 name="name"
-                                defaultValue={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                defaultValue={name}
+                                onChange={(e) => setName(e.target.value)}
                                 required
                             />
                         </div>
-                        {error && (
-                            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-                        )}
-                    </div>
-                    <div className="space-y-5 px-2 pb-3">
+
                         <div>
-                            <Label htmlFor="name">Email</Label>
+                            <Label htmlFor="email">Email</Label>
                             <Input
                                 type="email"
                                 id="email"
                                 name="email"
-                                defaultValue={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                defaultValue={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
                             />
                         </div>
-                        {error && (
-                            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-                        )}
-                    </div>
-                    <div className="space-y-5 px-2 pb-3">
+
                         <div>
-                            <Label htmlFor="name">No. Telepon</Label>
+                            <Label htmlFor="phone">No. Telp</Label>
                             <Input
-                                type="numeric"
+                                type="text"
                                 id="phone"
                                 name="phone"
-                                defaultValue={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                defaultValue={phone}
+                                onChange={(e) => setPhone(e.target.value)}
                                 required
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="role">Role</Label>
+                            <Select
+                                onValueChange={(selectedOption) => {
+                                   setRole(selectedOption.value);
+                                }}
+                                placeholder={"Select role"}
+                                value={_.find(roleOptions, { value: role })}
+                                options={roleOptions}
                             />
                         </div>
                         {error && (
                             <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
                         )}
                     </div>
-                    <div className="flex items-center justify-end gap-3 px-2 mt-6 lg:justify-end">
+                    <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
                         <button
                             type="button"
                             title="Cancel"
@@ -211,7 +183,7 @@ const EditStaffModal: React.FC<EditProps> = ({
                             title="Save"
                             className="px-4 py-2 rounded-md border border-transparent bg-blue-600 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 transition-all"
                         >
-                            Save
+                            Simpan
                         </button>
                     </div>
                 </form>
@@ -220,4 +192,4 @@ const EditStaffModal: React.FC<EditProps> = ({
     );
 };
 
-export default EditStaffModal;
+export default EditAdminModal;

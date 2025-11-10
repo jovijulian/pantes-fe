@@ -5,13 +5,13 @@ import CreatePage from "./create"
 import React from "react";
 
 export const metadata: Metadata = {
-    title: "Create Pemesan Data | Pantes Gold App",
+    title: "Create Admin Data | Pantes Gold App",
 };
 
 export default function FormElements() {
     return (
         <div>
-            <PageBreadcrumb pageTitle="Data Pemesan" />
+            <PageBreadcrumb pageTitle="Tambahkan Admin" />
             <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-6">
                     <CreatePage />

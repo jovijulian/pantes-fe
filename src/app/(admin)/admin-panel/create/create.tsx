@@ -14,7 +14,8 @@ interface CreateData {
     email: string;
     password: string;
     phone: string;
-    code: string;
+    role: string;
+    image: File | null;
 }
 
 export default function CreateForm() {
@@ -24,7 +25,8 @@ export default function CreateForm() {
         email: "",
         password: "",
         phone: "",
-        code: "",
+        role: "",
+        image: null,
     });
     const [loading, setLoading] = useState(false);
 
@@ -36,30 +38,37 @@ export default function CreateForm() {
         }
         try {
             setLoading(true);
-            const data: CreateData = {
-                name: formData.name,
-                email: formData.email,
-                password: formData.password,
-                phone: formData.phone,
-                code: formData.code,
+            const data = new FormData();
+            data.append("name", formData.name);
+            data.append("email", formData.email);
+            data.append("password", formData.password);
+            data.append("phone", formData.phone);
+            data.append("role_id", formData.role);
+            if (formData.image) {
+                data.append("image", formData.image);
             }
 
             await httpPost(
-                endpointUrlv2("staff-purchasing"),
+                endpointUrlv2("admin"),
                 data,
                 true,
             );
-            toast.success("Pemesan berhasil ditambahkan!");
-            router.push("/purchasing/master/staffs");
+            toast.success("Admin berhasil ditambahkan!");
+            router.push("/admin-panel");
         } catch (error: any) {
-            toast.error(error?.response?.data?.errors?.type || "Gagal menambahkan pemesan.");
+            toast.error(error?.response?.data?.errors?.type || "Gagal menambahkan admin.");
         } finally {
             setLoading(false);
         }
     };
 
+    const roleOptions = [
+        { label: "Admin Sales", value: "4" },
+        { label: "Admin Purchasing", value: "5" },
+    ];
+
     return (
-        <ComponentCard title="Data Pemesan">
+        <ComponentCard title="Data Admin">
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                     <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
@@ -91,22 +100,25 @@ export default function CreateForm() {
                         type="text"
                         value={formData.phone}
                         onChange={(e) => {
-                            const onlyNums = e.target.value.replace(/\D/g, ""); 
+                            const onlyNums = e.target.value.replace(/\D/g, "");
                             setFormData({ ...formData, phone: onlyNums });
-                          }}
+                        }}
                         required
                     />
 
                 </div>
                 <div>
                     <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Kode<span className="text-red-400 ml-1">*</span>
+                        Role<span className="text-red-400 ml-1">*</span>
                     </label>
-                    <Input
-                        type="text"
-                        defaultValue={formData.code}
-                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                        required
+
+                    <Select
+                        onValueChange={(selectedOption) => {
+                            setFormData({ ...formData, role: selectedOption.value });
+                        }}
+                        placeholder={"Select role"}
+                        value={_.find(roleOptions, { value: formData.role })}
+                        options={roleOptions}
                     />
                 </div>
                 <div>
@@ -122,7 +134,7 @@ export default function CreateForm() {
                 </div>
                 <div className="flex justify-end gap-2">
                     <button
-                        onClick={() => router.push("/purchasing/master/staffs")}
+                        onClick={() => router.push("/admin-panel")}
                         type="button"
                         className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
                     >

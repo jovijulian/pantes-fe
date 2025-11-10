@@ -179,7 +179,7 @@ export default function CreatePurchaseOrderPage() {
 
     const validateForm = (): boolean => {
         if (!formData.date || !formData.staff_id || !formData.supplier_id) {
-            toast.error("Harap isi Tanggal, Pemesan (Staff), dan Supplier.");
+            toast.error("Harap isi Tanggal, Pemesan, dan Supplier.");
             return false;
         }
         if (formData.nominal <= 0 || formData.weight === "0" || formData.cokim === 0) {
@@ -271,12 +271,12 @@ export default function CreatePurchaseOrderPage() {
 
                             <div className="md:col-span-6 space-y-4">
                                 <div>
-                                    <label className="block font-medium mb-1">Pemesan (Staff)<span className="text-red-400 ml-1">*</span></label>
+                                    <label className="block font-medium mb-1">Pemesan<span className="text-red-400 ml-1">*</span></label>
                                     <Select
                                         options={staffOptions}
                                         value={_.find(staffOptions, { value: formData.staff_id?.toString() })}
                                         onValueChange={(opt) => handleFieldChange('staff_id', opt ? parseInt(opt.value) : null)}
-                                        placeholder="Pilih staff..."
+                                        placeholder="Pilih pemesan..."
                                         disabled={loadingOptions}
                                     />
                                 </div>

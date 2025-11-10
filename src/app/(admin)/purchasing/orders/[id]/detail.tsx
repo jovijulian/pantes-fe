@@ -214,7 +214,7 @@ export default function PurchaseOrderDetailPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <DetailItem icon={<User />} label="Staff" value={data.staff.name} />
+                    <DetailItem icon={<User />} label="Pemesan" value={data.staff.name} />
                     <DetailItem icon={<Building />} label="Supplier" value={data.supplier.name} />
                     <DetailItem icon={<Calendar />} label="Tanggal PO" value={moment(data.date).format('DD MMMM YYYY')} />
                     <DetailItem icon={<UserCheck />} label="Dibuat Oleh" value={data.created_by.name} />

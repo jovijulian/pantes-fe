@@ -12,7 +12,8 @@ const rolePermissions: Record<string, string[]> = {
         '/transactions',
         '/master-data',
         '/profile',
-        '/purchasing'
+        '/purchasing',
+        '/admin-panel',
     ],
     '2': [
        '/dashboard',
@@ -27,6 +28,18 @@ const rolePermissions: Record<string, string[]> = {
         '/purchasing/work-orders',
         '/purchasing/orders',
      ],
+     '4': [
+        '/dashboard',
+        '/sales-accounts',
+        '/customers',
+        '/transactions',
+        '/master-data',
+        '/profile',
+    ],
+    '5': [
+        '/profile',
+        '/purchasing',
+    ],
     
 };
 
@@ -34,6 +47,8 @@ const homeRoutes: Record<string, string> = {
     '1': '/menus',
     '2': '/dashboard',
     '3': '/purchasing/dashboard',
+    '4': '/dashboard',
+    '5': '/purchasing/dashboard',
 };
 
 
