@@ -3,7 +3,7 @@
 import Table from "@/components/tables/Table";
 import React, { useState, useEffect, useMemo } from "react";
 import Badge from "@/components/ui/badge/Badge";
-import { alertToast, endpointUrlv2, httpGet, httpPost, httpPut } from "@/../helpers";
+import { alertToast, endpointUrl, endpointUrlv2, httpGet, httpPost, httpPut } from "@/../helpers";
 import { useSearchParams, useRouter } from 'next/navigation';
 import moment from "moment";
 import { toast } from "react-toastify";
@@ -89,7 +89,7 @@ export default function PurchaseOrdersPage() {
         };
 
         try {
-            const response = await httpGet(endpointUrlv2("purchase/order"), true, params);
+            const response = await httpGet(endpointUrl("purchase/order"), true, params);
             const responseData = response.data.data.data;
             setData(responseData);
             setCount(response.data.data.page_info.total_record);
@@ -152,7 +152,7 @@ export default function PurchaseOrdersPage() {
         }
 
         try {
-            await httpPost(endpointUrlv2(`purchase/order/${selectedOrder.id}/change-status`), payload, true);
+            await httpPost(endpointUrl(`purchase/order/${selectedOrder.id}/change-status`), payload, true);
             toast.success(successMessage);
             setIsModalOpen(false);
             getData();
@@ -171,7 +171,7 @@ export default function PurchaseOrdersPage() {
         setIsDownloadLoading(true);
 
         try {
-            const response = await axios.get(endpointUrlv2(`purchase/order/${id}/export`), {
+            const response = await axios.get(endpointUrl(`purchase/order/${id}/export`), {
                 responseType: 'blob',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,

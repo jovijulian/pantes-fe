@@ -39,7 +39,7 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({
             setIsLoading(true);
             setError("");
             try {
-                const response = await httpGet(endpointUrlv2(`admin/${selectedId}`), true);
+                const response = await httpGet(endpointUrl(`admin/${selectedId}`), true);
                 const userData = response.data.data;
 
                 setName(userData.name || "");
@@ -73,7 +73,7 @@ const EditAdminModal: React.FC<EditAdminModalProps> = ({
 
 
         try {
-            await httpPost(endpointUrlv2(`admin/${selectedId}/update`), payload, true);
+            await httpPost(endpointUrl(`admin/${selectedId}/update`), payload, true);
             toast.success("Akun admin berhasil diperbarui!");
             setName("");
             setPhone("");

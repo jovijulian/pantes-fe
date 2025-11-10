@@ -90,9 +90,9 @@ export default function EditPurchaseOrderPage() {
         const fetchOptions = async () => {
             try {
                 const [staffRes, supplierRes, bankRes] = await Promise.all([
-                    httpGet(endpointUrlv2("master/staff/dropdown"), true),
-                    httpGet(endpointUrlv2("master/supplier/dropdown"), true),
-                    httpGet(endpointUrlv2("master/bank/dropdown"), true),
+                    httpGet(endpointUrl("master/staff/dropdown"), true),
+                    httpGet(endpointUrl("master/supplier/dropdown"), true),
+                    httpGet(endpointUrl("master/bank/dropdown"), true),
                 ]);
 
                 setStaffOptions(staffRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
@@ -123,7 +123,7 @@ export default function EditPurchaseOrderPage() {
         const fetchOrderData = async () => {
             setLoadingData(true);
             try {
-                const res = await httpGet(endpointUrlv2(`/purchase/order/${id}`), true);
+                const res = await httpGet(endpointUrl(`/purchase/order/${id}`), true);
                 const data = res.data.data;
 
                 const mappedPayments: FormPaymentType[] = data.payment_types.map((p: any) => ({
@@ -259,7 +259,7 @@ export default function EditPurchaseOrderPage() {
                 order_payment_type_id: paymentIdToDelete,
             }
             separatePromises.push(
-                httpPut(endpointUrlv2(`/purchase/order/${id}/payment-type`), payload, true)
+                httpPut(endpointUrl(`/purchase/order/${id}/payment-type`), payload, true)
             );
         }
 
@@ -271,7 +271,7 @@ export default function EditPurchaseOrderPage() {
                 nominal: newPayment.nominal,
             };
             separatePromises.push(
-                httpPost(endpointUrlv2(`/purchase/order/${id}/payment-type`), addPayload, true)
+                httpPost(endpointUrl(`/purchase/order/${id}/payment-type`), addPayload, true)
             );
         }
 
@@ -305,7 +305,7 @@ export default function EditPurchaseOrderPage() {
             
             console.log("Main Payload:", mainPayload); 
 
-            await httpPost(endpointUrlv2(`/purchase/order/${id}/update`), mainPayload, true);
+            await httpPost(endpointUrl(`/purchase/order/${id}/update`), mainPayload, true);
 
             toast.success("Purchase Order (PO) berhasil diupdate!");
             router.push('/purchasing/orders');

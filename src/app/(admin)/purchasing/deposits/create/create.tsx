@@ -60,8 +60,8 @@ export default function CreateDepositPage() {
         const fetchInitialData = async () => {
             try {
                 const [employeeRes, supplierRes] = await Promise.all([
-                    httpGet(endpointUrlv2("master/employee/dropdown"), true), 
-                    httpGet(endpointUrlv2("master/supplier/dropdown"), true),
+                    httpGet(endpointUrl("master/employee/dropdown"), true), 
+                    httpGet(endpointUrl("master/supplier/dropdown"), true),
                 ]);
 
                 setEmployeeOptions(employeeRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
@@ -149,7 +149,7 @@ export default function CreateDepositPage() {
         };
 
         try {
-            await httpPost(endpointUrlv2('/deposit'), payload, true);
+            await httpPost(endpointUrl('/deposit'), payload, true);
             toast.success("Data Setor berhasil dibuat!");
             router.push('/purchasing/deposits');
         } catch (error: any) {

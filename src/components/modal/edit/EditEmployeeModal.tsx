@@ -43,7 +43,7 @@ const EditEmployeeModal: React.FC<EditProps> = ({
             setIsLoading(true);
             setError("");
             try {
-                const response = await httpGet(endpointUrlv2(`master/employee/${selectedId}`), true);
+                const response = await httpGet(endpointUrl(`master/employee/${selectedId}`), true);
                 const data = response.data.data;
 
                 setFormData({
@@ -74,7 +74,7 @@ const EditEmployeeModal: React.FC<EditProps> = ({
 
 
         try {
-            await httpPost(endpointUrlv2(`master/employee/${selectedId}/update`), payload, true);
+            await httpPost(endpointUrl(`master/employee/${selectedId}/update`), payload, true);
             toast.success("Berhasil mengubah karyawan!");
             setFormData({
                 id: 0,

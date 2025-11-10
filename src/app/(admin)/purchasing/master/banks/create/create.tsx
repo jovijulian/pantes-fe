@@ -39,7 +39,7 @@ export default function CreateForm() {
             }
 
             await httpPost(
-                endpointUrlv2("/master/bank"),
+                endpointUrl("/master/bank"),
                 data,
                 true,
             );

@@ -47,7 +47,7 @@ const EditBankModal: React.FC<EditProps> = ({
             setIsLoading(true);
             setError("");
             try {
-                const response = await httpGet(endpointUrlv2(`master/bank/${selectedId}`), true);
+                const response = await httpGet(endpointUrl(`master/bank/${selectedId}`), true);
                 const data = response.data.data;
 
                 setFormData({
@@ -82,7 +82,7 @@ const EditBankModal: React.FC<EditProps> = ({
 
 
         try {
-            await httpPost(endpointUrlv2(`master/bank/${selectedId}/update`), payload, true);
+            await httpPost(endpointUrl(`master/bank/${selectedId}/update`), payload, true);
             toast.success("Berhasil mengubah bank!");
             setFormData({
                 id: 0,

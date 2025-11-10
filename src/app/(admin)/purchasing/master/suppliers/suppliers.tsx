@@ -149,7 +149,7 @@ export default function SupplierPage() {
 
         try {
             const response = await httpGet(
-                endpointUrlv2("master/supplier"), true, params
+                endpointUrl("master/supplier"), true, params
             );
 
             const responseData = response.data.data.data;

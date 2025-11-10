@@ -164,7 +164,7 @@ export default function StaffPage() {
 
         try {
             const response = await httpGet(
-                endpointUrlv2("staff-purchasing"), true, params
+                endpointUrl("staff-purchasing"), true, params
             );
 
             const responseData = response.data.data.data;

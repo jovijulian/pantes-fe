@@ -3,7 +3,7 @@
 import Table from "@/components/tables/Table";
 import React, { useState, useEffect, useMemo } from "react";
 import Badge from "@/components/ui/badge/Badge";
-import { alertToast, endpointUrlv2, httpGet, httpPost, httpPut } from "@/../helpers";
+import { alertToast, endpointUrl, endpointUrlv2, httpGet, httpPost, httpPut } from "@/../helpers";
 import { useSearchParams, useRouter } from 'next/navigation';
 import moment from "moment";
 import { toast } from "react-toastify";
@@ -84,7 +84,7 @@ export default function DepositsPage() {
         };
 
         try {
-            const response = await httpGet(endpointUrlv2("deposit"), true, params);
+            const response = await httpGet(endpointUrl("deposit"), true, params);
             const responseData = response.data.data.data;
             setData(responseData);
             setCount(response.data.data.page_info.total_record);
@@ -153,7 +153,7 @@ export default function DepositsPage() {
         }
 
         try {
-            await httpPost(endpointUrlv2(`deposit/${selectedDeposit.id}/change-status`), payload, true);
+            await httpPost(endpointUrl(`deposit/${selectedDeposit.id}/change-status`), payload, true);
             toast.success(successMessage);
             setIsModalOpen(false);
             getData(); 

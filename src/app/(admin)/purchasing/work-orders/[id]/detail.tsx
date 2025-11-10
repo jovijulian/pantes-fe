@@ -138,7 +138,7 @@ export default function WorkOrderDetailPage() {
         if (!id) return;
         setIsLoading(true);
         try {
-            const response = await httpGet(endpointUrlv2(`work-order/${id}`), true);
+            const response = await httpGet(endpointUrl(`work-order/${id}`), true);
             if (!response.data.data.purchase_orders) {
                 response.data.data.purchase_orders = [];
             }
@@ -177,7 +177,7 @@ export default function WorkOrderDetailPage() {
         };
 
         try {
-            await httpPost(endpointUrlv2(`work-order/${data.id}/receipt`), payload, true);
+            await httpPost(endpointUrl(`work-order/${data.id}/receipt`), payload, true);
             toast.success("Surat Jalan berhasil ditandai 'Diterima'!");
             setIsReceiptModalOpen(false);
             getDetail();
@@ -244,7 +244,7 @@ export default function WorkOrderDetailPage() {
             work_order_item_id: selectedItem.id
         };
         try {
-            await httpPost(endpointUrlv2(`work-order/${data.id}/delete-item`), payload, true);
+            await httpPost(endpointUrl(`work-order/${data.id}/delete-item`), payload, true);
             toast.success("Barang berhasil dihapus.");
             setIsDeleteModalOpen(false);
             setSelectedItem(null);
@@ -261,7 +261,7 @@ export default function WorkOrderDetailPage() {
         setIsDownloadLoading(true);
 
         try {
-            const response = await axios.get(endpointUrlv2(`work-order/${data.id}/export`), {
+            const response = await axios.get(endpointUrl(`work-order/${data.id}/export`), {
                 responseType: 'blob',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -304,7 +304,7 @@ export default function WorkOrderDetailPage() {
         setIsDownloadLoading(true);
 
         try {
-            const response = await axios.get(endpointUrlv2(`work-order/${data.id}/export-item`), {
+            const response = await axios.get(endpointUrl(`work-order/${data.id}/export-item`), {
                 responseType: 'blob',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,

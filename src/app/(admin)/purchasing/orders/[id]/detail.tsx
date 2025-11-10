@@ -110,7 +110,7 @@ export default function PurchaseOrderDetailPage() {
         if (!id) return;
         setIsLoading(true);
         try {
-            const response = await httpGet(endpointUrlv2(`purchase/order/${id}`), true);
+            const response = await httpGet(endpointUrl(`purchase/order/${id}`), true);
             setData(response.data.data);
         } catch (error: any) {
             if (error.response?.status === 404 || error.response?.status === 403) {
@@ -148,7 +148,7 @@ export default function PurchaseOrderDetailPage() {
         setIsDownloadLoading(true);
 
         try {
-            const response = await axios.get(endpointUrlv2(`purchase/order/${data.id}/export`), {
+            const response = await axios.get(endpointUrl(`purchase/order/${data.id}/export`), {
                 responseType: 'blob',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -215,7 +215,7 @@ export default function PurchaseOrderDetailPage() {
         }
 
         try {
-            await httpPost(endpointUrlv2(`purchase/order/${data.id}/change-status`), payload, true);
+            await httpPost(endpointUrl(`purchase/order/${data.id}/change-status`), payload, true);
             toast.success(successMessage);
             setIsModalOpen(false);
             getDetail();

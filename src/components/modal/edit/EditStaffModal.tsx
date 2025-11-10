@@ -49,7 +49,7 @@ const EditStaffModal: React.FC<EditProps> = ({
             setIsLoading(true);
             setError("");
             try {
-                const response = await httpGet(endpointUrlv2(`staff-purchasing/${selectedId}`), true);
+                const response = await httpGet(endpointUrl(`staff-purchasing/${selectedId}`), true);
                 const data = response.data.data;
 
                 setFormData({
@@ -86,7 +86,7 @@ const EditStaffModal: React.FC<EditProps> = ({
 
 
         try {
-            await httpPost(endpointUrlv2(`staff-purchasing/${selectedId}/update`), payload, true);
+            await httpPost(endpointUrl(`staff-purchasing/${selectedId}/update`), payload, true);
             toast.success("Berhasil mengubah pemesan!");
             setFormData({
                 id: 0,

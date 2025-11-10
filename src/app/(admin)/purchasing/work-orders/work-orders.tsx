@@ -3,7 +3,7 @@
 import Table from "@/components/tables/Table";
 import React, { useState, useEffect, useMemo } from "react";
 import Badge from "@/components/ui/badge/Badge";
-import { alertToast, endpointUrlv2, httpGet, httpPost, httpPut } from "@/../helpers";
+import { alertToast, endpointUrl, endpointUrlv2, httpGet, httpPost, httpPut } from "@/../helpers";
 import { useSearchParams, useRouter } from 'next/navigation';
 import moment from "moment";
 import { toast } from "react-toastify";
@@ -90,7 +90,7 @@ export default function WorkOrdersPage() {
         };
 
         try {
-            const response = await httpGet(endpointUrlv2("work-order"), true, params);
+            const response = await httpGet(endpointUrl("work-order"), true, params);
             const responseData = response.data.data.data;
             setData(responseData);
             setCount(response.data.data.page_info.total_record);
@@ -138,7 +138,7 @@ export default function WorkOrdersPage() {
         };
 
         try {
-            await httpPost(endpointUrlv2(`work-order/${selectedWorkOrder.id}/receipt`), payload, true);
+            await httpPost(endpointUrl(`work-order/${selectedWorkOrder.id}/receipt`), payload, true);
             toast.success("Surat Jalan berhasil ditandai 'Diterima'!");
             setIsReceiptModalOpen(false);
             getData();
@@ -153,7 +153,7 @@ export default function WorkOrdersPage() {
         setIsDownloadLoading(true);
 
         try {
-            const response = await axios.get(endpointUrlv2(`work-order/${id}/export`), {
+            const response = await axios.get(endpointUrl(`work-order/${id}/export`), {
                 responseType: 'blob',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -195,7 +195,7 @@ export default function WorkOrdersPage() {
         setIsDownloadLoading(true);
 
         try {
-            const response = await axios.get(endpointUrlv2(`work-order/${id}/export-item`), {
+            const response = await axios.get(endpointUrl(`work-order/${id}/export-item`), {
                 responseType: 'blob',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,

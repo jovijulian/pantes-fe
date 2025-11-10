@@ -144,7 +144,7 @@ export default function BankPage() {
 
         try {
             const response = await httpGet(
-                endpointUrlv2("master/bank"), true, params
+                endpointUrl("master/bank"), true, params
             );
 
             const responseData = response.data.data.data;

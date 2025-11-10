@@ -49,7 +49,7 @@ export default function CreateForm() {
             }
 
             await httpPost(
-                endpointUrlv2("admin"),
+                endpointUrl("admin"),
                 data,
                 true,
             );

@@ -200,7 +200,7 @@ export default function Adminpage() {
 
         try {
             const response = await httpGet(
-                endpointUrlv2("/admin"),
+                endpointUrl("/admin"),
                 true,
                 params
             );

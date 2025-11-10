@@ -96,9 +96,9 @@ export default function CreatePurchaseOrderPage() {
         const fetchInitialData = async () => {
             try {
                 const [staffRes, supplierRes, bankRes] = await Promise.all([
-                    httpGet(endpointUrlv2("master/staff/dropdown"), true),
-                    httpGet(endpointUrlv2("master/supplier/dropdown"), true),
-                    httpGet(endpointUrlv2("master/bank/dropdown"), true),
+                    httpGet(endpointUrl("master/staff/dropdown"), true),
+                    httpGet(endpointUrl("master/supplier/dropdown"), true),
+                    httpGet(endpointUrl("master/bank/dropdown"), true),
                 ]);
 
                 setStaffOptions(staffRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
@@ -238,7 +238,7 @@ export default function CreatePurchaseOrderPage() {
         
 
         try {
-            await httpPost(endpointUrlv2('/purchase/order'), payload, true);
+            await httpPost(endpointUrl('/purchase/order'), payload, true);
             toast.success("Purchase Order (PO) berhasil dibuat!");
             router.push('/purchasing/orders');
         } catch (error: any) {

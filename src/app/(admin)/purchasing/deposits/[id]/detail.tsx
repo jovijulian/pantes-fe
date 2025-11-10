@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import moment from "moment";
 import 'moment/locale/id';
-import { endpointUrl, httpGet, httpPut, httpPost, httpDelete, alertToast, endpointUrlv2 } from "@/../helpers"; 
+import {  httpGet, httpPut, httpPost, httpDelete, alertToast, endpointUrl } from "@/../helpers"; 
 import ComponentCard from "@/components/common/ComponentCard";
 import {
     Loader2, User, Building, Calendar, Info, Check, X,
@@ -111,7 +111,7 @@ export default function DepositDetailPage() {
         if (!id) return;
         setIsLoading(true);
         try {
-            const response = await httpGet(endpointUrlv2(`deposit/${id}`), true);
+            const response = await httpGet(endpointUrl(`deposit/${id}`), true);
             if (!response.data.data.details) {
                 response.data.data.details = [];
             }
@@ -159,7 +159,7 @@ export default function DepositDetailPage() {
         const payload = { status: newStatus };
 
         try {
-            await httpPost(endpointUrlv2(`deposit/${data.id}/change-status`), payload, true);
+            await httpPost(endpointUrl(`deposit/${data.id}/change-status`), payload, true);
             toast.success(`Status berhasil diubah menjadi "${modalAction}"!`);
             setIsStatusModalOpen(false);
             getDetail();
@@ -183,7 +183,7 @@ export default function DepositDetailPage() {
         };
 
         try {
-            await httpPost(endpointUrlv2(`deposit/${data.id}/add-item`), payload, true);
+            await httpPost(endpointUrl(`deposit/${data.id}/add-item`), payload, true);
             toast.success("Barang berhasil ditambahkan!");
             setIsAddItemModalOpen(false);
             getDetail(); 
@@ -207,7 +207,7 @@ export default function DepositDetailPage() {
             deposit_detail_id: selectedItem.id
         };
         try {
-            await httpPost(endpointUrlv2(`deposit/${data.id}/delete-item`), payload, true);
+            await httpPost(endpointUrl(`deposit/${data.id}/delete-item`), payload, true);
             toast.success("Barang berhasil dihapus.");
             setIsDeleteModalOpen(false);
             setSelectedItem(null);

@@ -60,8 +60,8 @@ export default function CreateWorkOrderPage() {
         const fetchInitialData = async () => {
             try {
                 const [supplierRes, expeditionRes] = await Promise.all([
-                    httpGet(endpointUrlv2("master/supplier/dropdown"), true),
-                    httpGet(endpointUrlv2("master/expedition/dropdown"), true),
+                    httpGet(endpointUrl("master/supplier/dropdown"), true),
+                    httpGet(endpointUrl("master/expedition/dropdown"), true),
                 ]);
 
                 setSupplierOptions(supplierRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
@@ -167,7 +167,7 @@ export default function CreateWorkOrderPage() {
         };
 
         try {
-            await httpPost(endpointUrlv2('/work-order'), payload, true);
+            await httpPost(endpointUrl('/work-order'), payload, true);
             toast.success("Surat Jalan (SJ) berhasil dibuat!");
             router.push('/purchasing/work-orders');
         } catch (error: any) {

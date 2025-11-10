@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, Fragment, useCallback } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { toast } from 'react-toastify';
-import { alertToast, endpointUrlv2, httpGet, httpPost, httpPut } from '@/../helpers';
+import { alertToast, endpointUrl, endpointUrlv2, httpGet, httpPost, httpPut } from '@/../helpers';
 import Input from '@/components/form/input/InputField';
 import Select from '@/components/form/Select-custom';
 import { Loader2, Save, X } from 'lucide-react';
@@ -96,7 +96,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
             const fetchItems = async () => {
                 setLoadingOptions(true);
                 try {
-                    const res = await httpGet(endpointUrlv2("master/item/dropdown"), true);
+                    const res = await httpGet(endpointUrl("master/item/dropdown"), true);
                     setItemOptions(res.data.data.map((i: any) => ({
                         value: i.id.toString(),
                         label: `${i.name_item} (${i.code})`,
@@ -110,7 +110,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
             const fetchOrder = async () => {
                 setLoadingOptions(true);
                 try {
-                    const res = await httpGet(endpointUrlv2(`work-order/${workOrderId}/get-order`), true);
+                    const res = await httpGet(endpointUrl(`work-order/${workOrderId}/get-order`), true);
                     setItemPOOptions(res.data.data.map((i: any) => ({
                         value: i.id.toString(),
                         label: `${i.no_order}`,
@@ -196,7 +196,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
         };
 
         try {
-            await httpPost(endpointUrlv2(`work-order/${workOrderId}/update-item`), finalPayload, true);
+            await httpPost(endpointUrl(`work-order/${workOrderId}/update-item`), finalPayload, true);
             toast.success("Barang berhasil diupdate!");
             onSuccess();
             onClose();

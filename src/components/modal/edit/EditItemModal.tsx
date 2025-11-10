@@ -45,7 +45,7 @@ const EditItemModal: React.FC<EditProps> = ({
             setIsLoading(true);
             setError("");
             try {
-                const response = await httpGet(endpointUrlv2(`master/item/${selectedId}`), true);
+                const response = await httpGet(endpointUrl(`master/item/${selectedId}`), true);
                 const data = response.data.data;
 
                 setFormData({
@@ -78,7 +78,7 @@ const EditItemModal: React.FC<EditProps> = ({
 
 
         try {
-            await httpPost(endpointUrlv2(`master/item/${selectedId}/update`), payload, true);
+            await httpPost(endpointUrl(`master/item/${selectedId}/update`), payload, true);
             toast.success("Berhasil mengubah barang!");
             setFormData({
                 id: 0,

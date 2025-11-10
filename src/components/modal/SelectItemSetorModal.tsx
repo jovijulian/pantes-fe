@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { toast } from 'react-toastify';
-import { alertToast, endpointUrlv2, httpGet } from '@/../helpers'; 
+import { alertToast, endpointUrl, endpointUrlv2, httpGet } from '@/../helpers'; 
 import Input from '@/components/form/input/InputField'; 
 import { Loader2, Plus, Search } from 'lucide-react';
 import moment from 'moment';
@@ -44,7 +44,7 @@ const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({
         
         setIsLoading(true);
         try {
-            const res = await httpGet(endpointUrlv2(`/deposit/item-by-supplier/${supplierId}`), true, {
+            const res = await httpGet(endpointUrl(`/deposit/item-by-supplier/${supplierId}`), true, {
                 search: searchTerm,
             });
             
