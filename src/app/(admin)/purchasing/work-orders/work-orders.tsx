@@ -261,9 +261,10 @@ export default function WorkOrdersPage() {
                                             router.push('/purchasing/work-orders/' + row.id);
                                         }}
                                         title="Tandai Diterima"
-                                        className="p-3 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-green-100 text-green-700 hover:bg-green-200 text-xs font-medium"
                                     >
-                                        <FaCheckCircle className="w-4 h-4" />
+                                        <FaCheckCircle className="w-3.5 h-3.5" />
+                                        <span>Terima</span>
                                     </button>
                                     <button
                                         type="button"
@@ -273,13 +274,13 @@ export default function WorkOrdersPage() {
                                             handleExport(row.id);
                                         }}
                                         title="Export Surat Jalan"
-                                        className="flex items-center gap-2 p-3 rounded-lg 
-                                         bg-gradient-to-r from-blue-500 to-indigo-600 
-                                         text-white font-medium shadow-md hover:shadow-lg 
-                                         hover:from-blue-600 hover:to-indigo-700 
-                                         transition-all duration-200"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md 
+                                        bg-blue-600 text-white text-xs font-medium shadow-sm 
+                                        hover:bg-blue-700 disabled:opacity-50
+                                        transition-all duration-200"
                                     >
-                                        <Download className="w-4 h-4" />
+                                        <Download className="w-3.5 h-3.5" />
+                                        <span>Export SJ</span>
                                     </button>
                                 </>
                             )}
@@ -291,9 +292,10 @@ export default function WorkOrdersPage() {
                                             router.push('/purchasing/work-orders/' + row.id);
                                         }}
                                         title="Tambah Barang"
-                                        className="p-3 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200 text-xs font-medium"
                                     >
-                                        <PackagePlus className="w-4 h-4" />
+                                        <PackagePlus className="w-3.5 h-3.5" />
+                                        <span>Tambah Barang</span>
                                     </button>
                                     <button
                                         type="button"
@@ -303,19 +305,21 @@ export default function WorkOrdersPage() {
                                             handleExportReceiptItem(row.id);
                                         }}
                                         title="Export Barang Diterima"
-                                        className="flex items-center gap-2 p-3 rounded-lg 
-                                            bg-gradient-to-r from-purple-500 to-violet-600 
-                                            text-white font-medium shadow-md hover:shadow-lg 
-                                            hover:from-purple-600 hover:to-violet-700 
-                                            transition-all duration-200"
-                                        >
-                                        <Download className="w-4 h-4" />
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md 
+                                        bg-indigo-600 text-white text-xs font-medium shadow-sm 
+                                        hover:bg-indigo-700 disabled:opacity-50
+                                        transition-all duration-200"
+                                    >
+                                        <Download className="w-3.5 h-3.5" />
+                                        <span>Export Item</span>
                                     </button>
                                 </>
                             )}
                         </div>
                     );
                 },
+                minWidth: "800px",
+                maxWidth: "1000px",
             },
             {
                 id: "no_work_order",

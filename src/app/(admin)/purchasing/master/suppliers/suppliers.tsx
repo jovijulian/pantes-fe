@@ -65,45 +65,46 @@ export default function SupplierPage() {
                 accessorKey: "action",
                 cell: ({ row }: any) => {
                     return (
-                        <div className="flex items-center gap-2">
-                            {/* Edit */}
-                            <button
-                                onClick={() => {
-                                    setSelectedData(row);
-                                    setIsEditOpen(true);
-                                }}
-                                title="Edit"
-                                className="p-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
-                            >
-                                <FaEdit className="w-4 h-4" />
-                            </button>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex flex-row gap-2">
+                                <button
+                                    onClick={() => {
+                                        setSelectedData(row);
+                                        setIsEditOpen(true);
+                                    }}
+                                    title="Edit"
+                                    className="flex items-center p-3 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
+                                >
+                                    <FaEdit className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setSelectedData(row);
+                                        setIsDeleteModalOpen(true);
+                                    }}
+                                    title="Delete"
+                                    className="flex items-center p-3 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+                                >
+                                    <FaTrash className="w-4 h-4" />
+                                </button>
+                            </div>
 
-                            {/* Delete */}
-                            <button
-                                onClick={() => {
-                                    setSelectedData(row);
-                                    setIsDeleteModalOpen(true);
-                                }}
-                                title="Delete"
-                                className="p-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
-                            >
-                                <FaTrash className="w-4 h-4" />
-                            </button>
                             <button
                                 onClick={() => {
                                     setSelectedData(row);
                                     setIsBankModalOpen(true);
                                 }}
                                 title="Kelola Bank"
-                                className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
+                                className="flex items-center justify-center gap-1.5 p-3 rounded-md bg-green-100 text-green-700 hover:bg-green-200 text-sm font-medium"
                             >
                                 <FaUniversity className="w-4 h-4" />
+                                <span>Tambah Bank Supplier</span>
                             </button>
+
                         </div>
                     );
                 },
-                minWidth: "50px",
-                maxWidth: "70px",
+
             },
             {
                 id: "code",
@@ -243,7 +244,7 @@ export default function SupplierPage() {
                     setIsBankModalOpen(false);
                     setSelectedData(null);
                 }}
-                supplierData={selectedData} 
+                supplierData={selectedData}
             />
         </div>
     );

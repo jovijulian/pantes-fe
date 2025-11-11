@@ -250,9 +250,10 @@ export default function PurchaseOrdersPage() {
                                         handleOpenModal(row, 'Validasi')
                                     }}
                                     title="Validasi"
-                                    className="p-3 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 text-xs font-medium"
                                 >
-                                    <FaCheck className="w-4 h-4" />
+                                    <FaCheck className="w-3.5 h-3.5" />
+                                    <span>Validasi</span>
                                 </button>
                             )}
 
@@ -263,9 +264,10 @@ export default function PurchaseOrdersPage() {
                                         handleOpenModal(row, 'Disetujui')
                                     }}
                                     title="Disetujui"
-                                    className="p-3 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-green-100 text-green-700 hover:bg-green-200 text-xs font-medium"
                                 >
-                                    <FaCheckCircle className="w-4 h-4" />
+                                    <FaCheckCircle className="w-3.5 h-3.5" />
+                                    <span>Setujui</span>
                                 </button>
                             )}
 
@@ -276,9 +278,10 @@ export default function PurchaseOrdersPage() {
                                         handleOpenModal(row, 'Bayar')
                                     }}
                                     title="Bayar"
-                                    className="p-3 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200 text-xs font-medium"
                                 >
-                                    <DollarSign className="w-4 h-4" />
+                                    <DollarSign className="w-3.5 h-3.5" />
+                                    <span>Bayar</span>
                                 </button>
                             )}
                             {(status === '3' || status === '4') && (
@@ -291,13 +294,14 @@ export default function PurchaseOrdersPage() {
                                             handleExport(row.id);
                                         }}
                                         title="Export"
-                                        className="flex items-center gap-2 p-3 rounded-lg 
-                                            bg-gradient-to-r from-blue-500 to-indigo-600 
-                                            text-white font-medium shadow-md hover:shadow-lg 
-                                            hover:from-blue-600 hover:to-indigo-700 
-                                            transition-all duration-200"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md 
+                                        bg-gradient-to-r from-blue-500 to-indigo-600 
+                                        text-white text-xs font-medium shadow-md hover:shadow-lg 
+                                        hover:from-blue-600 hover:to-indigo-700 
+                                        transition-all duration-200"
                                     >
-                                        <Download className="w-4 h-4" />
+                                        <Download className="w-3.5 h-3.5" />
+                                        <span>Export</span>
                                     </button>
                                 </>
                             )}

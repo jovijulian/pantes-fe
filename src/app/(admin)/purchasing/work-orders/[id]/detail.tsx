@@ -375,11 +375,10 @@ export default function WorkOrderDetailPage() {
                                     type="button"
                                     disabled={isDownloadLoading}
                                     onClick={handleExport}
-                                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg 
-                                bg-gradient-to-r from-blue-500 to-indigo-600 
-                                text-white font-medium shadow-md hover:shadow-lg 
-                                hover:from-blue-600 hover:to-indigo-700 
-                                transition-all duration-200"
+                                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
+                                        bg-blue-600 text-white text-sm font-medium shadow-sm 
+                                        hover:bg-blue-700 disabled:opacity-50
+                                        transition-all duration-200"
                                 >
                                     <Download className="w-4 h-4" />
                                     <span>Export Surat Jalan</span>
@@ -390,11 +389,10 @@ export default function WorkOrderDetailPage() {
                                     type="button"
                                     disabled={isDownloadLoading}
                                     onClick={handleExportReceiptItem}
-                                    className="flex items-center gap-2  px-5 py-2.5 rounded-lg 
-                                bg-gradient-to-r from-purple-500 to-violet-600 
-                                text-white font-medium shadow-md hover:shadow-lg 
-                                hover:from-purple-600 hover:to-violet-700 
-                                transition-all duration-200"
+                                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
+                                        bg-indigo-600 text-white text-sm font-medium shadow-sm 
+                                        hover:bg-indigo-700 disabled:opacity-50
+                                        transition-all duration-200"
                                 >
                                     <Download className="w-4 h-4" />
                                     <span>Export Barang Diterima</span>
