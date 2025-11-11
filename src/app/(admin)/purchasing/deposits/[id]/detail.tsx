@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import moment from "moment";
 import 'moment/locale/id';
-import {  httpGet, httpPut, httpPost, httpDelete, alertToast, endpointUrl } from "@/../helpers"; 
+import { httpGet, httpPut, httpPost, httpDelete, alertToast, endpointUrl } from "@/../helpers";
 import ComponentCard from "@/components/common/ComponentCard";
 import {
     Loader2, User, Building, Calendar, Info, Check, X,
@@ -13,8 +13,8 @@ import {
 } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
 import ChangeStatusDepositModal from "@/components/modal/ChangeStatusDepositModal";
-import SelectItemSetorModal from "@/components/modal/SelectItemSetorModal"; 
-import DeleteConfirmationModal from "@/components/modal/deactive/DeleteItemDepositConfirmationModal"; 
+import SelectItemSetorModal from "@/components/modal/SelectItemSetorModal";
+import DeleteConfirmationModal from "@/components/modal/deactive/DeleteItemDepositConfirmationModal";
 interface IUserSimple {
     id: number;
     name: string;
@@ -31,7 +31,7 @@ interface IEmployee {
 }
 
 interface IDepositDetail {
-    id: number; 
+    id: number;
     work_order_item_id: string;
     item_id: string;
     code_item: string;
@@ -40,7 +40,7 @@ interface IDepositDetail {
     xray: string;
     weight: string;
     kadar: string;
-    jenis_barang: string;
+    item: { name_item: string }
 }
 
 interface IDepositData {
@@ -66,14 +66,14 @@ export default function DepositDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
     const params = useParams();
-    const id = Number(params.id); 
+    const id = Number(params.id);
     moment.locale('id');
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    
+
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedItem, setSelectedItem] = useState<IDepositDetail | null>(null); 
+    const [selectedItem, setSelectedItem] = useState<IDepositDetail | null>(null);
     const [modalAction, setModalAction] = useState<ModalAction>(null);
     const formatGram = (value: string | number | null): string => {
         const num = Number(value || 0);
@@ -89,12 +89,12 @@ export default function DepositDetailPage() {
     };
     const formatDate = (dateStr: string | null): string => {
         if (!dateStr) return "-";
-        return moment(dateStr).format('DD MMMM YYYY, HH:mm'); 
+        return moment(dateStr).format('DD MMMM YYYY, HH:mm');
     };
 
     const getStatusBadge = (status: string | null) => {
-        if (status === null) status = "1"; 
-        
+        if (status === null) status = "1";
+
         let color: "success" | "warning" | "info";
         let label = "Unknown";
         switch (status) {
@@ -119,7 +119,7 @@ export default function DepositDetailPage() {
         } catch (error: any) {
             if (error.response?.status === 404 || error.response?.status === 403) {
                 toast.error("Data Setor tidak ditemukan.");
-                router.push('/purchasing/deposits'); 
+                router.push('/purchasing/deposits');
             } else {
                 toast.error("Gagal mengambil detail Setor.");
                 alertToast(error);
@@ -155,7 +155,7 @@ export default function DepositDetailPage() {
             case 'Lunas': newStatus = "4"; break;
             default: setIsSubmitting(false); return;
         }
-        
+
         const payload = { status: newStatus };
 
         try {
@@ -170,10 +170,10 @@ export default function DepositDetailPage() {
         }
     };
 
-    const handleConfirmAddItem = async (selectedItems: any[]) => { 
+    const handleConfirmAddItem = async (selectedItems: any[]) => {
         if (!data) return;
         setIsSubmitting(true);
-        
+
         const payload = {
             items: selectedItems.map(item => ({
                 work_order_item_id: item.work_order_item_id,
@@ -186,7 +186,7 @@ export default function DepositDetailPage() {
             await httpPost(endpointUrl(`deposit/${data.id}/add-item`), payload, true);
             toast.success("Barang berhasil ditambahkan!");
             setIsAddItemModalOpen(false);
-            getDetail(); 
+            getDetail();
         } catch (error: any) {
             alertToast(error);
         } finally {
@@ -201,7 +201,7 @@ export default function DepositDetailPage() {
 
     const handleConfirmDelete = async () => {
         if (!selectedItem || !data) return;
-        
+
         setIsSubmitting(true);
         const payload = {
             deposit_detail_id: selectedItem.id
@@ -211,7 +211,7 @@ export default function DepositDetailPage() {
             toast.success("Barang berhasil dihapus.");
             setIsDeleteModalOpen(false);
             setSelectedItem(null);
-            getDetail(); 
+            getDetail();
         } catch (error: any) {
             alertToast(error);
         } finally {
@@ -233,8 +233,8 @@ export default function DepositDetailPage() {
             </button>
         </div>
     );
-    
-    const currentStatus = data.status || "1"; 
+
+    const currentStatus = data.status || "1";
 
     return (
         <>
@@ -264,7 +264,7 @@ export default function DepositDetailPage() {
                                     <button
                                         type="button"
                                         onClick={() => setIsAddItemModalOpen(true)}
-                                        disabled={!data.supplier_id} 
+                                        disabled={!data.supplier_id}
                                         className="px-4 py-2 bg-purple-600 text-white rounded-md flex items-center gap-2 text-sm font-medium hover:bg-purple-700 disabled:opacity-50"
                                     >
                                         <PackagePlus className="w-4 h-4" />
@@ -289,7 +289,7 @@ export default function DepositDetailPage() {
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Kadar (%)</th>
                                         </tr>
                                     </thead>
-                                    
+
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {data.details.length === 0 && (
                                             <tr><td colSpan={8} className="text-center p-3 italic text-gray-500">Belum ada barang yang ditambahkan.</td></tr>
@@ -299,7 +299,7 @@ export default function DepositDetailPage() {
                                                 {currentStatus !== "4" && (
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm">
                                                         <div className="flex items-center gap-1">
-                                                            <button 
+                                                            <button
                                                                 onClick={() => handleOpenDeleteModal(item)}
                                                                 className="p-1 text-red-600 hover:bg-red-100 rounded" title="Hapus">
                                                                 <Trash2 className="w-4 h-4" />
@@ -307,7 +307,7 @@ export default function DepositDetailPage() {
                                                         </div>
                                                     </td>
                                                 )}
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{item.jenis_barang}</td> 
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{item.item.name_item}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm">{item.code_item}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatNumber(item.scope)}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatNumber(item.sg)}</td>
@@ -317,7 +317,7 @@ export default function DepositDetailPage() {
                                             </tr>
                                         ))}
                                     </tbody>
-                                    
+
                                     <tfoot className="bg-gray-100 border-t-2 border-gray-300">
                                         <tr>
                                             <td colSpan={currentStatus !== "4" ? 6 : 5} className="px-4 py-3 text-left text-sm font-bold uppercase">Total</td>
@@ -367,7 +367,7 @@ export default function DepositDetailPage() {
                         </button>
                     )}
                     {currentStatus === "3" && (
-                         <button
+                        <button
                             className="px-5 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"
                             onClick={() => handleOpenStatusModal('Lunas')}
                         >
@@ -386,11 +386,11 @@ export default function DepositDetailPage() {
                     actionType={modalAction}
                     isSubmitting={isSubmitting}
                     onConfirm={handleConfirmStatusChange}
-                    paymentDate="" 
-                    setPaymentDate={() => {}} 
+                    paymentDate=""
+                    setPaymentDate={() => { }}
                 />
             )}
-            
+
             {data && currentStatus !== "4" && (
                 <SelectItemSetorModal
                     isOpen={isAddItemModalOpen}
@@ -400,7 +400,7 @@ export default function DepositDetailPage() {
                     existingItemIds={data.details.map(item => Number(item.work_order_item_id))}
                 />
             )}
-            
+
             {data && selectedItem && (
                 <DeleteConfirmationModal
                     isOpen={isDeleteModalOpen}

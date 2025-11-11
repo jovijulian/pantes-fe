@@ -302,7 +302,7 @@ export default function PurchaseOrderDetailPage() {
                                         {data.payment_types.map((payment) => (
                                             <tr key={payment.id}>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.payment_type}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.bank_id ? `${payment.bank?.account_name}` : "-"}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.bank_id ? `${payment.name}` : "-"}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.bank_id ? `${payment.bank?.bank_name}` : "-"}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(payment.nominal)}</td>
                                             </tr>

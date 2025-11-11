@@ -29,7 +29,7 @@ interface BankOption {
 interface FormPaymentType {
     id: string;
     payment_type: string;
-    bank_id: number | null;
+    supplier_bank_id: number | null;
     nominal: number;
 }
 
@@ -48,7 +48,7 @@ interface SelectOption { value: string; label: string; }
 
 interface PaymentPayload {
     payment_type: string;
-    bank_id: number | null;
+    supplier_bank_id: number | null;
     nominal: number;
 }
 
@@ -77,8 +77,8 @@ export default function CreatePurchaseOrderPage() {
 
     const [staffOptions, setStaffOptions] = useState<SelectOption[]>([]);
     const [supplierOptions, setSupplierOptions] = useState<SelectOption[]>([]);
-    const [bankOptions, setBankOptions] = useState<BankOption[]>([]); 
-    
+    const [bankOptions, setBankOptions] = useState<BankOption[]>([]);
+    const [isBankLoading, setIsBankLoading] = useState(false);
     const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
 
     const [formData, setFormData] = useState<FormState>({
@@ -95,23 +95,13 @@ export default function CreatePurchaseOrderPage() {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [staffRes, supplierRes, bankRes] = await Promise.all([
+                const [staffRes, supplierRes] = await Promise.all([
                     httpGet(endpointUrl("master/staff/dropdown"), true),
                     httpGet(endpointUrl("master/supplier/dropdown"), true),
-                    httpGet(endpointUrl("master/bank/dropdown"), true),
                 ]);
 
                 setStaffOptions(staffRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
                 setSupplierOptions(supplierRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
-                
-                const formattedBankOptions: BankOption[] = bankRes.data.data.map((b: any) => ({
-                    value: b.id.toString(),
-                    label: `${b.bank_name} - ${b.account_number} (${b.account_name})`,
-                    bank_name: b.bank_name,
-                    account_name: b.account_name,
-                    account_number: b.account_number,
-                }));
-                setBankOptions(formattedBankOptions);
 
             } catch (error) {
                 toast.error("Gagal memuat data master untuk form.");
@@ -121,6 +111,41 @@ export default function CreatePurchaseOrderPage() {
         };
         fetchInitialData();
     }, []);
+
+    useEffect(() => {
+        const fetchSupplierBanks = async (supplierId: number) => {
+            setIsBankLoading(true);
+            try {
+                const res = await httpGet(endpointUrl(`master/supplier/${supplierId}/bank/dropdown`), true);
+                console.log(res.data.data)
+                const formattedBankOptions: BankOption[] = res.data.data.map((b: any) => ({
+                    value: b.id.toString(), 
+                    label: `${b.bank_name} - ${b.account_number} (${b.account_name})`,
+                    bank_name: b.bank_name,
+                    account_name: b.account_name,
+                    account_number: b.account_number,
+                }));
+                setBankOptions(formattedBankOptions);
+                
+            } catch (error) {
+                toast.error("Gagal memuat data bank untuk supplier ini.");
+                setBankOptions([]);
+            } finally {
+                setIsBankLoading(false);
+            }
+        };
+
+        if (formData.supplier_id) {
+            fetchSupplierBanks(formData.supplier_id);
+            setFormData(prev => ({ ...prev, payment_type: [] }));
+            if (formData.payment_type.length > 0) {
+                 toast.info("Supplier diubah, harap pilih ulang bank pembayaran.");
+            }
+        } else {
+            setBankOptions([]);
+            setFormData(prev => ({ ...prev, payment_type: [] }));
+        }
+    }, [formData.supplier_id]);
 
     useEffect(() => {
         const weight = parseFloat(formData.weight) || 0;
@@ -147,10 +172,9 @@ export default function CreatePurchaseOrderPage() {
 
         (payment[field] as any) = value;
 
-        if (field === 'payment_type' && (value !== 'BANK TRANSFER' || value !== 'SETOR TUNAI')) {
-            payment.bank_id = null;
+        if (field === 'payment_type' && (value !== 'BANK TRANSFER' && value !== 'SETOR TUNAI')) {
+            payment.supplier_bank_id = null; 
         }
-
 
         setFormData(prev => ({ ...prev, payment_type: newPayments }));
     };
@@ -164,7 +188,7 @@ export default function CreatePurchaseOrderPage() {
                 {
                     id: `payment-${Date.now()}`,
                     payment_type: "BANK TRANSFER",
-                    bank_id: null,
+                    supplier_bank_id: null, 
                     nominal: newNominal,
                 }
             ]
@@ -201,7 +225,7 @@ export default function CreatePurchaseOrderPage() {
                 toast.error("Nominal di setiap baris pembayaran harus lebih besar dari 0.");
                 return false;
             }
-            if ((p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") && !p.bank_id) {
+            if ((p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") && !p.supplier_bank_id) {
                 toast.error("Untuk Bank Transfer / Setor Tunai, harap pilih Bank.");
                 return false;
             }
@@ -222,7 +246,7 @@ export default function CreatePurchaseOrderPage() {
 
         const paymentPayload: PaymentPayload[] = formData.payment_type.map(p => ({
             payment_type: p.payment_type,
-            bank_id: (p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") ? Number(p.bank_id) : null,
+            supplier_bank_id: (p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") ? Number(p.supplier_bank_id) : null,
             nominal: p.nominal 
         }));
 
@@ -326,15 +350,15 @@ export default function CreatePurchaseOrderPage() {
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bank</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bank Supplier</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                    {formData.payment_type.map((payment, index) => {
-                                        const selectedBank = payment.bank_id 
-                                            ? bankOptions.find(b => b.value === payment.bank_id?.toString()) 
+                                {formData.payment_type.map((payment, index) => {
+                                        const selectedBank = payment.supplier_bank_id 
+                                            ? bankOptions.find(b => b.value === payment.supplier_bank_id?.toString()) 
                                             : null;
 
                                         return (
@@ -350,10 +374,13 @@ export default function CreatePurchaseOrderPage() {
                                                 {(payment.payment_type === "BANK TRANSFER" || payment.payment_type === "SETOR TUNAI") && (
                                                         <Select
                                                             options={bankOptions} 
-                                                            value={_.find(bankOptions, { value: payment.bank_id?.toString() })}
-                                                            onValueChange={(opt) => handlePaymentChange(index, 'bank_id', opt ? parseInt(opt.value) : null)}
-                                                            placeholder="Pilih bank..."
-                                                            disabled={loadingOptions}
+                                                            value={_.find(bankOptions, { value: payment.supplier_bank_id?.toString() })}
+                                                            onValueChange={(opt) => handlePaymentChange(index, 'supplier_bank_id', opt ? parseInt(opt.value) : null)}
+                                                            placeholder={
+                                                                !formData.supplier_id ? "Pilih supplier dulu..." : 
+                                                                isBankLoading ? "Memuat bank..." : "Pilih bank supplier..."
+                                                            }
+                                                            disabled={loadingOptions || isBankLoading || !formData.supplier_id}
                                                         />
                                                     )}
                                                 </td>

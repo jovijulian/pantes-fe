@@ -12,12 +12,14 @@ import { useRouter } from 'next/navigation';
 import { toast } from "react-toastify";
 import DeactiveModal from "@/components/modal/deactive/DeactivePurchasing";
 import EditModal from "@/components/modal/edit/EditSupplierModal";
-import { FaEdit, FaPlus, FaTrash } from "react-icons/fa";
+import { FaEdit, FaPlus, FaTrash, FaUniversity } from "react-icons/fa";
 import DateRangePicker from "@/components/common/DateRangePicker";
+import ManageSupplierBanksModal from "@/components/modal/ManageSupplierBanksModal";
 
 interface TableDataItem {
     id: number;
-    name_item: string;
+    name: string;
+    code: string;
     created_at: string;
 }
 
@@ -40,7 +42,7 @@ export default function SupplierPage() {
     const [columns, setColumns] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedData, setSelectedData] = useState<any>(null);
-
+    const [isBankModalOpen, setIsBankModalOpen] = useState(false);
     useEffect(() => {
         getData();
     }, [searchParams, currentPage, perPage, page, searchTerm]);
@@ -86,6 +88,16 @@ export default function SupplierPage() {
                                 className="p-2 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
                             >
                                 <FaTrash className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setSelectedData(row);
+                                    setIsBankModalOpen(true);
+                                }}
+                                title="Kelola Bank"
+                                className="p-2 rounded-md bg-green-100 text-green-700 hover:bg-green-200"
+                            >
+                                <FaUniversity className="w-4 h-4" />
                             </button>
                         </div>
                     );
@@ -224,6 +236,14 @@ export default function SupplierPage() {
                 selectedId={selectedData?.id}
                 onClose={() => setIsEditOpen(false)}
                 onSuccess={getData}
+            />
+            <ManageSupplierBanksModal
+                isOpen={isBankModalOpen}
+                onClose={() => {
+                    setIsBankModalOpen(false);
+                    setSelectedData(null);
+                }}
+                supplierData={selectedData} 
             />
         </div>
     );

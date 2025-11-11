@@ -11,22 +11,20 @@ import { toast } from "react-toastify";
 
 interface CreateData {
     bank_name: string;
-    account_name: string;
-    account_number: string;
+    alias: string;
 }
 
 export default function CreateForm() {
     const router = useRouter();
     const [formData, setFormData] = useState<CreateData>({
         bank_name: "",
-        account_name: "",
-        account_number: "",
+        alias: "",
     });
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.bank_name || !formData.account_name || !formData.account_number) {
+        if (!formData.bank_name || !formData.alias) {
             toast.error("Please fill all required fields");
             return;
         }
@@ -34,8 +32,7 @@ export default function CreateForm() {
             setLoading(true);
             const data: CreateData = {
                 bank_name: formData.bank_name,
-                account_name: formData.account_name,
-                account_number: formData.account_number,
+                alias: formData.alias,
             }
 
             await httpPost(
@@ -68,23 +65,12 @@ export default function CreateForm() {
                 </div>
                 <div>
                     <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Nama Rekening<span className="text-red-400 ml-1">*</span>
+                        Singkatan<span className="text-red-400 ml-1">*</span>
                     </label>
                     <Input
                         type="text"
-                        defaultValue={formData.account_name}
-                        onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Nomor Rekening<span className="text-red-400 ml-1">*</span>
-                    </label>
-                    <Input
-                        type="text"
-                        defaultValue={formData.account_number}
-                        onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+                        defaultValue={formData.alias}
+                        onChange={(e) => setFormData({ ...formData, alias: e.target.value })}
                         required
                     />
                 </div>

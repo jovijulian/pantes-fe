@@ -14,8 +14,7 @@ import { useModal } from "@/hooks/useModal";
 interface BankData {
     id: number;
     bank_name: string;
-    account_name: string;
-    account_number: string;
+    alias: string;
 }
 interface EditProps {
     isOpen: boolean;
@@ -33,8 +32,7 @@ const EditBankModal: React.FC<EditProps> = ({
     const [formData, setFormData] = useState<BankData>({
         id: 0,
         bank_name: "",
-        account_name: "",
-        account_number: "",
+        alias: "",
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -53,8 +51,7 @@ const EditBankModal: React.FC<EditProps> = ({
                 setFormData({
                     id: data.id,
                     bank_name: data.bank_name,
-                    account_name: data.account_name,
-                    account_number: data.account_number,
+                    alias: data.alias,
                 });
 
             } catch (err: any) {
@@ -76,8 +73,7 @@ const EditBankModal: React.FC<EditProps> = ({
 
         const payload = {
             bank_name: formData.bank_name,
-            account_name: formData.account_name,
-            account_number: formData.account_number,
+            alias: formData.alias,
         };
 
 
@@ -87,8 +83,7 @@ const EditBankModal: React.FC<EditProps> = ({
             setFormData({
                 id: 0,
                 bank_name: "",
-                account_name: "",
-                account_number: "",
+                alias: "",
             });
             onClose();
             onSuccess?.();
@@ -105,8 +100,7 @@ const EditBankModal: React.FC<EditProps> = ({
         setFormData({
             id: 0,
             bank_name: "",
-            account_name: "",
-            account_number: "",
+            alias: "",
         });
     };
 
@@ -145,29 +139,13 @@ const EditBankModal: React.FC<EditProps> = ({
                     </div>
                     <div className="space-y-5 px-2 pb-3">
                         <div>
-                            <Label htmlFor="name">Nama Rekening</Label>
+                            <Label htmlFor="name">Singkatan</Label>
                             <Input
                                 type="text"
-                                id="account_name"
-                                name="account_name"
-                                defaultValue={formData.account_name}
-                                onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
-                                required
-                            />
-                        </div>
-                        {error && (
-                            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-                        )}
-                    </div>
-                    <div className="space-y-5 px-2 pb-3">
-                        <div>
-                            <Label htmlFor="name">Nomor Rekening</Label>
-                            <Input
-                                type="text"
-                                id="account_number"
-                                name="account_number"
-                                defaultValue={formData.account_number}
-                                onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+                                id="alias"
+                                name="alias"
+                                defaultValue={formData.alias}
+                                onChange={(e) => setFormData({ ...formData, alias: e.target.value })}
                                 required
                             />
                         </div>
