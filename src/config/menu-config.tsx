@@ -29,6 +29,7 @@ import {
   Gem,
   Coins,
   Diamond,
+  PackageSearch,
 } from 'lucide-react';
 
 export type NavItem = {
@@ -119,6 +120,12 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Setor Barang',
       icon: <Archive />, 
       path: '/purchasing/deposits',
+      roles: [1, 3, 5],
+    },
+    {
+      name: 'Laporan Stok Global',
+      icon: <PackageSearch />, 
+      path: '/purchasing/stock-global',
       roles: [1, 3, 5],
     },
     {
