@@ -45,7 +45,7 @@ const SelectPOModal: React.FC<SelectPOModalProps> = ({
         
         setIsLoading(true);
         try {
-            const res = await httpGet(endpointUrl(`/work-order/order-by-supplier/${supplierId}`), true, {
+            const res = await httpGet(endpointUrl(`/work-order/order-by-supplier/${supplierId}?type=2`), true, {
                 search: searchTerm,
             });
             

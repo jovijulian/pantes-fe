@@ -5,7 +5,7 @@ import EditPage from "./edit"
 import React from "react";
 
 export const metadata: Metadata = {
-    title: "Edit Purchase Order | Pantes Gold App",
+    title: "Edit Purchase Order LM | Pantes Gold App",
 };
 
 export default function FormElements() {

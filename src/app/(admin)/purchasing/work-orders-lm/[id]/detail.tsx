@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, Fragment, useMemo } from "react"; // <-- TAMBAHKAN useMemo
+import React, { useEffect, useState, useCallback, Fragment, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import moment from "moment";
@@ -149,7 +149,7 @@ export default function WorkOrderDetailPage() {
         } catch (error: any) {
             if (error.response?.status === 404 || error.response?.status === 403) {
                 toast.error("Surat Jalan tidak ditemukan.");
-                router.push('/purchasing/work-orders');
+                router.push('/purchasing/work-orders-lm');
             } else {
                 toast.error("Gagal mengambil detail Surat Jalan.");
                 alertToast(error);
@@ -353,7 +353,7 @@ export default function WorkOrderDetailPage() {
     if (!data) return (
         <div className="text-center mt-10 p-4">
             <p className="text-red-600">Gagal memuat data atau Surat Jalan tidak ditemukan.</p>
-            <button onClick={() => router.push('/purchasing/work-orders')} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            <button onClick={() => router.push('/purchasing/work-orders-lm')} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
                 Kembali ke Daftar
             </button>
         </div>
@@ -361,7 +361,7 @@ export default function WorkOrderDetailPage() {
 
     return (
         <>
-            <ComponentCard title="Detail Surat Jalan">
+            <ComponentCard title="Detail Surat Jalan LM">
                 <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6 pb-4 border-b">
                     <div>
                         <span className="text-sm text-gray-500">Surat Jalan</span>

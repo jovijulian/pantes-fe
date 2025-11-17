@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, Fragment, useCallback } from 'react'; // <-- TAMBAHKAN useCallback
+import React, { useState, useEffect, useMemo, Fragment, useCallback } from 'react'; 
 import { Dialog, Transition } from '@headlessui/react';
 import { toast } from 'react-toastify';
 import { alertToast, endpointUrl, endpointUrlv2, httpGet, httpPost } from '@/../helpers';
 import Input from '@/components/form/input/InputField';
 import Select from '@/components/form/Select-custom';
-import { Loader2, Plus, Save, Trash2, X, AlertTriangle, CheckCircle, DollarSign, Scale } from 'lucide-react'; // <-- TAMBAHKAN DollarSign
+import { Loader2, Plus, Save, Trash2, X, AlertTriangle, CheckCircle, DollarSign, Scale } from 'lucide-react';
 import _ from "lodash";
 
 interface SelectOption { value: string; label: string; }
@@ -151,7 +151,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
             const fetchOrder = async () => {
                 setLoadingOptions(true);
                 try {
-                    const res = await httpGet(endpointUrl(`work-order/${workOrderId}/get-order` ), true);
+                    const res = await httpGet(endpointUrl(`work-order/${workOrderId}/get-order?type=2` ), true);
                     setItemPOOptions(res.data.data.map((i: any) => ({
                         value: i.id.toString(),
                         label: `${i.no_order}`,

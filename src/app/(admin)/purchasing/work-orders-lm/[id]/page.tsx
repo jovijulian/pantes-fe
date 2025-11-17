@@ -1,20 +1,20 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 
 import { Metadata } from "next";
-import EditPage from "./edit"
+import DetailPage from "./detail"
 import React from "react";
 
 export const metadata: Metadata = {
-    title: "Edit Purchase Order | Pantes Gold App",
+    title: "Detail Work Order LM | Pantes Gold App",
 };
 
 export default function FormElements() {
     return (
         <div>
-            <PageBreadcrumb pageTitle="Halaman Edit" />
+            <PageBreadcrumb pageTitle="Halaman Detail" />
             <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-6">
-                    <EditPage />
+                    <DetailPage />
                 </div>
             </div>
         </div>
