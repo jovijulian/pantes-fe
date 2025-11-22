@@ -34,7 +34,7 @@ const DeactivePurchasingModal: React.FC<DeactiveModalProps> = ({
         try {
             setDeleteLoading(true);
             const response = await httpDelete(
-                endpointUrl(url),
+                endpointUrlv2(url),
                 true,
             );
             toast.success(response?.data?.message || "Deleted successfully!");

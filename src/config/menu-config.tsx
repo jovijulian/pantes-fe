@@ -30,7 +30,9 @@ import {
   Coins,
   Diamond,
   PackageSearch,
+  HeartHandshake,
 } from 'lucide-react';
+import { TbUserDollar } from 'react-icons/tb';
 
 export type NavItem = {
   name: string;
@@ -65,6 +67,12 @@ export const menuConfig: Record<string, NavItem[]> = {
       icon: <ShieldUser />,
       path: '/sales-accounts',
       roles: [1, 4],
+    },
+    {
+      name: 'Kategori Pelanggan',
+      icon: <HeartHandshake />,
+      path: '/customer-categories',
+      roles: [1],
     },
     {
       name: 'Manajemen Data Master',
@@ -149,6 +157,24 @@ export const menuConfig: Record<string, NavItem[]> = {
     },
   ],
   menu_admin: [
+    {
+      name: 'Admin Sales & Purchasing',
+      icon: <ShieldUser />,
+      path: '/admin-panel',
+      roles: [1],
+    },
+    {
+      name: 'Area Manager',
+      icon: <ShieldUser />,
+      path: '/admin-panel/area-manager',
+      roles: [1],
+    },
+    {
+      name: 'General Manager',
+      icon: <ShieldUser />,
+      path: '/admin-panel/general-manager',
+      roles: [1],
+    },
     {
       name: 'Menu',
       icon: <Home />,
