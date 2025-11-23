@@ -5,16 +5,17 @@ import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import ComponentCard from "@/components/common/ComponentCard";
 import Input from "@/components/form/input/InputField";
-import { endpointUrl, httpGet, httpPost, httpPut } from "@/../helpers";
+import { endpointUrl, endpointUrlv2, httpGet, httpPost, httpPut } from "@/../helpers";
 import moment from "moment";
 import SingleDatePicker from "@/components/common/SingleDatePicker";
-
+import Select from "@/components/form/Select-custom";
+import _ from "lodash";
+interface SelectOption { value: string; label: string; }
 export default function EditCustomerForm() {
     const router = useRouter();
     const params = useParams();
     const id = params.id;
-
-    // State untuk setiap field form
+    const [loadingOptions, setLoadingOptions] = useState(true);
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const [address, setAddress] = useState("");
@@ -23,31 +24,36 @@ export default function EditCustomerForm() {
     const [detailInformation, setDetailInformation] = useState("");
     const [viewingMonthDateBirth, setViewingMonthDateBirth] = useState(new Date());
     const [viewingMonthDateAnniv, setViewingMonthDateAnniv] = useState(new Date());
-    // State loading: satu untuk fetch data awal, satu untuk proses submit
+    const [selectedCategory, setSelectedCategory] = useState<SelectOption | null>(null);
     const [initialLoading, setInitialLoading] = useState(true);
     const [loading, setLoading] = useState(false);
-
+    const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
     // --- Efek untuk mengambil data customer saat halaman dimuat ---
     useEffect(() => {
         if (!id) return;
 
         const getCustomerData = async () => {
             try {
-                const response = await httpGet(endpointUrl(`/customer/${id}`), true);
+                const response = await httpGet(endpointUrlv2(`/customer/${id}`), true);
                 const customer = response.data.data;
-
-                // Isi state dengan data yang ada
                 setName(customer.name || "");
                 setPhone(customer.phone || "");
                 setAddress(customer.address || "");
-                // Pastikan format tanggal YYYY-MM-DD untuk input type="date"
                 setDateOfBirth(customer.date_of_birth ? customer.date_of_birth.split('T')[0] : "");
                 setDateAnniv(customer.date_anniv ? customer.date_anniv.split('T')[0] : "");
                 setDetailInformation(customer.detail_information || "");
-
+                if (customer.categories && Array.isArray(customer.categories) && customer.categories.length > 0) {
+                    const firstCategory = customer.categories[0];
+                    setSelectedCategory({
+                        value: firstCategory.id.toString(),
+                        label: firstCategory.name
+                    });
+                } else {
+                    setSelectedCategory(null);
+                }
             } catch (error) {
                 toast.error("Gagal mengambil data pelanggan.");
-                router.push("/customers"); // Kembali jika data tidak ditemukan
+                router.push("/customers");
             } finally {
                 setInitialLoading(false);
             }
@@ -56,6 +62,24 @@ export default function EditCustomerForm() {
         getCustomerData();
     }, [id, router]);
 
+    const fetchInitialData = async () => {
+        try {
+            const [categoryRes] = await Promise.all([
+                httpGet(endpointUrlv2("master/customer-category/dropdown"), true),
+            ]);
+            setCategoryOptions(categoryRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
+
+        } catch (error) {
+            toast.error("Gagal memuat data master untuk form.");
+        } finally {
+            setLoadingOptions(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchInitialData();
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -63,7 +87,6 @@ export default function EditCustomerForm() {
             toast.error("Silakan isi nama dan nomor telepon pelanggan.");
             return;
         }
-
         const payload = {
             name,
             phone,
@@ -71,11 +94,12 @@ export default function EditCustomerForm() {
             date_of_birth: dateOfBirth ? moment(dateOfBirth).format("YYYY-MM-DD") : null,
             date_anniv: dateAnniv ? moment(dateAnniv).format("YYYY-MM-DD") : null,
             detail_information: detailInformation,
+            category_id: selectedCategory ? Number(selectedCategory.value) : null,
         };
 
         try {
             setLoading(true);
-            await httpPost(endpointUrl(`/customer/${id}/update`), payload, true);
+            await httpPost(endpointUrlv2(`/customer/${id}/update`), payload, true);
             toast.success("Pelanggan berhasil diperbarui!");
             router.push("/customers");
         } catch (error: any) {
@@ -108,6 +132,18 @@ export default function EditCustomerForm() {
                     <div>
                         <label className="block font-medium mb-1">Tanggal Anniversary</label>
                         <SingleDatePicker placeholderText="Select anniversary date" selectedDate={dateAnniv ? new Date(dateAnniv) : null} onChange={(date: any) => setDateAnniv(date)} onClearFilter={() => setDateAnniv("")} viewingMonthDate={viewingMonthDateAnniv} onMonthChange={setViewingMonthDateAnniv} />
+                    </div>
+                    <div>
+                        <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
+                            Kategori Pelanggan
+                        </label>
+                        <Select
+                            options={categoryOptions}
+                            value={selectedCategory}
+                            onValueChange={(opt) => setSelectedCategory(opt as SelectOption)}
+                            placeholder="Pilih kategori..."
+                            disabled={loadingOptions}
+                        />
                     </div>
                 </div>
                 <div>

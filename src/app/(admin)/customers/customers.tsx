@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Badge from "@/components/ui/badge/Badge";
-import { alertToast, endpointUrl, httpDelete, httpGet, httpPost } from "@/../helpers";
+import { alertToast, endpointUrl, endpointUrlv2, httpDelete, httpGet, httpPost } from "@/../helpers";
 import { useSearchParams } from "next/navigation";
 import moment from "moment";
 import { useRouter } from 'next/navigation';
@@ -61,7 +61,7 @@ export default function CustomerPage() {
     useEffect(() => {
         const fetchFilterData = async () => {
             try {
-                const response = await httpGet(endpointUrl('/data-filter'), true);
+                const response = await httpGet(endpointUrlv2('/data-filter'), true);
                 setFilterOptions(response.data.data);
             } catch (error) {
                 toast.error("Failed to load filter options.");

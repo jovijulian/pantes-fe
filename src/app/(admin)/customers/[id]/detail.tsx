@@ -3,11 +3,18 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import ComponentCard from "@/components/common/ComponentCard";
-import { endpointUrl, httpGet } from "../../../../../helpers";
-import { FaUserCircle, FaPhoneAlt, FaMapMarkerAlt, FaInfoCircle, FaBirthdayCake, FaGift, FaCheckCircle, FaTimesCircle, FaHistory } from "react-icons/fa";
+import { endpointUrl, endpointUrlv2, httpGet } from "../../../../../helpers";
+import { FaUserCircle, FaPhoneAlt, FaMapMarkerAlt, FaInfoCircle, FaBirthdayCake, FaGift, FaCheckCircle, FaTimesCircle, FaHistory, FaTags } from "react-icons/fa";
 import Table from "@/components/tables/Table";
 import moment from "moment";
 import toast from "react-hot-toast";
+
+interface Category {
+    id: number;
+    name: string;
+    note: string | null;
+    status: string;
+}
 
 interface CustomerData {
     id: number;
@@ -21,6 +28,7 @@ interface CustomerData {
     status: string;
     created_at: string;
     updated_at: string;
+    categories: Category[];
 }
 
 const formatDate = (dateString: string | null) => {
@@ -65,7 +73,7 @@ export default function CustomerDetailPage() {
         if (id) {
             const getDetail = async (customerId: number) => {
                 try {
-                    const response = await httpGet(endpointUrl(`/customer/${customerId}`), true);
+                    const response = await httpGet(endpointUrlv2(`/customer/${customerId}`), true);
                     setData(response.data.data);
                 } catch (error) {
                     console.error("Error fetching customer details:", error);
@@ -224,6 +232,26 @@ export default function CustomerDetailPage() {
                         <div className="flex items-start gap-3"><FaMapMarkerAlt className="w-4 h-4 mt-1 text-gray-400" /><div><span className="block text-xs text-gray-500">Alamat</span><p className="font-semibold">{data.address || 'N/A'}</p></div></div>
                         <div className="flex items-center gap-3"><FaBirthdayCake className="w-5 h-5 text-pink-500" /><div><span className="block text-xs text-gray-500">Tanggal Lahir</span><span className="font-semibold">{formatDate(data.date_of_birth)}</span></div></div>
                         <div className="flex items-center gap-3"><FaGift className="w-5 h-5 text-red-500" /><div><span className="block text-xs text-gray-500">Anniversary</span><span className="font-semibold">{formatDate(data.date_anniv)}</span></div></div>
+                        <div className="flex items-start gap-3 md:col-span-2">
+                            <FaTags className="w-4 h-4 mt-1 text-gray-400" />
+                            <div className="w-full">
+                                <span className="block text-xs text-gray-500 uppercase tracking-wide mb-1">Kategori</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {data.categories && data.categories.length > 0 ? (
+                                        data.categories.map((cat) => (
+                                            <span 
+                                                key={cat.id} 
+                                                className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
+                                            >
+                                                {cat.name}
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <span className="text-gray-400 italic text-sm">Tidak ada kategori</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                         <div className="flex items-start gap-3 md:col-span-2"><FaInfoCircle className="w-4 h-4 mt-1 text-gray-400" /><div><span className="block text-xs text-gray-500">Informasi Tambahan</span><p className="text-gray-600 dark:text-gray-400 italic">{data.detail_information || 'N/A'}</p></div></div>
                     </div>
                 </div>

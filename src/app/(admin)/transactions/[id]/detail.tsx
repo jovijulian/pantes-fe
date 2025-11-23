@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ComponentCard from "@/components/common/ComponentCard";
-import { endpointUrl, httpGet } from "../../../../../helpers";
+import { endpointUrl, endpointUrlv2, httpGet } from "../../../../../helpers";
 import {
     FaReceipt,
     FaUserCircle,
@@ -246,9 +246,9 @@ export default function TransactionDetailPage() {
             try {
                 let endpoint = '';
                 if (role === 1 || role === 4) {
-                    endpoint = endpointUrl(`/customer/history/${transactionId}`);
+                    endpoint = endpointUrlv2(`/customer/history/${transactionId}`);
                 } else if (role === 2) {
-                    endpoint = endpointUrl(`/sales/transaction/${transactionId}`);
+                    endpoint = endpointUrlv2(`/sales/transaction/${transactionId}`);
                 } else {
                     console.error("Unknown user role:", role);
                     return;

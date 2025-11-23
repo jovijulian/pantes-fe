@@ -33,6 +33,7 @@ import {
   HeartHandshake,
 } from 'lucide-react';
 import { TbUserDollar } from 'react-icons/tb';
+import { FaTags } from 'react-icons/fa';
 
 export type NavItem = {
   name: string;
@@ -70,7 +71,7 @@ export const menuConfig: Record<string, NavItem[]> = {
     },
     {
       name: 'Kategori Pelanggan',
-      icon: <HeartHandshake />,
+      icon: <FaTags />,
       path: '/customer-categories',
       roles: [1],
     },

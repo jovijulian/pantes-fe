@@ -1,27 +1,49 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import ComponentCard from "@/components/common/ComponentCard";
 import Input from "@/components/form/input/InputField";
-import { endpointUrl, httpPost } from "@/../helpers";
+import { endpointUrl, endpointUrlv2, httpGet, httpPost } from "@/../helpers";
 import SingleDatePicker from "@/components/common/SingleDatePicker";
 import moment from "moment";
-
+import Select from "@/components/form/Select-custom";
+import { set } from "lodash";
+import _ from "lodash";
+interface SelectOption { value: string; label: string; }
 export default function CreateCustomerForm() {
     const router = useRouter();
-
+    const [loadingOptions, setLoadingOptions] = useState(true);
     const [numberMember, setNumberMember] = useState("");
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const [address, setAddress] = useState("");
     const [dateOfBirth, setDateOfBirth] = useState("");
     const [dateAnniv, setDateAnniv] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState<SelectOption | null>(null);
     const [detailInformation, setDetailInformation] = useState("");
     const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
-
+    const [categoryOptions, setCategoryOptions] = useState<SelectOption[]>([]);
     const [loading, setLoading] = useState(false);
+
+    const fetchInitialData = async () => {
+        try {
+            const [categoryRes] = await Promise.all([
+                httpGet(endpointUrlv2("master/customer-category/dropdown"), true),
+            ]);
+            setCategoryOptions(categoryRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
+
+        } catch (error) {
+            toast.error("Gagal memuat data master untuk form.");
+        } finally {
+            setLoadingOptions(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchInitialData();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,11 +61,12 @@ export default function CreateCustomerForm() {
             date_of_birth: dateOfBirth ? moment(dateOfBirth).format("YYYY-MM-DD") : null,
             date_anniv: dateAnniv ? moment(dateAnniv).format("YYYY-MM-DD") : null,
             detail_information: detailInformation,
+            category_id: selectedCategory ? selectedCategory.value : null,
         };
 
         try {
             setLoading(true);
-            await httpPost(endpointUrl("/customer"), payload, true);
+            await httpPost(endpointUrlv2("/customer"), payload, true);
             toast.success("Pelanggan berhasil ditambahkan!");
             router.push("/customers");
         } catch (error: any) {
@@ -112,6 +135,18 @@ export default function CreateCustomerForm() {
                             Tanggal Anniversary
                         </label>
                         <SingleDatePicker placeholderText="Select anniversary date" selectedDate={dateAnniv ? new Date(dateAnniv) : null} onChange={(date: any) => setDateAnniv(date)} onClearFilter={() => setDateAnniv("")} viewingMonthDate={viewingMonthDate} onMonthChange={setViewingMonthDate} />
+                    </div>
+                    <div>
+                        <label className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
+                            Kategori Pelanggan
+                        </label>
+                        <Select
+                            options={categoryOptions}
+                            value={_.find(categoryOptions, { value: selectedCategory?.value }) || null}
+                            onValueChange={(opt) => setSelectedCategory(opt)}
+                            placeholder="Pilih kategori..."
+                            disabled={loadingOptions}
+                        />
                     </div>
                 </div>
 

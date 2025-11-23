@@ -5,7 +5,7 @@ import moment from "moment";
 
 import Input from "@/components/form/input/InputField";
 import SingleDatePicker from '@/components/common/SingleDatePicker';
-import { endpointUrl, httpGet, httpPost } from '../../../../../helpers';
+import { endpointUrl, endpointUrlv2, httpGet, httpPost } from '../../../../../helpers';
 import CreatableSelect from "@/components/form/CreatableSelect";
 import ConfirmationModal from "@/components/modal/ConfirmationModal";
 import toast from 'react-hot-toast';
@@ -49,6 +49,11 @@ interface TransactionData {
     items: TransactionItem[];
 }
 
+interface CategoryOption {
+    id: number;
+    name: string;
+}
+
 const generateKey = (str: string): string =>
     str.toLowerCase()
         .replace(/[^a-zA-Z0-9\s]/g, '')
@@ -82,17 +87,29 @@ export default function DynamicCreateTransactionPage() {
     const [foundCustomerId, setFoundCustomerId] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const [categories, setCategories] = useState<CategoryOption[]>([]);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<number>(1);
 
     useEffect(() => {
         fetchFormTemplate();
+        fetchCategories();
     }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const response = await httpGet(endpointUrlv2('master/customer-category/dropdown'), true);
+            setCategories(response.data.data);
+        } catch (error) {
+            console.error("Failed to fetch categories:", error);
+        }
+    };
 
     const fetchFormTemplate = async () => {
         try {
             setLoadingTemplate(true);
             setError(null);
 
-            const response = await httpGet(endpointUrl('form'), true);
+            const response = await httpGet(endpointUrlv2('form'), true);
 
             if (response.status === 200 && response.data?.data) {
                 const data: FormStep[] = response.data.data;
@@ -186,6 +203,7 @@ export default function DynamicCreateTransactionPage() {
 
             const finalPayload = {
                 customer_id: foundCustomerId,
+                category_id: selectedCategoryId,
                 date: customerInfoData[generateKey('Transaction Date')] || moment().format('YYYY-MM-DD'),
                 name_purchase: purchaseName[0],
                 description: customerInfoData[generateKey('Notes')] || '',
@@ -244,7 +262,7 @@ export default function DynamicCreateTransactionPage() {
 
         try {
             await httpPost(
-                endpointUrl("/sales/transaction"),
+                endpointUrlv2("/sales/transaction"),
                 finalPayload,
                 true,
             );
@@ -261,9 +279,9 @@ export default function DynamicCreateTransactionPage() {
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
-        
+
         const customerStepKey = generateKey('Customer Information');
-        
+
         const fieldsToClear = {
             [generateKey('Customer Name')]: '',
             [generateKey('Customer Phone Number')]: '',
@@ -275,43 +293,43 @@ export default function DynamicCreateTransactionPage() {
 
         const clearCustomerData = (
             status: 'idle' | 'not_found' = 'idle',
-            numberToKeep: string 
+            numberToKeep: string
         ) => {
             setFoundCustomerId(0);
             setCustomerFoundStatus(status);
-            
+
             setTransactionData(prev => ({
                 ...prev,
                 [customerStepKey]: {
-                    ...prev[customerStepKey],  
-                    ...fieldsToClear,         
-                    [generateKey('Customer Member Number')]: numberToKeep 
+                    ...prev[customerStepKey],
+                    ...fieldsToClear,
+                    [generateKey('Customer Member Number')]: numberToKeep
                 }
             }));
         };
-    
+
         if (!numberMember.trim()) {
             clearCustomerData('idle', '');
             return;
         }
 
-    
+
         debounceTimeout.current = setTimeout(async () => {
             // if (numberMember.length < 9) {
             //     clearCustomerData('idle'); 
             //     return;
             // }
-    
+
             setSearchingCustomer(true);
-            setCustomerFoundStatus('idle'); 
-    
+            setCustomerFoundStatus('idle');
+
             try {
-                const response = await httpPost(endpointUrl('customer/number-member'), { number_member: numberMember }, true);
-    
+                const response = await httpPost(endpointUrlv2('customer/number-member'), { number_member: numberMember }, true);
+
                 if (response.data && response.data.data) {
                     const customerData = response.data.data;
                     setFoundCustomerId(customerData.id);
-    
+
                     const autofillData = {
                         [generateKey('Customer Member Number')]: customerData.member_no,
                         [generateKey('Customer Name')]: customerData.name,
@@ -321,7 +339,7 @@ export default function DynamicCreateTransactionPage() {
                         [generateKey('Anniversary Date')]: customerData.date_anniv ? moment(customerData.date_anniv).format('YYYY-MM-DD') : '',
                         [generateKey('Customer Details')]: customerData.detail_information,
                     };
-    
+
                     setTransactionData(prev => ({
                         ...prev,
                         [customerStepKey]: {
@@ -330,7 +348,7 @@ export default function DynamicCreateTransactionPage() {
                         }
                     }));
                     setCustomerFoundStatus('found');
-    
+
                 } else {
                     clearCustomerData('not_found', numberMember);
                 }
@@ -340,7 +358,7 @@ export default function DynamicCreateTransactionPage() {
             } finally {
                 setSearchingCustomer(false);
             }
-        }, 1500); 
+        }, 1500);
     };
 
     const handleCreateOption = async (fieldId: number, newValue: string) => {
@@ -348,7 +366,7 @@ export default function DynamicCreateTransactionPage() {
             const payload = {
                 value: newValue,
             };
-            const response = await httpPost(endpointUrl(`master/field/${fieldId}/add-value`), payload, true);
+            const response = await httpPost(endpointUrlv2(`master/field/${fieldId}/add-value`), payload, true);
             const createdOption = response.data.data.field_value;
 
             setFormTemplate(prevTemplate => {
@@ -658,6 +676,22 @@ export default function DynamicCreateTransactionPage() {
                                         )}
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                                    Kategori Pelanggan <span className="text-red-500 ml-1">*</span>
+                                                </label>
+                                                <select
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
+                                                    value={selectedCategoryId}
+                                                    onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
+                                                >
+                                                    {categories.map((cat) => (
+                                                        <option key={cat.id} value={cat.id}>
+                                                            {cat.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
                                             {otherFields.map((field) => (
                                                 <div key={field.id} className={
                                                     field.label.toLowerCase().includes('address')
