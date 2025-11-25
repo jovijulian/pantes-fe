@@ -231,7 +231,7 @@ export default function SalesPage() {
         let endpoint = '';
         if (role === 1 || role === 4) {
             endpoint = endpointUrl(`/transaction/list`);
-        } else if (role === 2) {
+        } else if (role === 2 || role === 6 || role === 7) {
             endpoint = endpointUrl(`/sales/transaction/list`);
         } else {
             console.error("Unknown user role:", role);
