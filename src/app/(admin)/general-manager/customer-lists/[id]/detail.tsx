@@ -7,7 +7,7 @@ import { endpointUrl, endpointUrlv2, httpGet } from "@/../helpers";
 import { FaUserCircle, FaPhoneAlt, FaMapMarkerAlt, FaInfoCircle, FaBirthdayCake, FaGift, FaCheckCircle, FaTimesCircle, FaHistory, FaTags } from "react-icons/fa";
 import Table from "@/components/tables/Table";
 import moment from "moment";
-import toast from "react-hot-toast";
+import {toast} from "react-toastify";
 
 interface Category {
     id: number;

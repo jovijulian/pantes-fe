@@ -8,7 +8,7 @@ import SingleDatePicker from '@/components/common/SingleDatePicker';
 import { endpointUrl, endpointUrlv2, httpGet, httpPost } from '../../../../../helpers';
 import CreatableSelect from "@/components/form/CreatableSelect";
 import ConfirmationModal from "@/components/modal/ConfirmationModal";
-import toast from 'react-hot-toast';
+import {toast} from "react-toastify";
 import { useRouter } from "next/navigation";
 import Select from '@/components/form/Select-custom';
 import _ from 'lodash';
@@ -274,7 +274,7 @@ export default function DynamicCreateTransactionPage() {
             toast.success("Transaksi berhasil ditambahkan!");
             router.push("/transactions");
         } catch (error: any) {
-            toast.error(error?.response?.data?.errors?.type || "Gagal menambahkan Transaksi");
+            toast.error("Gagal menambahkan Transaksi, silahkan periksa form kembali.");
         } finally {
             setLoading(false);
         }

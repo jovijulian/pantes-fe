@@ -6,7 +6,7 @@ import { Modal } from "../ui/modal"; // Asumsi path ini benar
 import Input from "../form/input/InputField"; // Asumsi path ini benar
 import Label from "../form/Label"; // Asumsi path ini benar
 import { endpointUrl, httpPost } from "../../../helpers";
-import toast from "react-hot-toast";
+import {toast} from "react-toastify";
 // Jika Anda ingin menggunakan FaEdit atau ikon serupa:
 // import { FaLock, FaTimes, FaSave } from "react-icons/fa"; // Contoh ikon
 

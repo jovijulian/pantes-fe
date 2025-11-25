@@ -79,9 +79,24 @@ export default function MasterPage() {
                 accessorKey: "action",
                 cell: ({ row }: any) => {
                     const isDefault = row.is_default
+                    if (row.label == "Item Type") {
+                        return (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    router.push(`/master-data/edit/${row.id}`);
+                                }}
+                                title="Edit"
+                                className="px-3 py-2 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
+                            >
+                                <FaEdit className="w-4 h-4" />
+                            </button>
+                        );
+                    }
                     if (isDefault == 1) {
                         return null
                     }
+
                     return (
 
                         <div className="flex items-center gap-3 w-[100px]">
