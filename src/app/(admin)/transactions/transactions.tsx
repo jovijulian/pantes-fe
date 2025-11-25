@@ -180,7 +180,7 @@ export default function SalesPage() {
                 accessorKey: "name_purchase",
                 cell: ({ row }: any) => <span>{row.name_purchase}</span>,
             },
-            ...(role === 1 || role === 4
+            ...(role === 1 || role === 4 || role === 8
                 ? [
                     {
                         id: "sales",
@@ -229,7 +229,7 @@ export default function SalesPage() {
         };
 
         let endpoint = '';
-        if (role === 1 || role === 4) {
+        if (role === 1 || role === 4 || role === 8) {
             endpoint = endpointUrl(`/transaction/list`);
         } else if (role === 2 || role === 6 || role === 7) {
             endpoint = endpointUrl(`/sales/transaction/list`);
@@ -376,7 +376,7 @@ export default function SalesPage() {
                     setSelectedData(null);
                 }}
                 url={
-                    role === 1 || role === 4
+                    role === 1 || role === 4 || role === 8
                         ? `transaction/${selectedData?.id}`
                         : `sales/transaction/${selectedData?.id}/delete`
                 }

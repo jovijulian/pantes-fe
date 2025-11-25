@@ -53,6 +53,14 @@ const rolePermissions: Record<string, string[]> = {
         '/profile',
         '/transactions'
     ],
+    '8': [
+        '/dashboard',
+        '/sales-accounts',
+        '/customers',
+        '/transactions',
+        '/profile',
+        '/admin-panel',
+    ],
     
 };
 
@@ -62,6 +70,9 @@ const homeRoutes: Record<string, string> = {
     '3': '/purchasing/dashboard',
     '4': '/dashboard',
     '5': '/purchasing/dashboard',
+    '6': '/dashboard',
+    '7': '/dashboard',
+    '8': '/menus',
 };
 
 
@@ -87,7 +98,7 @@ export async function middleware(request: NextRequest) {
     }
 
     if (pathname.startsWith('/menus')) {
-        if (userRole !== '1') {
+        if (userRole !== '1' && userRole !== '8') {
             return NextResponse.redirect(new URL(userHomeRoute, request.url));
         }
         return NextResponse.next();

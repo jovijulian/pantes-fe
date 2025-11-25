@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from "react-toastify";
 import DeactiveModal from "@/components/modal/deactive/DeactivePurchasing";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
-import EditAdminModal from "@/components/modal/edit/EditAdminModal";
+import EditMainAdminModal from "@/components/modal/edit/EditMainAdminModal";
 
 
 interface TableDataItem {
@@ -108,7 +108,7 @@ export default function Adminpage() {
                         </div>
                     );
                 },
-                minWidth: 160, 
+                minWidth: 160,
                 maxWidth: 220,
             },
             {
@@ -128,35 +128,6 @@ export default function Adminpage() {
                 header: "Email",
                 accessorKey: "email",
                 cell: ({ row }: any) => <span>{row.email}</span>,
-            },
-            {
-                id: "role_id",
-                header: "Role",
-                accessorKey: "role_id",
-                cell: ({ row }: any) => {
-                    const roleId = row.role_id;
-
-                    let roleText = '';
-                    let className = '';
-
-                    if (roleId == 4) {
-                        roleText = 'Admin Sales';
-                        className = 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-                    } else if (roleId == 5) {
-                        roleText = 'Admin Purchasing';
-                        className = 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-                    } else {
-                        roleText = `Unknown Role (${roleId})`;
-                        className = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
-                    }
-                    return (
-                        <span
-                            className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${className}`}
-                        >
-                            {roleText}
-                        </span>
-                    );
-                },
             },
             {
                 id: "status",
@@ -196,6 +167,7 @@ export default function Adminpage() {
             ...(search ? { search } : {}),
             per_page: perPageParam ? Number(perPageParam) : perPage,
             page: page ? Number(page) : currentPage,
+            role_id: 8
         };
 
         try {
@@ -232,7 +204,7 @@ export default function Adminpage() {
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
                     <button
-                        onClick={() => router.push("/admin-panel/create")}
+                        onClick={() => router.push("/admin-panel/main-admin/create")}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                     >
                         <span className="text-lg font-bold">+</span>
@@ -269,7 +241,7 @@ export default function Adminpage() {
                 message="Admin deleted successfully!"
             />
 
-            <EditAdminModal
+            <EditMainAdminModal
                 isOpen={isEditOpen}
                 selectedId={selectedData?.id}
                 onClose={() => setIsEditOpen(false)}

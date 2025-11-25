@@ -50,25 +50,25 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Dashboard',
       icon: <LayoutDashboard />,
       path: '/dashboard',
-      roles: [1, 2, 4, 6, 7],
+      roles: [1, 2, 4, 6, 7, 8],
     },
     {
       name: 'Transaksi',
       icon: <Receipt />,
       path: '/transactions',
-      roles: [1, 2, 4, 6, 7],
+      roles: [1, 2, 4, 6, 7, 8],
     },
     {
       name: 'Pelanggan',
       icon: <Users />,
       path: '/customers',
-      roles: [1, 2, 4],
+      roles: [1, 2, 4, 8],
     },
     {
       name: 'Akun Sales',
       icon: <ShieldUser />,
       path: '/sales-accounts',
-      roles: [1, 4],
+      roles: [1, 4, 8],
     },
     {
       name: 'Kategori Pelanggan',
@@ -80,7 +80,7 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Manajemen Data Master',
       icon: <Database />,
       path: '/master-data',
-      roles: [1, 8],
+      roles: [1],
     },
     {
       name: 'List Pelanggan',
@@ -110,7 +110,7 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Menu',
       icon: <Home />,
       path: '/menus',
-      roles: [1],
+      roles: [1, 8],
     }
   ],
   menu_purchasing: [
@@ -184,16 +184,16 @@ export const menuConfig: Record<string, NavItem[]> = {
   ],
   menu_admin: [
     {
-      name: 'Admin Utama',
-      icon: <ShieldUser />,
-      path: '/admin-panel/main-admin',
-      roles: [1],
-    },
-    {
       name: 'Admin Sales & Purchasing',
       icon: <ShieldUser />,
       path: '/admin-panel',
       roles: [1, 8],
+    },
+    {
+      name: 'Admin Utama',
+      icon: <ShieldUser />,
+      path: '/admin-panel/main-admin',
+      roles: [1],
     },
     {
       name: 'Area Manager',
@@ -211,7 +211,7 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Menu',
       icon: <Home />,
       path: '/menus',
-      roles: [1],
+      roles: [1, 8],
     }
   ],
 };
