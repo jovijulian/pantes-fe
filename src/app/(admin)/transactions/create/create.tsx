@@ -10,6 +10,8 @@ import CreatableSelect from "@/components/form/CreatableSelect";
 import ConfirmationModal from "@/components/modal/ConfirmationModal";
 import toast from 'react-hot-toast';
 import { useRouter } from "next/navigation";
+import Select from '@/components/form/Select-custom';
+import _ from 'lodash';
 
 interface FieldValue {
     id: number;
@@ -88,7 +90,7 @@ export default function DynamicCreateTransactionPage() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const [categories, setCategories] = useState<CategoryOption[]>([]);
-    const [selectedCategoryId, setSelectedCategoryId] = useState<number>(1);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<any>("1");
 
     useEffect(() => {
         fetchFormTemplate();
@@ -98,7 +100,11 @@ export default function DynamicCreateTransactionPage() {
     const fetchCategories = async () => {
         try {
             const response = await httpGet(endpointUrlv2('master/customer-category/dropdown'), true);
-            setCategories(response.data.data);
+            setCategories(
+                response.data.data.map((cat: any) => ({
+                    value: cat.id.toString(), label: cat.name
+                }))
+            );
         } catch (error) {
             console.error("Failed to fetch categories:", error);
         }
@@ -203,7 +209,7 @@ export default function DynamicCreateTransactionPage() {
 
             const finalPayload = {
                 customer_id: foundCustomerId,
-                category_id: selectedCategoryId,
+                category_id: Number(selectedCategoryId),
                 date: customerInfoData[generateKey('Transaction Date')] || moment().format('YYYY-MM-DD'),
                 name_purchase: purchaseName[0],
                 description: customerInfoData[generateKey('Notes')] || '',
@@ -253,7 +259,6 @@ export default function DynamicCreateTransactionPage() {
                 });
                 if (field.label === 'Name Purchase') {
                     purchaseName = valueFromState;
-                    console.log('Purchase Name set to:', purchaseName);
                 }
             }
         };
@@ -680,7 +685,13 @@ export default function DynamicCreateTransactionPage() {
                                                 <label className="block text-sm font-semibold text-gray-700 mb-3">
                                                     Kategori Pelanggan <span className="text-red-500 ml-1">*</span>
                                                 </label>
-                                                <select
+                                                <Select
+                                                    onValueChange={(e) => setSelectedCategoryId(e.value)}
+                                                    placeholder={"Pilih Kategori"}
+                                                    value={_.find(categories, { value: selectedCategoryId })}
+                                                    options={categories}
+                                                />
+                                                {/* <select
                                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
                                                     value={selectedCategoryId}
                                                     onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
@@ -690,7 +701,7 @@ export default function DynamicCreateTransactionPage() {
                                                             {cat.name}
                                                         </option>
                                                     ))}
-                                                </select>
+                                                </select> */}
                                             </div>
                                             {otherFields.map((field) => (
                                                 <div key={field.id} className={

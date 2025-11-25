@@ -84,11 +84,11 @@ const SignIn: React.FC = () => {
       localStorage.setItem("name", user.name);
       localStorage.setItem("email", user.email);
       localStorage.setItem("id", user.id);
-      if (user.role_id == "1") {
+      if (user.role_id == "1" || user.role_id == "8") {
         window.location.href = "/menus";
-      } else if (user.role_id == 2 || user.role_id == "4") {
+      } else if (user.role_id == "2" || user.role_id == "4" || user.role_id == "6" || user.role_id == "7") {
         window.location.href = "/dashboard";
-      } else if (user.role_id == 3 || user.role_id == "5") {
+      } else if (user.role_id == "3" || user.role_id == "5") {
         window.location.href = "/purchasing/dashboard";
       }
 

@@ -41,6 +41,12 @@ const rolePermissions: Record<string, string[]> = {
         '/profile',
         '/purchasing',
     ],
+    '6': [
+        '/dashboard',
+        '/area-manager',
+        '/profile',
+        '/transactions'
+    ],
     
 };
 

@@ -31,6 +31,7 @@ import {
   Diamond,
   PackageSearch,
   HeartHandshake,
+  UserCheck,
 } from 'lucide-react';
 import { TbUserDollar } from 'react-icons/tb';
 import { FaTags } from 'react-icons/fa';
@@ -49,13 +50,13 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Dashboard',
       icon: <LayoutDashboard />,
       path: '/dashboard',
-      roles: [1, 2, 4],
+      roles: [1, 2, 4, 6, 7],
     },
     {
       name: 'Transaksi',
       icon: <Receipt />,
       path: '/transactions',
-      roles: [1, 2, 4],
+      roles: [1, 2, 4, 6, 7],
     },
     {
       name: 'Pelanggan',
@@ -79,7 +80,31 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Manajemen Data Master',
       icon: <Database />,
       path: '/master-data',
-      roles: [1, 4],
+      roles: [1, 8],
+    },
+    {
+      name: 'List Pelanggan',
+      icon: <Users />,
+      path: '/area-manager/customer-lists',
+      roles: [1, 6],
+    },
+    {
+      name: 'Pelanggan Saya',
+      icon: <UserCheck />,
+      path: '/area-manager/my-customers',
+      roles: [1, 6],
+    },
+    {
+      name: 'List Pelanggan',
+      icon: <Users />,
+      path: '/general-manager/customer-lists',
+      roles: [1, 7],
+    },
+    {
+      name: 'Pelanggan Saya',
+      icon: <UserCheck />,
+      path: '/general-manager/my-customers',
+      roles: [1, 7],
     },
     {
       name: 'Menu',
@@ -159,22 +184,28 @@ export const menuConfig: Record<string, NavItem[]> = {
   ],
   menu_admin: [
     {
+      name: 'Admin Utama',
+      icon: <ShieldUser />,
+      path: '/admin-panel/main-admin',
+      roles: [1],
+    },
+    {
       name: 'Admin Sales & Purchasing',
       icon: <ShieldUser />,
       path: '/admin-panel',
-      roles: [1],
+      roles: [1, 8],
     },
     {
       name: 'Area Manager',
       icon: <ShieldUser />,
       path: '/admin-panel/area-manager',
-      roles: [1],
+      roles: [1, 8],
     },
     {
       name: 'General Manager',
       icon: <ShieldUser />,
       path: '/admin-panel/general-manager',
-      roles: [1],
+      roles: [1, 8],
     },
     {
       name: 'Menu',

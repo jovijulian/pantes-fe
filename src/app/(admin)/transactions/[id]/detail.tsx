@@ -245,9 +245,9 @@ export default function TransactionDetailPage() {
         const getDetail = async (transactionId: number) => {
             try {
                 let endpoint = '';
-                if (role === 1 || role === 4) {
+                if (role === 1 || role === 4 || role === 8) {
                     endpoint = endpointUrlv2(`/customer/history/${transactionId}`);
-                } else if (role === 2) {
+                } else if (role === 2 || role == 6 || role == 7) {
                     endpoint = endpointUrlv2(`/sales/transaction/${transactionId}`);
                 } else {
                     console.error("Unknown user role:", role);

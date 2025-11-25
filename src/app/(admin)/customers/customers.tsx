@@ -1,21 +1,21 @@
 "use client";
 
 import Table from "@/components/tables/Table";
-import { Metadata } from "next";
 import React, { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
-import Badge from "@/components/ui/badge/Badge";
-import { alertToast, endpointUrl, endpointUrlv2, httpDelete, httpGet, httpPost } from "@/../helpers";
+import { endpointUrl, endpointUrlv2, httpGet, httpPost } from "@/../helpers";
 import { useSearchParams } from "next/navigation";
 import moment from "moment";
 import { useRouter } from 'next/navigation';
 import { toast } from "react-toastify";
 import DeactiveModal from "@/components/modal/deactive/Deactive";
-import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import EditUserModal from "@/components/modal/edit/EditUserModal";
 import DynamicFilterCard from "@/components/filters/DynamicFilterCard";
-import { Filter, X } from "lucide-react";
+import { Filter, X, Users, Check } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion";
+import Select from "@/components/form/Select-custom";
+import _ from "lodash";
+
 interface TableDataItem {
     id: number;
     email: string;
@@ -26,7 +26,6 @@ interface TableDataItem {
     updated_at: string;
 }
 
-
 export default function CustomerPage() {
     const searchParams = useSearchParams();
     const [currentPage, setCurrentPage] = useState(1);
@@ -35,27 +34,34 @@ export default function CustomerPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
-    const [editData, setEditData] = useState<TableDataItem | null>(null);
-    const [deleteData, setDeleteData] = useState<TableDataItem | null>(null);
-    const router = useRouter()
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false); 
+    const [selectedData, setSelectedData] = useState<any>(null);
+    const router = useRouter();
     const page = searchParams.get("page") || "1";
     const [data, setData] = useState<TableDataItem[]>([]);
     const [lastPage, setLastPage] = useState(1);
     const [count, setCount] = useState(0);
     const [columns, setColumns] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedData, setSelectedData] = useState<any>(null);
     const [role, setRole] = useState<number | null>(null);
     const [filterOptions, setFilterOptions] = useState<any[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<string>(""); 
+    const [isAssigning, setIsAssigning] = useState(false); 
+
     const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({});
     const [showFilters, setShowFilters] = useState(false);
+
     useEffect(() => {
         getData();
         const storedRole = localStorage.getItem("role");
         if (storedRole) {
-            setRole(parseInt(storedRole));
+            const roleId = parseInt(storedRole);
+            setRole(roleId);
+            if (roleId === 2) {
+                fetchCategories();
+            }
         }
-
     }, [searchParams, currentPage, perPage, page, searchTerm, appliedFilters]);
 
     useEffect(() => {
@@ -70,6 +76,46 @@ export default function CustomerPage() {
         fetchFilterData();
     }, []);
 
+    const fetchCategories = async () => {
+        try {
+            const response = await httpGet(endpointUrlv2('/master/customer-category/dropdown'), true);
+            setCategories(
+                response.data.data.map((cat: any) => ({
+                    value: cat.id.toString(), label: cat.name
+                }))
+            );
+        } catch (error) {
+            console.error("Failed to load categories", error);
+        }
+    };
+
+    const handleAssignCategory = async () => {
+        if (!selectedCategory) {
+            toast.warning("Harap pilih kategori terlebih dahulu.");
+            return;
+        }
+
+        setIsAssigning(true);
+        try {
+            const payload = {
+                customer_ids: selectedRows.map((row) => row.id),
+                category_id: parseInt(selectedCategory),
+            };
+
+            await httpPost(endpointUrlv2('/customer/assign-category-customer'), payload, true);
+
+            toast.success("Berhasil meng-assign kategori ke pelanggan.");
+            setIsAssignModalOpen(false);
+            setSelectedRows([]); 
+            setSelectedCategory(""); 
+            getData(); 
+        } catch (error) {
+            toast.error("Gagal meng-assign kategori.");
+        } finally {
+            setIsAssigning(false);
+        }
+    };
+
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
@@ -77,21 +123,6 @@ export default function CustomerPage() {
     const handlePerPageChange = (newPerPage: number) => {
         setPerPage(newPerPage);
         setCurrentPage(1);
-    };
-
-    const statusText = (status: number) => {
-        let className = "";
-        let text = "";
-
-        if (status == 1) {
-            className = "text-sky-500 bg-sky-50";
-            text = "Active";
-        } else {
-            className = "text-red-500 bg-red-50";
-            text = "Inactive";
-        }
-
-        return <span className={`px-3 py-1 rounded-md text-sm font-medium ${className}`}>{text}</span>;
     };
 
     const activeFilterCount = Object.keys(appliedFilters).length;
@@ -121,7 +152,6 @@ export default function CustomerPage() {
                     } else {
                         return (
                             <div className="flex items-center gap-3 w-[100px]">
-                                {/* Edit */}
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -132,8 +162,6 @@ export default function CustomerPage() {
                                 >
                                     <FaEdit className="w-4 h-4" />
                                 </button>
-
-                                {/* Delete */}
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -158,11 +186,10 @@ export default function CustomerPage() {
                 accessorKey: "member_no",
                 cell: ({ row }: any) => {
                     const data = row;
-
                     return (
                         <button
                             className="text-blue-600 hover:underline"
-                            onClick={() => handleRowClick}
+                            onClick={() => handleRowClick(data)}
                         >
                             {data.member_no}
                         </button>
@@ -176,22 +203,15 @@ export default function CustomerPage() {
                 cell: ({ row }: any) => {
                     const name = row.name;
                     const captionsString = row.captions;
-
                     const showCaptions = activeFilterCount > 0 && captionsString;
 
                     return (
                         <div>
-                            <span
-                                className={`${showCaptions ? "font-semibold" : ""} text-gray-800 dark:text-white`}
-                            >
+                            <span className={`${showCaptions ? "font-semibold" : ""} text-gray-800 dark:text-white`}>
                                 {name}
                             </span>
-
                             {showCaptions && (
-                                <div
-                                    className="text-xs text-gray-500 mt-1 max-w-sm truncate"
-                                    title={captionsString} 
-                                >
+                                <div className="text-xs text-gray-500 mt-1 max-w-sm truncate" title={captionsString}>
                                     {captionsString}
                                 </div>
                             )}
@@ -200,10 +220,29 @@ export default function CustomerPage() {
                 },
             },
             {
-                id: "phone",
-                header: "No. Telp",
-                accessorKey: "phone",
-                cell: ({ row }: any) => <span>{row.phone}</span>,
+                id: "category",
+                header: "Kategori",
+                accessorKey: "category",
+                cell: ({ row }: any) => {
+                    return (
+                        <>
+                            {row.categories && row.categories.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                    {row.categories.map((cat: any) => (
+                                        <span key={cat.id} className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded border border-indigo-100">
+                                            {cat.name}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            {row.captions && activeFilterCount > 0 && (
+                                <div className="text-xs text-gray-500 mt-1 max-w-sm truncate" title={row.captions}>
+                                    {row.captions}
+                                </div>
+                            )}
+                        </>
+                    )
+                }
             },
             {
                 id: "created_at",
@@ -223,7 +262,7 @@ export default function CustomerPage() {
 
     const getData = async () => {
         setIsLoading(true);
-        const search = searchTerm.trim();;
+        const search = searchTerm.trim();
         const page = searchParams.get("page");
         const perPageParam = searchParams.get("per_page");
 
@@ -236,7 +275,7 @@ export default function CustomerPage() {
 
         try {
             const response = await httpPost(
-                endpointUrl("/customer/list"),
+                endpointUrlv2("/customer/list"),
                 payload,
                 true,
             );
@@ -269,15 +308,17 @@ export default function CustomerPage() {
         });
         setCurrentPage(1);
     };
+
     const handleResetFilters = () => {
         setAppliedFilters({});
         setSearchTerm('');
         setShowFilters(false);
         setCurrentPage(1);
     };
+
     const handleRowClick = (rowData: TableDataItem) => {
         const detailUrl = `/customers/${rowData.id}`;
-        
+
         if (activeFilterCount > 0) {
             window.open(detailUrl, '_blank');
         } else {
@@ -289,10 +330,21 @@ export default function CustomerPage() {
         <>
             <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
+                    {role === 2 && selectedRows.length > 0 && (
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            onClick={() => setIsAssignModalOpen(true)}
+                            className="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center justify-center gap-2"
+                        >
+                            <Users className="w-4 h-4" />
+                            <span>Assign Kategori ({selectedRows.length})</span>
+                        </motion.button>
+                    )}
+
                     <button
                         onClick={() => setShowFilters(prev => !prev)}
-                        className={`w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md flex items-center justify-center gap-2 transition-colors ${showFilters ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
-                            }`}
+                        className={`w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md flex items-center justify-center gap-2 transition-colors ${showFilters ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                     >
                         <Filter className="w-4 h-4" />
                         <span>Filter</span>
@@ -325,8 +377,8 @@ export default function CustomerPage() {
                         <span className="text-lg font-bold">+</span>
                         Tambahkan Pelanggan
                     </button>
-
                 </div>
+
                 <AnimatePresence>
                     {showFilters && (
                         <motion.div
@@ -346,12 +398,12 @@ export default function CustomerPage() {
                     )}
                 </AnimatePresence>
 
-                {/* Table */}
+                {/* Table: Selection Enabled */}
                 <Table
                     data={data}
                     columns={columnsNew}
                     pagination={true}
-                    // selection={true}
+                    selection={true} // ENABLED
                     lastPage={lastPage}
                     total={count}
                     loading={isLoading}
@@ -359,7 +411,7 @@ export default function CustomerPage() {
                     setCheckedData={setSelectedRows}
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
-                    onRowClick={handleRowClick}
+                // onRowClick={handleRowClick}
                 />
 
                 <DeactiveModal
@@ -381,9 +433,63 @@ export default function CustomerPage() {
                     onClose={() => setIsEditOpen(false)}
                     onSuccess={getData}
                 />
+
+                <AnimatePresence>
+                    {isAssignModalOpen && (
+                        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6"
+                            >
+                                <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
+                                    Assign Kategori ke {selectedRows.length} Pelanggan
+                                </h3>
+
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Pilih Kategori
+                                    </label>
+                                    <Select
+                                        onValueChange={(e) => setSelectedCategory(e.value)}
+                                        placeholder={"Pilih Kategori"}
+                                        value={_.find(categories, { value: selectedCategory })}
+                                        options={categories}
+                                    />
+                                </div>
+
+                                <div className="flex justify-end gap-3">
+                                    <button
+                                        onClick={() => setIsAssignModalOpen(false)}
+                                        className="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                                        disabled={isAssigning}
+                                    >
+                                        Batal
+                                    </button>
+                                    <button
+                                        onClick={handleAssignCategory}
+                                        disabled={isAssigning || !selectedCategory}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    >
+                                        {isAssigning ? (
+                                            <>
+                                                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                                Menyimpan...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Check className="w-4 h-4" />
+                                                Simpan
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
             </div>
         </>
     );
 }
-
-

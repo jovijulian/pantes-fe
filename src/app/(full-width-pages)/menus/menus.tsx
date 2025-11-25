@@ -116,6 +116,12 @@ export default function MenusPage() {
         if (name) setUserName(name);
         if (role) setUserRole(role);
     }, []);
+    const filteredMenuItems = menuItems.filter((item) => {
+        if (userRole === "8") {
+            return item.href === "/dashboard" || item.href === "/admin-panel";
+        }
+        return true;
+    });
     return (
         <div className="min-h-screen xl:flex-center">
             <div
@@ -133,7 +139,7 @@ export default function MenusPage() {
                     </div>
 
                     <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {menuItems.map((item) => (
+                        {filteredMenuItems.map((item) => (
                             <MenuCard key={item.href} {...item} userRole={userRole} />
                         ))}
                     </div>
