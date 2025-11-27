@@ -57,7 +57,7 @@ export default function AreaManagerDetailPage() {
             const getManagerDetail = async () => {
                 try {
                     setLoadingManager(true);
-                    const response = await httpGet(endpointUrlv2(`/manager/${id}`), true);
+                    const response = await httpGet(endpointUrl(`/manager/${id}`), true);
                     setManager(response.data.data);
                 } catch (error) {
                     console.error("Error fetching manager details:", error);
@@ -87,7 +87,7 @@ export default function AreaManagerDetailPage() {
 
             try {
                 const response = await httpGet(
-                    endpointUrlv2(`/manager/${id}/customer`), 
+                    endpointUrl(`/manager/${id}/customer`), 
                     true,
                     queryParams
                 );

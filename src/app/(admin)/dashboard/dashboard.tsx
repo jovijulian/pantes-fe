@@ -51,7 +51,7 @@ export default function DashboardPage() {
 
         try {
             const response = await httpPost(
-                endpointUrlv2("/dashboard?" + new URLSearchParams(params).toString()),
+                endpointUrl("/dashboard?" + new URLSearchParams(params).toString()),
                 "",
                 true
             );

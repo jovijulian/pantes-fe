@@ -30,7 +30,7 @@ export default function CreateCustomerForm() {
     const fetchInitialData = async () => {
         try {
             const [categoryRes] = await Promise.all([
-                httpGet(endpointUrlv2("master/customer-category/dropdown"), true),
+                httpGet(endpointUrl("master/customer-category/dropdown"), true),
             ]);
             setCategoryOptions(categoryRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
 
@@ -66,7 +66,7 @@ export default function CreateCustomerForm() {
 
         try {
             setLoading(true);
-            await httpPost(endpointUrlv2("/customer"), payload, true);
+            await httpPost(endpointUrl("/customer"), payload, true);
             toast.success("Pelanggan berhasil ditambahkan!");
             router.push("/customers");
         } catch (error: any) {

@@ -86,7 +86,7 @@ export default function SalesPage() {
             const fetchInitialData = async () => {
                 try {
                     const [categoryRes] = await Promise.all([
-                        httpGet(endpointUrlv2('master/customer-category/dropdown'), true)
+                        httpGet(endpointUrl('master/customer-category/dropdown'), true)
                     ]);
                     setCategoryOptions(categoryRes.data.data);
                 } catch (error) {
@@ -285,7 +285,7 @@ export default function SalesPage() {
         } else if (role === 2) {
             endpoint = endpointUrl(`/sales/transaction/list`);
         } else if (role === 6 || role === 7) {
-            endpoint = endpointUrlv2(`transaction/list`);
+            endpoint = endpointUrl(`transaction/list`);
         } else {
             console.error("Unknown user role:", role);
             return;

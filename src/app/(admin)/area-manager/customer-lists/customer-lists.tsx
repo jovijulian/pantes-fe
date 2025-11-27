@@ -62,8 +62,8 @@ export default function CustomerPage() {
         const fetchInitialData = async () => {
             try {
                 const [filterRes, categoryRes] = await Promise.all([
-                    httpGet(endpointUrlv2('/data-filter'), true),
-                    httpGet(endpointUrlv2('master/customer-category/dropdown'), true)
+                    httpGet(endpointUrl('/data-filter'), true),
+                    httpGet(endpointUrl('master/customer-category/dropdown'), true)
                 ]);
 
                 setFilterOptions(filterRes.data.data);
@@ -127,7 +127,7 @@ export default function CustomerPage() {
                 category_id: Number(targetCategoryId)
             };
 
-            await httpPost(endpointUrlv2("/customer/assign-category-customer"), payload, true);
+            await httpPost(endpointUrl("/customer/assign-category-customer"), payload, true);
 
             toast.success("Berhasil mengubah kategori customer!");
 
@@ -244,7 +244,7 @@ export default function CustomerPage() {
 
         try {
             const response = await httpPost(
-                endpointUrlv2("/customer/list"),
+                endpointUrl("/customer/list"),
                 payload,
                 true,
             );

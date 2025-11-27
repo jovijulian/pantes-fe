@@ -99,7 +99,7 @@ export default function DynamicCreateTransactionPage() {
 
     const fetchCategories = async () => {
         try {
-            const response = await httpGet(endpointUrlv2('master/customer-category/dropdown'), true);
+            const response = await httpGet(endpointUrl('master/customer-category/dropdown'), true);
             setCategories(
                 response.data.data.map((cat: any) => ({
                     value: cat.id.toString(), label: cat.name
@@ -115,7 +115,7 @@ export default function DynamicCreateTransactionPage() {
             setLoadingTemplate(true);
             setError(null);
 
-            const response = await httpGet(endpointUrlv2('form'), true);
+            const response = await httpGet(endpointUrl('form'), true);
 
             if (response.status === 200 && response.data?.data) {
                 const data: FormStep[] = response.data.data;
@@ -267,7 +267,7 @@ export default function DynamicCreateTransactionPage() {
 
         try {
             await httpPost(
-                endpointUrlv2("/sales/transaction"),
+                endpointUrl("/sales/transaction"),
                 finalPayload,
                 true,
             );
@@ -329,7 +329,7 @@ export default function DynamicCreateTransactionPage() {
             setCustomerFoundStatus('idle');
 
             try {
-                const response = await httpPost(endpointUrlv2('customer/number-member'), { number_member: numberMember }, true);
+                const response = await httpPost(endpointUrl('customer/number-member'), { number_member: numberMember }, true);
 
                 if (response.data && response.data.data) {
                     const customerData = response.data.data;
@@ -371,7 +371,7 @@ export default function DynamicCreateTransactionPage() {
             const payload = {
                 value: newValue,
             };
-            const response = await httpPost(endpointUrlv2(`master/field/${fieldId}/add-value`), payload, true);
+            const response = await httpPost(endpointUrl(`master/field/${fieldId}/add-value`), payload, true);
             const createdOption = response.data.data.field_value;
 
             setFormTemplate(prevTemplate => {

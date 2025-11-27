@@ -73,7 +73,7 @@ export default function CustomerDetailPage() {
         if (id) {
             const getDetail = async (customerId: number) => {
                 try {
-                    const response = await httpGet(endpointUrlv2(`/customer/${customerId}`), true);
+                    const response = await httpGet(endpointUrl(`/customer/${customerId}`), true);
                     setData(response.data.data);
                 } catch (error) {
                     console.error("Error fetching customer details:", error);

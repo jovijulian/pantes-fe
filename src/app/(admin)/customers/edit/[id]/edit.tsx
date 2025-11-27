@@ -34,7 +34,7 @@ export default function EditCustomerForm() {
 
         const getCustomerData = async () => {
             try {
-                const response = await httpGet(endpointUrlv2(`/customer/${id}`), true);
+                const response = await httpGet(endpointUrl(`/customer/${id}`), true);
                 const customer = response.data.data;
                 setName(customer.name || "");
                 setPhone(customer.phone || "");
@@ -65,7 +65,7 @@ export default function EditCustomerForm() {
     const fetchInitialData = async () => {
         try {
             const [categoryRes] = await Promise.all([
-                httpGet(endpointUrlv2("master/customer-category/dropdown"), true),
+                httpGet(endpointUrl("master/customer-category/dropdown"), true),
             ]);
             setCategoryOptions(categoryRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
 
@@ -99,7 +99,7 @@ export default function EditCustomerForm() {
 
         try {
             setLoading(true);
-            await httpPost(endpointUrlv2(`/customer/${id}/update`), payload, true);
+            await httpPost(endpointUrl(`/customer/${id}/update`), payload, true);
             toast.success("Pelanggan berhasil diperbarui!");
             router.push("/customers");
         } catch (error: any) {

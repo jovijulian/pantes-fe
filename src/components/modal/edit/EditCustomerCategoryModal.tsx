@@ -45,7 +45,7 @@ const EditCustomerCategoryModal: React.FC<EditProps> = ({
             setIsLoading(true);
             setError("");
             try {
-                const response = await httpGet(endpointUrlv2(`master/customer-category/${selectedId}`), true);
+                const response = await httpGet(endpointUrl(`master/customer-category/${selectedId}`), true);
                 const data = response.data.data;
 
                 setFormData({
@@ -78,7 +78,7 @@ const EditCustomerCategoryModal: React.FC<EditProps> = ({
 
 
         try {
-            await httpPost(endpointUrlv2(`master/customer-category/${selectedId}/update`), payload, true);
+            await httpPost(endpointUrl(`master/customer-category/${selectedId}/update`), payload, true);
             toast.success("Berhasil mengubah ekspedisi!");
             setFormData({
                 id: 0,

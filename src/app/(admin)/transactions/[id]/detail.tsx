@@ -259,11 +259,11 @@ export default function TransactionDetailPage() {
             try {
                 let endpoint = '';
                 if (role === 1 || role === 4 || role === 8) {
-                    endpoint = endpointUrlv2(`/customer/history/${transactionId}`);
+                    endpoint = endpointUrl(`/customer/history/${transactionId}`);
                 } else if (role === 2) {
-                    endpoint = endpointUrlv2(`/sales/transaction/${transactionId}`);
+                    endpoint = endpointUrl(`/sales/transaction/${transactionId}`);
                 } else if (role == 6 || role == 7) {
-                    endpoint = endpointUrlv2(`transaction/${transactionId}`);
+                    endpoint = endpointUrl(`transaction/${transactionId}`);
                 } else {
                     console.error("Unknown user role:", role);
                     return;

@@ -10,7 +10,7 @@ import { useSearchParams } from "next/navigation";
 import moment from "moment";
 import { useRouter } from 'next/navigation';
 import { toast } from "react-toastify";
-import DeactiveModal from "@/components/modal/deactive/DeactivePurchasing";
+import DeactiveModal from "@/components/modal/deactive/Deactive";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 import EditMainAdminModal from "@/components/modal/edit/EditMainAdminModal";
 
@@ -172,7 +172,7 @@ export default function Adminpage() {
 
         try {
             const response = await httpGet(
-                endpointUrlv2("/admin"),
+                endpointUrl("/admin"),
                 true,
                 params
             );

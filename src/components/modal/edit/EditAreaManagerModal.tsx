@@ -38,7 +38,7 @@ const EditAreaManagerModal: React.FC<EditAreaManagerModalProps> = ({
             setIsLoading(true);
             setError("");
             try {
-                const response = await httpGet(endpointUrlv2(`manager/${selectedId}`), true);
+                const response = await httpGet(endpointUrl(`manager/${selectedId}`), true);
                 const userData = response.data.data;
 
                 setName(userData.name || "");
@@ -70,7 +70,7 @@ const EditAreaManagerModal: React.FC<EditAreaManagerModalProps> = ({
 
 
         try {
-            await httpPost(endpointUrlv2(`manager/${selectedId}/update`), payload, true);
+            await httpPost(endpointUrl(`manager/${selectedId}/update`), payload, true);
             toast.success("Akun area manager berhasil diperbarui!");
             setName("");
             setPhone("");

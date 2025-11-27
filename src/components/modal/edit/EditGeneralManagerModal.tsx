@@ -38,7 +38,7 @@ const EditGeneralManagerModal: React.FC<EditGeneralManagerModalProps> = ({
             setIsLoading(true);
             setError("");
             try {
-                const response = await httpGet(endpointUrlv2(`general-manager/${selectedId}`), true);
+                const response = await httpGet(endpointUrl(`general-manager/${selectedId}`), true);
                 const userData = response.data.data;
 
                 setName(userData.name || "");
@@ -70,7 +70,7 @@ const EditGeneralManagerModal: React.FC<EditGeneralManagerModalProps> = ({
 
 
         try {
-            await httpPost(endpointUrlv2(`general-manager/${selectedId}/update`), payload, true);
+            await httpPost(endpointUrl(`general-manager/${selectedId}/update`), payload, true);
             toast.success("Akun general manager berhasil diperbarui!");
             setName("");
             setPhone("");

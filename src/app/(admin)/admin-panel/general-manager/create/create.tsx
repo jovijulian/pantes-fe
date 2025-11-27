@@ -46,7 +46,7 @@ export default function CreateForm() {
             }
 
             await httpPost(
-                endpointUrlv2("general-manager"),
+                endpointUrl("general-manager"),
                 data,
                 true,
             );

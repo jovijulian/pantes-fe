@@ -142,7 +142,7 @@ export default function Adminpage() {
 
         try {
             const response = await httpGet(
-                endpointUrlv2("manager"),
+                endpointUrl("manager"),
                 true,
                 params
             );
@@ -192,25 +192,7 @@ export default function Adminpage() {
                 onRowClick={handleRowClick}
             />
 
-            <DeactiveModal
-                isOpen={isDeleteModalOpen}
-                onClose={() => {
-                    setIsDeleteModalOpen(false);
-                    setSelectedData(null);
-                }}
-                url={`manager/${selectedData?.id}/deactive`}
-                itemName={selectedData?.name || ""}
-                selectedData={selectedData}
-                onSuccess={getData}
-                message="General manager deleted successfully!"
-            />
-
-            <EditAreaManagerModal
-                isOpen={isEditOpen}
-                selectedId={selectedData?.id}
-                onClose={() => setIsEditOpen(false)}
-                onSuccess={getData}
-            />
+            
         </div>
     );
 }

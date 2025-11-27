@@ -151,7 +151,7 @@ export default function CustomerCategory() {
 
         try {
             const response = await httpGet(
-                endpointUrlv2("master/customer-category"), true, params
+                endpointUrl("master/customer-category"), true, params
             );
 
             const responseData = response.data.data.list;

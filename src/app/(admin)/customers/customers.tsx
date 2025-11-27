@@ -67,7 +67,7 @@ export default function CustomerPage() {
     useEffect(() => {
         const fetchFilterData = async () => {
             try {
-                const response = await httpGet(endpointUrlv2('/data-filter'), true);
+                const response = await httpGet(endpointUrl('/data-filter'), true);
                 setFilterOptions(response.data.data);
             } catch (error) {
                 toast.error("Failed to load filter options.");
@@ -78,7 +78,7 @@ export default function CustomerPage() {
 
     const fetchCategories = async () => {
         try {
-            const response = await httpGet(endpointUrlv2('/master/customer-category/dropdown'), true);
+            const response = await httpGet(endpointUrl('/master/customer-category/dropdown'), true);
             setCategories(
                 response.data.data.map((cat: any) => ({
                     value: cat.id.toString(), label: cat.name
@@ -102,7 +102,7 @@ export default function CustomerPage() {
                 category_id: parseInt(selectedCategory),
             };
 
-            await httpPost(endpointUrlv2('/customer/assign-category-customer'), payload, true);
+            await httpPost(endpointUrl('/customer/assign-category-customer'), payload, true);
 
             toast.success("Berhasil meng-assign kategori ke pelanggan.");
             setIsAssignModalOpen(false);
@@ -275,7 +275,7 @@ export default function CustomerPage() {
 
         try {
             const response = await httpPost(
-                endpointUrlv2("/customer/list"),
+                endpointUrl("/customer/list"),
                 payload,
                 true,
             );
