@@ -32,6 +32,7 @@ import {
   PackageSearch,
   HeartHandshake,
   UserCheck,
+  Users2,
 } from 'lucide-react';
 import { TbUserDollar } from 'react-icons/tb';
 import { FaTags } from 'react-icons/fa';
@@ -93,6 +94,12 @@ export const menuConfig: Record<string, NavItem[]> = {
       icon: <UserCheck />,
       path: '/area-manager/my-customers',
       roles: [6],
+    },
+    {
+      name: 'List Area Manager',
+      icon: <Users2 />,
+      path: '/general-manager/area-manager-lists',
+      roles: [7],
     },
     {
       name: 'List Pelanggan',

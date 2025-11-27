@@ -82,7 +82,7 @@ export default function SalesPage() {
     }, []);
 
     useEffect(() => {
-        if (role === 6) {
+        if (role === 6 || role === 7) {
             const fetchInitialData = async () => {
                 try {
                     const [categoryRes] = await Promise.all([
@@ -274,7 +274,7 @@ export default function SalesPage() {
             page: page ? Number(page) : currentPage,
             filters: appliedFilters,
         };
-        if (role === 6) {
+        if (role === 6 || role === 7) {
             payload.assign_by_me = 1;
             payload.assign_category = assignCategory
         }
@@ -282,7 +282,7 @@ export default function SalesPage() {
         let endpoint = '';
         if (role === 1 || role === 4 || role === 8) {
             endpoint = endpointUrl(`/transaction/list`);
-        } else if (role === 2 || role === 7) {
+        } else if (role === 2) {
             endpoint = endpointUrl(`/sales/transaction/list`);
         } else if (role === 6 || role === 7) {
             endpoint = endpointUrlv2(`transaction/list`);
@@ -347,7 +347,7 @@ export default function SalesPage() {
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
                 {
-                    role === 6 && (
+                    role === 6 || role === 7 && (
                         <div className="w-full xl:w-64">
                             <Select
                                 placeholder="Semua Kategori"

@@ -7,7 +7,7 @@ import { endpointUrl, endpointUrlv2, httpGet } from "@/../helpers";
 import { FaUserCircle, FaPhoneAlt, FaMapMarkerAlt, FaInfoCircle, FaBirthdayCake, FaGift, FaCheckCircle, FaTimesCircle, FaHistory, FaTags } from "react-icons/fa";
 import Table from "@/components/tables/Table";
 import moment from "moment";
-import {toast} from "react-toastify";
+import {toast} from"react-toastify";
 
 interface Category {
     id: number;
@@ -88,7 +88,7 @@ export default function CustomerDetailPage() {
         const detailUrl = `/transactions/${id}`;
         window.open(detailUrl, '_blank');
     };
-
+    
     useEffect(() => {
         if (!id) return;
 
@@ -163,8 +163,8 @@ export default function CustomerDetailPage() {
                             const prices = relevantDetail.value
                                 .split(", ")
                                 .map((v: string) => v.trim())
-                                .filter(Boolean);
-
+                                .filter(Boolean); 
+                
                             return (
                                 <div className="flex flex-col">
                                     {prices.map((price: string, idx: number) => (
@@ -239,8 +239,8 @@ export default function CustomerDetailPage() {
                                 <div className="flex flex-wrap gap-2">
                                     {data.categories && data.categories.length > 0 ? (
                                         data.categories.map((cat) => (
-                                            <span
-                                                key={cat.id}
+                                            <span 
+                                                key={cat.id} 
                                                 className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
                                             >
                                                 {cat.name}

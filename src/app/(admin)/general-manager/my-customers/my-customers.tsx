@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import DeactiveModal from "@/components/modal/deactive/Deactive";
 import { FaCheckDouble } from "react-icons/fa";
 import DynamicFilterCard from "@/components/filters/DynamicFilterCard";
-import { Filter, X } from "lucide-react";
+import { Filter, Users, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Select from "@/components/form/Select-custom";
 import _ from "lodash";
@@ -47,9 +47,6 @@ export default function CustomerPage() {
     const [columns, setColumns] = useState<any[]>([]);
     const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
     const [assignCategory, setAssignCategory] = useState<any>(0);
-    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-    const [targetCategoryId, setTargetCategoryId] = useState<number | "">("");
-    const [isAssigning, setIsAssigning] = useState(false);
 
     useEffect(() => {
         const paramCategory = searchParams.get("assign_category");
@@ -91,56 +88,15 @@ export default function CustomerPage() {
 
     const selectCategoryOptions = useMemo(() => {
         const defaultOption = [{ value: "0", label: "Semua Kategori" }];
-        const mappedOptions = categoryOptions.filter(cat => cat.name.toLowerCase() !== "regular") 
+        const mappedOptions = categoryOptions.filter(cat => cat.name.toLowerCase() !== "regular")
             .map(cat => ({
                 value: cat.id.toString(),
                 label: cat.name
             }));
+
         return [...defaultOption, ...mappedOptions];
     }, [categoryOptions]);
 
-    const selectCategoryAssignOptions = useMemo(() => {
-        const mappedOptions = categoryOptions.map(cat => ({
-            value: cat.id.toString(),
-            label: cat.name
-        }));
-
-        return [...mappedOptions];
-    }, [categoryOptions]);
-
-    const handleBulkAssign = async () => {
-        if (!targetCategoryId) {
-            toast.error("Silakan pilih kategori terlebih dahulu.");
-            return;
-        }
-
-        if (selectedRows.length === 0) {
-            toast.error("Tidak ada customer yang dipilih.");
-            return;
-        }
-
-        setIsAssigning(true);
-        try {
-            const payload = {
-                customer_ids: selectedRows.map((row) => row.id),
-                category_id: Number(targetCategoryId)
-            };
-
-            await httpPost(endpointUrlv2("/customer/assign-category-customer"), payload, true);
-
-            toast.success("Berhasil mengubah kategori customer!");
-
-            setIsAssignModalOpen(false);
-            setTargetCategoryId("");
-            setSelectedRows([]);
-            getData();
-
-        } catch (error: any) {
-            toast.error(error?.response?.data?.message || "Gagal mengubah kategori.");
-        } finally {
-            setIsAssigning(false);
-        }
-    };
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -239,7 +195,7 @@ export default function CustomerPage() {
             page: pageParam ? Number(pageParam) : currentPage,
             filters: appliedFilters,
             assign_category: assignCategory,
-            assign_by_me: 1
+            assign_by_me: 1,
         };
 
         try {
@@ -288,7 +244,7 @@ export default function CustomerPage() {
 
     const handleRowClick = (rowData: TableDataItem) => {
         const activeFilterCount = Object.keys(appliedFilters).length;
-        const detailUrl = `/area-manager/my-customers/${rowData.id}`;
+        const detailUrl = `/general-manager/customer-lists/${rowData.id}`;
         if (activeFilterCount > 0) {
             window.open(detailUrl, '_blank');
         } else {
@@ -313,7 +269,41 @@ export default function CustomerPage() {
                     />
                 </div>
 
-                
+                <div className="w-full xl:w-auto flex flex-col sm:flex-row gap-2 items-center">
+
+
+                    <button
+                        onClick={() => setShowFilters(prev => !prev)}
+                        className={`w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md flex items-center justify-center gap-2 transition-colors ${showFilters ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
+                            }`}
+                    >
+                        <Filter className="w-4 h-4" />
+                        <span>Filter</span>
+                        {activeFilterCount > 0 && (
+                            <span className="bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                                {activeFilterCount}
+                            </span>
+                        )}
+                    </button>
+
+                    {(activeFilterCount > 0 || assignCategory !== 0 || searchTerm !== '') && (
+                        <button
+                            onClick={handleResetFilters}
+                            className="w-full sm:w-auto px-4 py-2 border border-red-500 text-red-500 rounded-md flex items-center justify-center gap-2 hover:bg-red-50 transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                            <span>Reset</span>
+                        </button>
+                    )}
+
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={handleSearch}
+                        placeholder="Cari customer..."
+                        className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    />
+                </div>
             </div>
 
             <AnimatePresence>
@@ -347,6 +337,8 @@ export default function CustomerPage() {
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
             />
+
+
         </div>
     );
 }
