@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import moment from "moment";
 import { useRouter, useSearchParams } from "next/navigation";
-import { endpointUrl, httpPost } from "../../../../helpers";
+import { endpointUrl, endpointUrlv2, httpPost } from "../../../../helpers";
 
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import TotalTransactionCard from "@/components/dashboard/TotalTransactionCard";
@@ -17,6 +17,7 @@ import ItemTransactionPieChart from "@/components/dashboard/ItemTransactionLeade
 import BirthdayList from "@/components/dashboard/BirthdayList";
 import InactiveCustomerList from "@/components/dashboard/InactiveCustomerList";
 import PurchaseNameChart from "@/components/dashboard/PurchaseNameChart";
+import TotalCustomerFilterCard from "@/components/dashboard/TotalCustomerFilterCard";
 
 interface LeaderboardItem { id: number; name: string; total_transaction: number; phone?: string; }
 interface GrafikTransaction { date: string; transaction_count: number; }
@@ -50,7 +51,7 @@ export default function DashboardPage() {
 
         try {
             const response = await httpPost(
-                endpointUrl("/dashboard?" + new URLSearchParams(params).toString()),
+                endpointUrlv2("/dashboard?" + new URLSearchParams(params).toString()),
                 "",
                 true
             );
@@ -122,15 +123,18 @@ export default function DashboardPage() {
             </div>
 
             <TransactionTrendChart data={dashboardData.grafik.transaction} />
-            {(role === "1" || role == "4" || role == "8") &&(
+            {(role === "1" || role == "4" || role == "6" || role == "7" || role == "8") && (
                 <>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className=" h-full">
+                        <div className="lg:col-span-1 flex flex-col gap-6">
+                            <TotalCustomerFilterCard
+                                data={dashboardData.customer.count_new_this_month || 0}
+                            />
                             <TotalTransactionCard
                                 value={dashboardData.transaction.total_price_all || 0}
                             />
                         </div>
-                        <div className="space-y-6 h-full">
+                        <div className="lg:col-span-1">
                             <RecentTransactions data={dashboardData.transaction.list} />
                         </div>
                     </div>
@@ -154,7 +158,7 @@ export default function DashboardPage() {
             )}
             <hr className="my-8 border-t-2 border-gray-300 dark:border-gray-600" />
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Sepanjang Waktu</h3>
-            {(role === "1" || role == "4" || role == "8") &&(
+            {(role === "1" || role == "4" || role == "6" || role == "7" || role == "8") && (
                 <>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="h-full">
@@ -180,7 +184,7 @@ export default function DashboardPage() {
                     </div>
                 </>
             )}
-           {(role === "1" || role == "4" || role == "8") &&(
+            {(role === "1" || role == "4" || role == "6" || role == "7" || role == "8") && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt--2">
                     <CustomerLeaderboard data={dashboardData.customer.leaderboard} />
                     <SalesLeaderbord data={dashboardData.sales.leaderboard} />
