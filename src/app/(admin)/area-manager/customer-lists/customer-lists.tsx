@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import DeactiveModal from "@/components/modal/deactive/Deactive";
 import { FaCheckDouble } from "react-icons/fa";
 import DynamicFilterCard from "@/components/filters/DynamicFilterCard";
-import { Filter, X } from "lucide-react";
+import { Filter, Users, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Select from "@/components/form/Select-custom";
 import _ from "lodash";
@@ -91,10 +91,11 @@ export default function CustomerPage() {
 
     const selectCategoryOptions = useMemo(() => {
         const defaultOption = [{ value: "0", label: "Semua Kategori" }];
-        const mappedOptions = categoryOptions.map(cat => ({
-            value: cat.id.toString(),
-            label: cat.name
-        }));
+        const mappedOptions = categoryOptions.filter(cat => cat.name.toLowerCase() !== "regular") 
+            .map(cat => ({
+                value: cat.id.toString(),
+                label: cat.name
+            }));
 
         return [...defaultOption, ...mappedOptions];
     }, [categoryOptions]);
@@ -300,13 +301,23 @@ export default function CustomerPage() {
     return (
         <div className="space-y-4">
             <div className="flex flex-col xl:flex-row justify-end items-start xl:items-center gap-3">
+                {selectedRows.length > 0 && (
+                    <motion.button
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        onClick={() => setIsAssignModalOpen(true)}
+                        className="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center justify-center gap-2"
+                    >
+                        <Users className="w-4 h-4" />
+                        <span>Assign Kategori ({selectedRows.length})</span>
+                    </motion.button>
+                )}
                 <div className="w-full xl:w-64">
                     <Select
                         placeholder="Semua Kategori"
                         options={selectCategoryOptions}
                         value={_.find(selectCategoryOptions, { value: assignCategory.toString() })}
                         onValueChange={(selectedOption: any) => {
-                            // selectedOption mengembalikan object {value, label}, kita ambil value-nya
                             setAssignCategory(Number(selectedOption?.value || 0));
                             setCurrentPage(1);
                         }}
@@ -314,15 +325,7 @@ export default function CustomerPage() {
                 </div>
 
                 <div className="w-full xl:w-auto flex flex-col sm:flex-row gap-2 items-center">
-                    {selectedRows.length > 0 && (
-                        <button
-                            onClick={() => setIsAssignModalOpen(true)}
-                            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 flex items-center justify-center gap-2 transition-colors shadow-sm"
-                        >
-                            <FaCheckDouble className="w-4 h-4" />
-                            <span>Assign Kategori ({selectedRows.length})</span>
-                        </button>
-                    )}
+
 
                     <button
                         onClick={() => setShowFilters(prev => !prev)}

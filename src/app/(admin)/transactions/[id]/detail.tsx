@@ -24,7 +24,8 @@ import {
     FaMoneyBillWave,
     FaGem,
     FaLayerGroup,
-    FaArrowLeft
+    FaArrowLeft,
+    FaTags
 } from "react-icons/fa";
 
 interface FieldValue {
@@ -80,6 +81,18 @@ interface Customer {
     status: string;
     created_at: string;
     created_by: string;
+    updated_at: string;
+    categories: CustomerCategory[];
+}
+
+interface CustomerCategory {
+    id: number;
+    name: string;
+    created_by: {
+        id: number;
+        name: string;
+    };
+    created_at: string;
     updated_at: string;
 }
 
@@ -247,8 +260,10 @@ export default function TransactionDetailPage() {
                 let endpoint = '';
                 if (role === 1 || role === 4 || role === 8) {
                     endpoint = endpointUrlv2(`/customer/history/${transactionId}`);
-                } else if (role === 2 || role == 6 || role == 7) {
+                } else if (role === 2) {
                     endpoint = endpointUrlv2(`/sales/transaction/${transactionId}`);
+                } else if (role == 6 || role == 7) {
+                    endpoint = endpointUrlv2(`transaction/${transactionId}`);
                 } else {
                     console.error("Unknown user role:", role);
                     return;
@@ -319,8 +334,8 @@ export default function TransactionDetailPage() {
                         </div>
                         <div
                             className={`px-6 py-3 rounded-full font-semibold text-sm flex items-center gap-2 self-start ${data.status === 1
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
-                                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+                                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300'
                                 }`}
                         >
                             {data.status === 1 ? <FaCheckCircle className="w-5 h-5" /> : <FaTimesCircle className="w-5 h-5" />}
@@ -359,6 +374,37 @@ export default function TransactionDetailPage() {
                             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                                 <FaPhone className="w-4 h-4" />
                                 <span className="font-medium">{data.customer.phone}</span>
+                            </div>
+                            <div className="flex items-start gap-3 md:col-span-2">
+                                <FaTags className="w-4 h-4 mt-1 text-gray-400" />
+                                <div className="w-full">
+                                    <span className="block text-xs text-gray-500 uppercase tracking-wide mb-1">Kategori</span>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3">
+                                        {data.customer?.categories && data.customer?.categories.length > 0 ? (
+                                            data.customer?.categories.map((cat) => (
+                                                <div
+                                                    key={cat.id}
+                                                    className="p-3 border rounded-lg bg-white shadow-sm flex flex-col gap-1"
+                                                >
+                                                    <div className="w-fit">
+                                                        <span
+                                                            className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded border border-indigo-200"
+                                                        >
+                                                            {cat.name}
+                                                        </span>
+                                                    </div>
+
+                                                    <p className="text-xs text-gray-600 break-words">
+                                                        Dibuat oleh <span className="font-bold">{cat.created_by.name}</span>
+                                                    </p>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <span className="text-gray-400 italic text-sm">Tidak ada kategori</span>
+                                        )}
+                                    </div>
+
+                                </div>
                             </div>
                         </div>
                     </div>

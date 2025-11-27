@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Badge from "@/components/ui/badge/Badge";
-import { alertToast, endpointUrl, httpDelete, httpGet, httpPost } from "@/../helpers";
+import { alertToast, endpointUrl, endpointUrlv2, httpDelete, httpGet, httpPost } from "@/../helpers";
 import { useSearchParams } from "next/navigation";
 import moment from "moment";
 import { useRouter } from 'next/navigation';
@@ -16,6 +16,8 @@ import EditUserModal from "@/components/modal/edit/EditUserModal";
 import DynamicFilterCard from "@/components/filters/DynamicFilterCard";
 import { Filter, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import Select from "@/components/form/Select-custom";
+import _ from "lodash";
 
 interface TableDataItem {
     id: number;
@@ -27,6 +29,11 @@ interface TableDataItem {
     name_purchase: string;
     created_at: string;
     updated_at: string;
+}
+
+interface CategoryOption {
+    id: number;
+    name: string;
 }
 
 export default function SalesPage() {
@@ -51,6 +58,8 @@ export default function SalesPage() {
     const [filterOptions, setFilterOptions] = useState<any[]>([]);
     const [appliedFilters, setAppliedFilters] = useState<Record<string, string[]>>({});
     const [showFilters, setShowFilters] = useState(false);
+    const [assignCategory, setAssignCategory] = useState<any>(0);
+    const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
     useEffect(() => {
         getData();
         const storedRole = localStorage.getItem("role");
@@ -71,6 +80,44 @@ export default function SalesPage() {
         };
         fetchFilterData();
     }, []);
+
+    useEffect(() => {
+        if (role === 6) {
+            const fetchInitialData = async () => {
+                try {
+                    const [categoryRes] = await Promise.all([
+                        httpGet(endpointUrlv2('master/customer-category/dropdown'), true)
+                    ]);
+                    setCategoryOptions(categoryRes.data.data);
+                } catch (error) {
+                    console.error("Failed to load initial options", error);
+                }
+            };
+            fetchInitialData();
+        }
+
+    }, [role]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (assignCategory !== 0) {
+            params.set('assign_category', assignCategory.toString());
+        } else {
+            params.delete('assign_category');
+        }
+        router.replace(`?${params.toString()}`, { scroll: false });
+    }, [assignCategory]);
+
+    const selectCategoryOptions = useMemo(() => {
+        const defaultOption = [{ value: "0", label: "Semua Kategori" }];
+        const mappedOptions = categoryOptions.filter(cat => cat.name.toLowerCase() !== "regular")
+            .map(cat => ({
+                value: cat.id.toString(),
+                label: cat.name
+            }));
+
+        return [...defaultOption, ...mappedOptions];
+    }, [categoryOptions]);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -227,12 +274,18 @@ export default function SalesPage() {
             page: page ? Number(page) : currentPage,
             filters: appliedFilters,
         };
+        if (role === 6) {
+            payload.assign_by_me = 1;
+            payload.assign_category = assignCategory
+        }
 
         let endpoint = '';
         if (role === 1 || role === 4 || role === 8) {
             endpoint = endpointUrl(`/transaction/list`);
-        } else if (role === 2 || role === 6 || role === 7) {
+        } else if (role === 2 || role === 7) {
             endpoint = endpointUrl(`/sales/transaction/list`);
+        } else if (role === 6 || role === 7) {
+            endpoint = endpointUrlv2(`transaction/list`);
         } else {
             console.error("Unknown user role:", role);
             return;
@@ -278,6 +331,7 @@ export default function SalesPage() {
         setSearchTerm('');
         setShowFilters(false);
         setCurrentPage(1);
+        setAssignCategory(0);
     };
 
     const handleRowClick = (rowData: TableDataItem) => {
@@ -292,6 +346,21 @@ export default function SalesPage() {
     return (
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
+                {
+                    role === 6 && (
+                        <div className="w-full xl:w-64">
+                            <Select
+                                placeholder="Semua Kategori"
+                                options={selectCategoryOptions}
+                                value={_.find(selectCategoryOptions, { value: assignCategory.toString() })}
+                                onValueChange={(selectedOption: any) => {
+                                    setAssignCategory(Number(selectedOption?.value || 0));
+                                    setCurrentPage(1);
+                                }}
+                            />
+                        </div>
+                    )
+                }
                 <button
                     onClick={() => setShowFilters(prev => !prev)}
                     className={`w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md flex items-center justify-center gap-2 transition-colors ${showFilters ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'
