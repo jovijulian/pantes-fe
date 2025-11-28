@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import DeactiveModal from "@/components/modal/deactive/Deactive";
 import { FaCheckDouble } from "react-icons/fa";
 import DynamicFilterCard from "@/components/filters/DynamicFilterCard";
-import { Filter, Users, X } from "lucide-react";
+import { Filter, Trash, Users, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Select from "@/components/form/Select-custom";
 import _ from "lodash";
@@ -47,7 +47,11 @@ export default function CustomerPage() {
     const [columns, setColumns] = useState<any[]>([]);
     const [categoryOptions, setCategoryOptions] = useState<CategoryOption[]>([]);
     const [assignCategory, setAssignCategory] = useState<any>(0);
-
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [targetCategoryId, setTargetCategoryId] = useState<number | "">("");
+    const [isAssigning, setIsAssigning] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     useEffect(() => {
         const paramCategory = searchParams.get("assign_category");
         if (paramCategory) {
@@ -252,11 +256,105 @@ export default function CustomerPage() {
         }
     };
 
+    const handleBulkAssign = async () => {
+        if (!targetCategoryId) {
+            toast.error("Silakan pilih kategori terlebih dahulu.");
+            return;
+        }
+
+        if (selectedRows.length === 0) {
+            toast.error("Tidak ada customer yang dipilih.");
+            return;
+        }
+
+        setIsAssigning(true);
+        try {
+            const payload = {
+                customer_ids: selectedRows.map((row) => row.id),
+                category_id: Number(targetCategoryId)
+            };
+
+            await httpPost(endpointUrl("/customer/assign-category-customer"), payload, true);
+
+            toast.success("Berhasil mengubah kategori customer!");
+
+            setIsAssignModalOpen(false);
+            setTargetCategoryId("");
+            setSelectedRows([]);
+            getData();
+
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || "Gagal mengubah kategori.");
+        } finally {
+            setIsAssigning(false);
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedRows.length === 0) {
+            toast.error("Tidak ada customer yang dipilih.");
+            return;
+        }
+
+        setIsDeleting(true);
+        try {
+            const payload = {
+                customer_ids: selectedRows.map((row) => row.id),
+            };
+
+            await httpPost(endpointUrl("/customer/delete-category-customer"), payload, true);
+
+            toast.success("Berhasil menghapus pelanggan!");
+
+            setIsDeleteModalOpen(false);
+            setSelectedRows([]);
+            getData();
+
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || "Gagal menghapus pelanggan.");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const selectCategoryAssignOptions = useMemo(() => {
+        const mappedOptions = categoryOptions.map(cat => ({
+            value: cat.id.toString(),
+            label: cat.name
+        }));
+
+        return [...mappedOptions];
+    }, [categoryOptions]);
+
+
     const activeFilterCount = Object.keys(appliedFilters).length;
 
     return (
         <div className="space-y-4">
             <div className="flex flex-col xl:flex-row justify-end items-start xl:items-center gap-3">
+                {selectedRows.length > 0 && (
+                    <>
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            onClick={() => setIsDeleteModalOpen(true)}
+                            className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center justify-center gap-2"
+                        >
+                            <Trash className="w-4 h-4" />
+                            <span>Hapus pelanggan ({selectedRows.length})</span>
+                        </motion.button>
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            onClick={() => setIsAssignModalOpen(true)}
+                            className="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center justify-center gap-2"
+                        >
+                            <Users className="w-4 h-4" />
+                            <span>Assign Kategori ({selectedRows.length})</span>
+                        </motion.button>
+                    </>
+
+                )}
                 <div className="w-full xl:w-64">
                     <Select
                         placeholder="Semua Kategori"
@@ -329,6 +427,7 @@ export default function CustomerPage() {
                 data={data}
                 columns={columnsNew}
                 pagination={true}
+                selection={true}
                 lastPage={lastPage}
                 total={count}
                 loading={isLoading}
@@ -337,7 +436,94 @@ export default function CustomerPage() {
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
             />
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                            Hapus pelanggan
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                            Anda akan menghapus <strong>{selectedRows.length}</strong> customer yang dipilih.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => {
+                                    setIsDeleteModalOpen(false);
+                                }}
+                                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                                disabled={isDeleting}
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleBulkDelete}
+                                disabled={isDeleting}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    "Hapus pelanggan"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isAssignModalOpen && (
+                <div className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                            Assign Kategori Massal
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                            Anda akan menetapkan kategori baru untuk <strong>{selectedRows.length}</strong> customer yang dipilih.
+                        </p>
 
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Pilih Kategori Baru
+                            </label>
+                            <Select
+                                onValueChange={(e) => setTargetCategoryId(e.value)}
+                                placeholder={"Pilih Kategori"}
+                                value={_.find(selectCategoryAssignOptions, { value: targetCategoryId })}
+                                options={selectCategoryAssignOptions}
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => {
+                                    setIsAssignModalOpen(false);
+                                    setTargetCategoryId("");
+                                }}
+                                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                                disabled={isAssigning}
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleBulkAssign}
+                                disabled={isAssigning || !targetCategoryId}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {isAssigning ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Processing...
+                                    </>
+                                ) : (
+                                    "Simpan Perubahan"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
