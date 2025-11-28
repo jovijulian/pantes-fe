@@ -24,7 +24,7 @@ interface GrafikTransaction { date: string; transaction_count: number; }
 interface Transaction { id: number; date: string; name_purchase: string; customer: { name: string }; sales: { name: string }; }
 
 interface DashboardData {
-    customer: { count_all: number; count_new_this_month: number; leaderboard: LeaderboardItem[]; three_month_no_transaction: any; birth_day: any; };
+    customer: { count_all: number; count_by_filter: number; leaderboard: LeaderboardItem[]; three_month_no_transaction: any; birth_day: any; };
     transaction: { count_all: number; list: Transaction[]; total_price_all: number; purchase_name: { purchase_name: string; total: number; }[]; };
     sales: { count_all: number; leaderboard: LeaderboardItem[]; };
     grafik: { transaction: GrafikTransaction[]; };
@@ -128,7 +128,7 @@ export default function DashboardPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="lg:col-span-1 flex flex-col gap-6">
                             <TotalCustomerFilterCard
-                                data={dashboardData.customer.count_new_this_month || 0}
+                                data={dashboardData.customer.count_by_filter || 0}
                             />
                             <TotalTransactionCard
                                 value={dashboardData.transaction.total_price_all || 0}
