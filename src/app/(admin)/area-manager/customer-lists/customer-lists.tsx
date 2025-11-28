@@ -91,7 +91,7 @@ export default function CustomerPage() {
 
     const selectCategoryOptions = useMemo(() => {
         const defaultOption = [{ value: "0", label: "Semua Kategori" }];
-        const mappedOptions = categoryOptions.filter(cat => cat.name.toLowerCase() !== "regular") 
+        const mappedOptions = categoryOptions
             .map(cat => ({
                 value: cat.id.toString(),
                 label: cat.name

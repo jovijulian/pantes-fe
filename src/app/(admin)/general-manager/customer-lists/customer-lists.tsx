@@ -91,11 +91,10 @@ export default function CustomerPage() {
 
     const selectCategoryOptions = useMemo(() => {
         const defaultOption = [{ value: "0", label: "Semua Kategori" }];
-        const mappedOptions = categoryOptions.filter(cat => cat.name.toLowerCase() !== "regular") 
-            .map(cat => ({
-                value: cat.id.toString(),
-                label: cat.name
-            }));
+        const mappedOptions = categoryOptions.map(cat => ({
+            value: cat.id.toString(),
+            label: cat.name
+        }));
 
         return [...defaultOption, ...mappedOptions];
     }, [categoryOptions]);
@@ -197,8 +196,8 @@ export default function CustomerPage() {
                             {row.categories && row.categories.length > 0 ? (
                                 <div className="flex flex-col gap-1 mt-1">
                                     {row.categories.map((cat: any) => (
-                                        <div 
-                                            key={cat.id} 
+                                        <div
+                                            key={cat.id}
                                             className="bg-indigo-50 border border-indigo-100 rounded p-1"
                                         >
                                             <span className="text-[12px] text-indigo-700 font-medium px-1 py-0.5 rounded">

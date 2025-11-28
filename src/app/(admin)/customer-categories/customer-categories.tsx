@@ -97,15 +97,9 @@ export default function CustomerCategory() {
 
             {
                 id: "name",
-                header: "Nama Ekspedisi",
+                header: "Nama Kategori",
                 accessorKey: "name",
                 cell: ({ row }: any) => <span>{row.name}</span>,
-            },
-            {
-                id: "note",
-                header: "Catatn",
-                accessorKey: "note",
-                cell: ({ row }: any) => <span>{row.note}</span>,
             },
             {
                 id: "status",
