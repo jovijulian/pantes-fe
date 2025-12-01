@@ -33,6 +33,7 @@ import {
   HeartHandshake,
   UserCheck,
   Users2,
+  User2,
 } from 'lucide-react';
 import { TbUserDollar } from 'react-icons/tb';
 import { FaTags } from 'react-icons/fa';
@@ -82,6 +83,12 @@ export const menuConfig: Record<string, NavItem[]> = {
       icon: <Database />,
       path: '/master-data',
       roles: [1],
+    },
+    {
+      name: 'Sales Saya',
+      icon: <User2 />,
+      path: '/area-manager/my-sales',
+      roles: [6],
     },
     {
       name: 'List Pelanggan',
