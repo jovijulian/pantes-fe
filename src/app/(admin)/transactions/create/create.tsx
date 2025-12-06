@@ -187,7 +187,7 @@ export default function DynamicCreateTransactionPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         let purchaseName: string = '';
-
+        setLoading(true);
         const buildPayload = () => {
             const details: any[] = [];
             const customerInfoStepKey = generateKey('Customer Information');
