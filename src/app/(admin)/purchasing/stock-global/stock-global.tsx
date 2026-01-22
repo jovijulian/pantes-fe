@@ -99,7 +99,7 @@ export default function StockGlobalReportPage() {
             try {
                 const [supplierRes, itemRes, staffRes] = await Promise.all([
                     httpGet(endpointUrl("master/supplier/dropdown"), true),
-                    httpGet(endpointUrlv2("master/item/dropdown"), true),
+                    httpGet(endpointUrl("master/item/dropdown"), true),
                     httpGet(endpointUrl("master/staff/dropdown"), true)
                 ]);
 
@@ -142,7 +142,7 @@ export default function StockGlobalReportPage() {
         const params = buildActiveFilters(appliedFilters);
 
         try {
-            const response = await httpGet(endpointUrlv2("stock-global"), true, params);
+            const response = await httpGet(endpointUrl("stock-global"), true, params);
             setData(response.data.data || []);
 
         } catch (error: any) {
@@ -162,7 +162,7 @@ export default function StockGlobalReportPage() {
         const params = buildActiveFilters(appliedFilters);
 
         try {
-            const response = await axios.get(endpointUrlv2("stock-global/export"), {
+            const response = await axios.get(endpointUrl("stock-global/export"), {
                 params,
                 responseType: 'blob',
                 headers: {

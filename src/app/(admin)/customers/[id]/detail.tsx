@@ -222,7 +222,7 @@ export default function CustomerDetailPage() {
 
             try {
                 const response = await httpGet(
-                    endpointUrlv2(`/customer/${id}/history-follow-up`),
+                    endpointUrl(`/customer/${id}/history-follow-up`),
                     true,
                     params
                 );

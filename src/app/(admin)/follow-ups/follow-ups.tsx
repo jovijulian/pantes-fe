@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import moment from "moment";
 import { useRouter } from 'next/navigation';
 import { toast } from "react-toastify";
-import DeactiveModal from "@/components/modal/deactive/DeactivePurchasing";
+import DeactiveModal from "@/components/modal/deactive/Deactive";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import DynamicFilterCard from "@/components/filters/DynamicFilterCard";
 import { X } from "lucide-react"
@@ -86,7 +86,7 @@ export default function FollowUpPage() {
                 start_date: summaryStartDate,
                 end_date: summaryEndDate
             };
-            const response = await httpGet(endpointUrlv2('follow-up/summary'), true, params);
+            const response = await httpGet(endpointUrl('follow-up/summary'), true, params);
             setSummaryData(response.data.data);
         } catch (error) {
             console.error(error);
@@ -111,7 +111,7 @@ export default function FollowUpPage() {
         if (tableEndDate) payload.end_date = tableEndDate;
 
         try {
-            const url = role === 2 ? endpointUrlv2("sales/follow-up/list") : endpointUrlv2("follow-up/list");
+            const url = role === 2 ? endpointUrl("sales/follow-up/list") : endpointUrl("follow-up/list");
             const response = await httpPost(url, payload, true);
 
             const responseData = response.data.data.data;

@@ -118,7 +118,7 @@ export default function EditPurchaseOrderPage() {
         const fetchOrderData = async () => {
             setLoadingData(true);
             try {
-                const res = await httpGet(endpointUrlv2(`/purchase/order/${id}`), true);
+                const res = await httpGet(endpointUrl(`/purchase/order/${id}`), true);
                 const data = res.data.data;
 
                 const mappedPayments: FormPaymentType[] = data.payment_types.map((p: any) => ({

@@ -5,7 +5,7 @@ import Input from "@/components/form/input/InputField";
 import Select from "@/components/form/Select-custom";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { endpointUrlv2, httpGet, httpPost, httpDelete } from "@/../helpers";
+import { endpointUrlv2, httpGet, httpPost, httpDelete, endpointUrl } from "@/../helpers";
 import { Modal } from "@/components/ui/modal";
 import {
     FaTrash,
@@ -75,7 +75,7 @@ export default function EditMasterForm() {
         try {
             if (!data) setLoading(true);
 
-            const response = await httpGet(endpointUrlv2(`/master/form/${formId}`), true);
+            const response = await httpGet(endpointUrl(`/master/form/${formId}`), true);
             setData(response.data.data);
 
             const details = response.data.data.details;
@@ -195,7 +195,7 @@ export default function EditMasterForm() {
             const payload = {
                 sort: targetDetail.sort
             }
-            await httpPost(endpointUrlv2(`/master/form/detail/${currentDetail.id}/sort`), payload, true);
+            await httpPost(endpointUrl(`/master/form/detail/${currentDetail.id}/sort`), payload, true);
             await fetchData();
             toast.success("Urutan berhasil diubah");
         } catch (error: any) {
@@ -220,7 +220,7 @@ export default function EditMasterForm() {
 
     const handleUpdateInfo = async () => {
         try {
-            await httpPost(endpointUrlv2(`/master/form/${formId}/update`), { name: inputName, description: inputDesc }, true);
+            await httpPost(endpointUrl(`/master/form/${formId}/update`), { name: inputName, description: inputDesc }, true);
             toast.success("Info form berhasil diupdate");
             fetchData();
             closeModal();
@@ -231,7 +231,7 @@ export default function EditMasterForm() {
         if (!validateFieldInput()) return;
         try {
             const payload = { step: inputStep, step_name: inputStepName, label: inputLabel, value_type: inputType, value_length: Number(inputLength) };
-            await httpPost(endpointUrlv2(`/master/form/${formId}/add`), payload, true);
+            await httpPost(endpointUrl(`/master/form/${formId}/add`), payload, true);
             toast.success("Field berhasil ditambahkan");
             fetchData();
             closeModal();
@@ -243,7 +243,7 @@ export default function EditMasterForm() {
         if (!validateFieldInput()) return;
         try {
             const payload = { step: inputStep, step_name: inputStepName, label: inputLabel, value_type: inputType, value_length: Number(inputLength) };
-            await httpPost(endpointUrlv2(`/master/form/detail/${selectedDetail.id}/update`), payload, true);
+            await httpPost(endpointUrl(`/master/form/detail/${selectedDetail.id}/update`), payload, true);
             toast.success("Field berhasil diupdate");
             fetchData();
             closeModal();
@@ -256,7 +256,7 @@ export default function EditMasterForm() {
             return;
         }
         try {
-            await httpPost(endpointUrlv2(`/master/form/rename-step/${inputStep}`), { step_name: inputStepName }, true);
+            await httpPost(endpointUrl(`/master/form/rename-step/${inputStep}`), { step_name: inputStepName }, true);
             toast.success("Nama Step berhasil diubah");
             fetchData();
             closeModal();
@@ -266,7 +266,7 @@ export default function EditMasterForm() {
     const handleAddOptionValue = async () => {
         if (!selectedDetail) return;
         try {
-            await httpPost(endpointUrlv2(`/master/form/detail/${selectedDetail.id}/value/add`), { value: inputOptionValue }, true);
+            await httpPost(endpointUrl(`/master/form/detail/${selectedDetail.id}/value/add`), { value: inputOptionValue }, true);
             toast.success("Opsi berhasil ditambahkan");
             fetchData();
             closeModal();
@@ -276,7 +276,7 @@ export default function EditMasterForm() {
     const handleUpdateOptionValue = async () => {
         if (!selectedOption) return;
         try {
-            await httpPost(endpointUrlv2(`/master/form/detail/value/${selectedOption.id}/update`), { value: inputOptionValue }, true);
+            await httpPost(endpointUrl(`/master/form/detail/value/${selectedOption.id}/update`), { value: inputOptionValue }, true);
             toast.success("Opsi berhasil diupdate");
             fetchData();
             closeModal();
@@ -287,15 +287,15 @@ export default function EditMasterForm() {
         if (!itemToDelete) return;
         try {
             if (itemToDelete.type === "STEP") {
-                await httpDelete(endpointUrlv2(`/master/form/deactive-step/${itemToDelete.id}`), true);
+                await httpDelete(endpointUrl(`/master/form/deactive-step/${itemToDelete.id}`), true);
                 toast.success(`Step ${itemToDelete.id} berhasil dinonaktifkan`);
             }
             else if (itemToDelete.type === "FIELD") {
-                await httpDelete(endpointUrlv2(`/master/form/detail/${itemToDelete.id}`), true);
+                await httpDelete(endpointUrl(`/master/form/detail/${itemToDelete.id}`), true);
                 toast.success("Pertanyaan berhasil dihapus");
             }
             else if (itemToDelete.type === "OPTION") {
-                await httpDelete(endpointUrlv2(`/master/form/detail/value/${itemToDelete.id}`), true);
+                await httpDelete(endpointUrl(`/master/form/detail/value/${itemToDelete.id}`), true);
                 toast.success("Opsi berhasil dihapus");
             }
             fetchData();

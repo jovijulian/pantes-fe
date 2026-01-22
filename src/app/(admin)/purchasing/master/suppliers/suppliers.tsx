@@ -10,7 +10,7 @@ import { useSearchParams } from "next/navigation";
 import moment from "moment";
 import { useRouter } from 'next/navigation';
 import { toast } from "react-toastify";
-import DeactiveModal from "@/components/modal/deactive/DeactivePurchasing";
+import DeactiveModal from "@/components/modal/deactive/Deactive";
 import EditModal from "@/components/modal/edit/EditSupplierModal";
 import { FaEdit, FaPlus, FaTrash, FaUniversity } from "react-icons/fa";
 import DateRangePicker from "@/components/common/DateRangePicker";

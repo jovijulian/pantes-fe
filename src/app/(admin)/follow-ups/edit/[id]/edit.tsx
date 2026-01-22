@@ -6,7 +6,7 @@ import Select from "@/components/form/Select-custom";
 import SingleDatePicker from '@/components/common/SingleDatePicker';
 import React, { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
-import { endpointUrlv2, httpGet, httpPost } from "@/../helpers";
+import { endpointUrl, endpointUrlv2, httpGet, httpPost } from "@/../helpers";
 import { useRouter, useParams } from "next/navigation";
 import moment from "moment";
 import { FaArrowLeft, FaCheckCircle, FaSyncAlt, FaUserCircle } from "react-icons/fa";
@@ -82,8 +82,8 @@ export default function SalesUpdateFollowUp() {
     const initData = async () => {
         try {
             const [configRes, dataRes] = await Promise.all([
-                httpGet(endpointUrlv2("form?code=follow_up"), true),
-                httpGet(endpointUrlv2(`sales/follow-up/${id}`), true)
+                httpGet(endpointUrl("form?code=follow_up"), true),
+                httpGet(endpointUrl(`sales/follow-up/${id}`), true)
             ]);
 
             if (configRes.data && Array.isArray(configRes.data.data)) {
@@ -161,7 +161,7 @@ export default function SalesUpdateFollowUp() {
                 ]
             };
 
-            await httpPost(endpointUrlv2(`sales/follow-up/${id}/update`), payload, true);
+            await httpPost(endpointUrl(`sales/follow-up/${id}/update`), payload, true);
             setSavingStatus("saved");
             setTimeout(() => setSavingStatus("idle"), 2000);
             toast.success("Perubahan berhasil disimpan.");

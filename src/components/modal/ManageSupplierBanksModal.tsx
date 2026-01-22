@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { toast } from 'react-toastify';
-import { alertToast, endpointUrlv2, httpDelete, httpGet, httpPost, httpPut } from '@/../helpers'; 
+import { alertToast, endpointUrl, endpointUrlv2, httpDelete, httpGet, httpPost, httpPut } from '@/../helpers'; 
 import Input from '@/components/form/input/InputField';
 import Select from '@/components/form/Select-custom';
 import { Loader2, Plus, Save, Trash2, X, Info } from 'lucide-react';
@@ -57,7 +57,7 @@ const ManageSupplierBanksModal: React.FC<ManageBanksModalProps> = ({
         if (isOpen) {
             const fetchMasterBanks = async () => {
                 try {
-                    const res = await httpGet(endpointUrlv2("master/bank/dropdown"), true);
+                    const res = await httpGet(endpointUrl("master/bank/dropdown"), true);
                     setAllBankOptions(res.data.data.map((b: any) => ({
                         value: b.id.toString(),
                         label: b.bank_name, 
@@ -77,7 +77,7 @@ const ManageSupplierBanksModal: React.FC<ManageBanksModalProps> = ({
             per_page: 100,
         }
         try {
-            const res = await httpGet(endpointUrlv2(`master/supplier/${supplierData.id}/bank`), true, params);
+            const res = await httpGet(endpointUrl(`master/supplier/${supplierData.id}/bank`), true, params);
             setAssignedBanks(res.data.data.data);
         } catch (error) {
             toast.error("Gagal memuat bank milik supplier.");
@@ -121,10 +121,10 @@ const ManageSupplierBanksModal: React.FC<ManageBanksModalProps> = ({
 
         try {
             if (mode === 'add') {
-                await httpPost(endpointUrlv2(`master/supplier/${supplierData.id}/bank`), payload, true);
+                await httpPost(endpointUrl(`master/supplier/${supplierData.id}/bank`), payload, true);
                 toast.success("Bank baru berhasil ditambahkan.");
             } else {
-                await httpPost(endpointUrlv2(`master/supplier/${supplierData.id}/bank/${selectedSupplierBankId}/update`), payload, true);
+                await httpPost(endpointUrl(`master/supplier/${supplierData.id}/bank/${selectedSupplierBankId}/update`), payload, true);
                 toast.success("Bank berhasil diupdate.");
             }
             fetchAssignedBanks(); 
@@ -159,7 +159,7 @@ const ManageSupplierBanksModal: React.FC<ManageBanksModalProps> = ({
 
         setIsSubmitting(true);
         try {
-            await httpDelete(endpointUrlv2(`master/supplier/${supplierData.id}/bank/${supplierBankId}/deactive`), true);
+            await httpDelete(endpointUrl(`master/supplier/${supplierData.id}/bank/${supplierBankId}/deactive`), true);
             toast.success("Bank berhasil dinonaktifkan.");
             fetchAssignedBanks(); 
         } catch (error: any) {

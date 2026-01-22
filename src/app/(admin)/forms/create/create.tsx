@@ -106,7 +106,7 @@ export default function CreateMasterForm() {
         try {
             setLoading(true);
             await httpPost(
-                endpointUrlv2("/master/form"),
+                endpointUrl("/master/form"),
                 payload,
                 true,
             );

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from 'next/navigation';
 import ComponentCard from "@/components/common/ComponentCard";
-import { endpointUrlv2, httpGet } from "@/../helpers";
+import { endpointUrl, endpointUrlv2, httpGet } from "@/../helpers";
 import moment from "moment";
 import {
     FaClipboardList,
@@ -176,9 +176,9 @@ export default function SalesFollowUpDetail() {
         setLoading(true);
         let url;
         if (role === 2) {
-            url = endpointUrlv2(`sales/follow-up/${id}`);
+            url = endpointUrl(`sales/follow-up/${id}`);
         } else {
-            url = endpointUrlv2(`follow-up/${id}`);
+            url = endpointUrl(`follow-up/${id}`);
         }
         try {
             const response = await httpGet(url, true);

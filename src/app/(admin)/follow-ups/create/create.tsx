@@ -61,7 +61,7 @@ export default function SalesCreateFollowUp() {
     useEffect(() => {
         const fetchConfig = async () => {
             try {
-                const response = await httpGet(endpointUrlv2("form?code=follow_up"), true);
+                const response = await httpGet(endpointUrl("form?code=follow_up"), true);
                 if (response.data && Array.isArray(response.data.data)) {
                     const steps = response.data.data;
                     setFormSteps(steps);
@@ -245,7 +245,7 @@ export default function SalesCreateFollowUp() {
                 detail: detailPayload
             };
 
-            await httpPost(endpointUrlv2("sales/follow-up"), fullPayload, true);
+            await httpPost(endpointUrl("sales/follow-up"), fullPayload, true);
             toast.success("Follow Up berhasil dibuat!");
             router.push("/follow-ups");
 
