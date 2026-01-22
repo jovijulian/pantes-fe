@@ -164,6 +164,7 @@ export default function SalesUpdateFollowUp() {
             await httpPost(endpointUrlv2(`sales/follow-up/${id}/update`), payload, true);
             setSavingStatus("saved");
             setTimeout(() => setSavingStatus("idle"), 2000);
+            toast.success("Perubahan berhasil disimpan.");
 
         } catch (error) {
             console.error("Update failed", error);
@@ -366,7 +367,7 @@ export default function SalesUpdateFollowUp() {
                             ) : (
                                 <button
                                     type="button"
-                                    onClick={() => router.push('/sales/follow-up')}
+                                    onClick={() => router.push('/follow-ups')}
                                     className="px-6 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 font-medium shadow-lg shadow-green-500/30"
                                 >
                                     Selesai
