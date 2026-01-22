@@ -3,11 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import ComponentCard from "@/components/common/ComponentCard";
-import { endpointUrl, endpointUrlv2, httpGet } from "../../../../../helpers";
-import { FaUserCircle, FaPhoneAlt, FaMapMarkerAlt, FaInfoCircle, FaBirthdayCake, FaGift, FaCheckCircle, FaTimesCircle, FaHistory, FaTags, FaClipboardList } from "react-icons/fa";
+import { endpointUrl, endpointUrlv2, httpGet } from "@/../helpers";
+import { FaUserCircle, FaPhoneAlt, FaMapMarkerAlt, FaInfoCircle, FaBirthdayCake, FaGift, FaCheckCircle, FaTimesCircle, FaHistory, FaTags } from "react-icons/fa";
 import Table from "@/components/tables/Table";
 import moment from "moment";
-import { toast } from "react-toastify";
+import {toast} from "react-toastify";                             
 
 interface Category {
     id: number;
@@ -60,7 +60,6 @@ export default function CustomerDetailPage() {
     const id = Number(params.id);
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
-    const [searchTermFollowUp, setSearchTermFollowUp] = useState('');
     const page = searchParams.get("page") || "1";
     const [historyData, setHistoryData] = useState<any[]>([]);
     const [historyColumns, setHistoryColumns] = useState<any[]>([]);
@@ -69,14 +68,6 @@ export default function CustomerDetailPage() {
     const [perPage, setPerPage] = useState(10);
     const [lastPage, setLastPage] = useState(1);
     const [count, setCount] = useState(0);
-    const [activeTab, setActiveTab] = useState<'transaction' | 'followup'>('transaction');
-    const [followUpData, setFollowUpData] = useState<any[]>([]);
-    const [followUpColumns, setFollowUpColumns] = useState<any[]>([]);
-    const [isLoadingFollowUp, setIsLoadingFollowUp] = useState(true);
-    const [followUpPage, setFollowUpPage] = useState(1);
-    const [followUpPerPage, setFollowUpPerPage] = useState(10);
-    const [followUpLastPage, setFollowUpLastPage] = useState(1);
-    const [followUpCount, setFollowUpCount] = useState(0);
 
     useEffect(() => {
         if (id) {
@@ -91,13 +82,13 @@ export default function CustomerDetailPage() {
             };
             getDetail(id);
         }
-    }, [searchParams, currentPage, perPage, page, id]);
+    }, [searchParams, currentPage, perPage, page, searchTerm, id]);
 
     const handleRowClick = (id: number) => {
         const detailUrl = `/transactions/${id}`;
         window.open(detailUrl, '_blank');
     };
-
+    
     useEffect(() => {
         if (!id) return;
 
@@ -172,8 +163,8 @@ export default function CustomerDetailPage() {
                             const prices = relevantDetail.value
                                 .split(", ")
                                 .map((v: string) => v.trim())
-                                .filter(Boolean);
-
+                                .filter(Boolean); 
+                
                             return (
                                 <div className="flex flex-col">
                                     {prices.map((price: string, idx: number) => (
@@ -208,84 +199,6 @@ export default function CustomerDetailPage() {
         getDataHistory();
     }, [searchParams, currentPage, perPage, page, searchTerm, id]);
 
-    useEffect(() => {
-        if (!id) return;
-
-        const getFollowUpHistory = async () => {
-            setIsLoadingFollowUp(true);
-            const search = searchTermFollowUp.trim();
-            const params: any = {
-                ...(search ? { search } : {}),
-                per_page: followUpPerPage,
-                page: followUpPage,
-            };
-
-            try {
-                const response = await httpGet(
-                    endpointUrlv2(`/customer/${id}/history-follow-up`),
-                    true,
-                    params
-                );
-
-                const responseData = response.data.data.data || [];
-                const pageInfo = response.data.data.page_info;
-                const staticColumns = [
-                    {
-                        id: "date",
-                        header: "Tanggal",
-                        cell: ({ row }: any) => (
-                            <div className="flex flex-col">
-                                <span className="font-medium text-gray-800 dark:text-gray-200">
-                                    {moment(row.date).format("DD MMM YYYY")}
-                                </span>
-                            </div>
-                        )
-                    },
-                    {
-                        id: "name",
-                        header: "Judul",
-                        accessorKey: "name",
-                        cell: ({ row }: any) => (
-                            <span className="font-semibold text-blue-600 hover:underline">
-                                {row.name}
-                            </span>
-                        )
-                    },
-                    {
-                        id: "description",
-                        header: "Catatan",
-                        accessorKey: "description",
-                        cell: ({ row }: any) => (
-                            <span className="italic text-gray-500 truncate max-w-[200px] block">
-                                {row.description || "-"}
-                            </span>
-                        )
-                    },
-                    {
-                        id: "sales",
-                        header: "Sales",
-                        cell: ({ row }: any) => (
-                            <span className="capitalize">{row.sales?.name || "-"}</span>
-                        )
-                    },
-                ];
-
-                setFollowUpColumns([...staticColumns]);
-                setFollowUpData(responseData);
-                setFollowUpLastPage(pageInfo?.total_pages || 1);
-                setFollowUpCount(pageInfo?.total_record || 0);
-
-            } catch (error) {
-                console.error("Failed to fetch follow up history", error);
-                toast.error("Failed to fetch follow up history");
-            } finally {
-                setIsLoadingFollowUp(false);
-            }
-        };
-
-        getFollowUpHistory();
-    }, [followUpPage, followUpPerPage, id, searchTermFollowUp]);
-
     const handlePageChange = (page: number) => setCurrentPage(page);
     const handlePerPageChange = (newPerPage: number) => {
         setPerPage(newPerPage);
@@ -295,22 +208,6 @@ export default function CustomerDetailPage() {
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
     };
-
-    const handleSearchFollowUp = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTermFollowUp(e.target.value);
-    };
-
-    const handleFollowUpRowClick = (id: number) => {
-        const detailUrl = `/follow-ups/${id}`;
-        window.open(detailUrl, '_blank');
-    };
-
-    const handleFollowUpPageChange = (page: number) => setFollowUpPage(page);
-    const handleFollowUpPerPageChange = (newPerPage: number) => {
-        setFollowUpPerPage(newPerPage);
-        setFollowUpPage(1);
-    };
-
 
     if (!data) {
         return <div className="text-center p-10">Loading customer data...</div>;
@@ -342,8 +239,8 @@ export default function CustomerDetailPage() {
                                 <div className="flex flex-wrap gap-2">
                                     {data.categories && data.categories.length > 0 ? (
                                         data.categories.map((cat) => (
-                                            <span
-                                                key={cat.id}
+                                            <span 
+                                                key={cat.id} 
                                                 className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
                                             >
                                                 {cat.name}
@@ -358,74 +255,39 @@ export default function CustomerDetailPage() {
                         <div className="flex items-start gap-3 md:col-span-2"><FaInfoCircle className="w-4 h-4 mt-1 text-gray-400" /><div><span className="block text-xs text-gray-500">Informasi Tambahan</span><p className="text-gray-600 dark:text-gray-400 italic">{data.detail_information || 'N/A'}</p></div></div>
                     </div>
                 </div>
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
-                    <div className="flex border-b border-gray-200 dark:border-gray-700">
-                        <button
-                            onClick={() => setActiveTab('transaction')}
-                            className={`
-                flex-1 py-4 text-sm font-medium text-center transition-all duration-200 flex items-center justify-center gap-2 border-b-2
-                ${activeTab === 'transaction'
-                                    ? 'border-blue-600 text-blue-600 bg-blue-50/50 dark:bg-blue-900/10 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-700'}
-            `}
-                        >
-                            Transaksi
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('followup')}
-                            className={`
-                flex-1 py-4 text-sm font-medium text-center transition-all duration-200 flex items-center justify-center gap-2 border-b-2
-                ${activeTab === 'followup'
-                                    ? 'border-blue-600 text-blue-600 bg-blue-50/50 dark:bg-blue-900/10 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-700'}
-            `}
-                        >
-                            Follow Up
-                        </button>
-                    </div>
 
-                    <div className="p-4">
-                        <div className="flex justify-between items-center mb-4">
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm p-4">
+                    <div className="flex justify-between items-center p-3">
+                        <div className="flex items-center gap-3">
                             <h3 className="text-lg font-bold text-gray-800 dark:text-white">
-                                {activeTab === 'transaction' ? 'Daftar Transaksi' : 'Daftar Follow Up'}
+                                Histori Transaksi
                             </h3>
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={activeTab === 'transaction' ? searchTerm : searchTermFollowUp}
-                                    onChange={activeTab === 'transaction' ? handleSearch : handleSearchFollowUp}
-                                    placeholder={activeTab === 'transaction' ? "Cari Transaksi..." : "Cari Follow Up..."}
-                                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm w-64"
-                                />
-                            </div>
                         </div>
 
-                        {activeTab === 'transaction' ? (
-                            <Table
-                                data={historyData}
-                                columns={historyColumns}
-                                pagination={true}
-                                lastPage={lastPage}
-                                total={count}
-                                loading={isLoadingHistory}
-                                onPageChange={handlePageChange}
-                                onPerPageChange={handlePerPageChange}
-                                onRowClick={(rowData: any) => handleRowClick(rowData.id)}
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={handleSearch}
+                                placeholder="Search..."
+                                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none 
+                 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 
+                 dark:bg-gray-700 dark:text-white"
                             />
-                        ) : (
-                            <Table
-                                data={followUpData}
-                                columns={followUpColumns}
-                                pagination={true}
-                                lastPage={followUpLastPage}
-                                total={followUpCount}
-                                loading={isLoadingFollowUp}
-                                onPageChange={handleFollowUpPageChange}
-                                onPerPageChange={handleFollowUpPerPageChange}
-                                onRowClick={(rowData: any) => handleFollowUpRowClick(rowData.id)}
-                            />
-                        )}
+                        </div>
                     </div>
+
+                    <Table
+                        data={historyData}
+                        columns={historyColumns}
+                        pagination={true}
+                        lastPage={lastPage}
+                        total={count}
+                        loading={isLoadingHistory}
+                        onPageChange={handlePageChange}
+                        onPerPageChange={handlePerPageChange}
+                        onRowClick={(rowData: any) => handleRowClick(rowData.id)}
+                    />
                 </div>
             </div>
         </ComponentCard >

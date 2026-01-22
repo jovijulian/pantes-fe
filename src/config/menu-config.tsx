@@ -34,9 +34,11 @@ import {
   UserCheck,
   Users2,
   User2,
+  BookText,
+  Pointer,
 } from 'lucide-react';
 import { TbUserDollar } from 'react-icons/tb';
-import { FaTags } from 'react-icons/fa';
+import { FaTags, FaWpforms } from 'react-icons/fa';
 
 export type NavItem = {
   name: string;
@@ -61,10 +63,29 @@ export const menuConfig: Record<string, NavItem[]> = {
       roles: [1, 2, 4, 6, 7, 8],
     },
     {
+      name: 'Follow Up',
+      icon: <Pointer />,
+      path: '/follow-ups',
+      roles: [1,2],
+    },
+    {
       name: 'Pelanggan',
       icon: <Users />,
       path: '/customers',
       roles: [1, 2, 4, 8],
+    },
+    
+    {
+      name: 'Manajemen Data Master',
+      icon: <Database />,
+      path: '/master-data',
+      roles: [1],
+    },
+    {
+      name: 'Manajemen Form Follow Up',
+      icon: <BookText />,
+      path: '/forms',
+      roles: [1],
     },
     {
       name: 'Akun Sales',
@@ -76,12 +97,6 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Kategori Pelanggan',
       icon: <FaTags />,
       path: '/customer-categories',
-      roles: [1],
-    },
-    {
-      name: 'Manajemen Data Master',
-      icon: <Database />,
-      path: '/master-data',
       roles: [1],
     },
     {

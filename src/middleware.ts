@@ -10,16 +10,19 @@ const rolePermissions: Record<string, string[]> = {
         '/sales-accounts',
         '/customers',
         '/transactions',
+        '/follow-ups',
         '/master-data',
         '/profile',
         '/purchasing',
         '/admin-panel',
         '/customer-categories',
+        '/forms',
     ],
     '2': [
        '/dashboard',
        '/customers',
        '/transactions',
+       '/follow-ups',
        '/profile'
     ],
     '3': [

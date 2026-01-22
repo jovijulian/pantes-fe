@@ -190,7 +190,7 @@ export default function SalesPage() {
                 header: "Nama Pelanggan",
                 accessorKey: "name",
                 cell: ({ row }: any) => {
-                    const name = row.customer.name;
+                    const name = row.customer?.name;
                     const captionsString = row.captions;
 
                     const showCaptions = activeFilterCount > 0 && captionsString;
@@ -219,7 +219,7 @@ export default function SalesPage() {
                 id: "phone",
                 header: "No. Telp Pelanggan",
                 accessorKey: "phone",
-                cell: ({ row }: any) => <span>{row.customer.phone}</span>,
+                cell: ({ row }: any) => <span>{row.customer?.phone}</span>,
             },
             {
                 id: "name_purchase",

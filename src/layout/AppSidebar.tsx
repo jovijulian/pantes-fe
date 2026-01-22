@@ -31,7 +31,7 @@ const AppSidebar: React.FC = () => {
     if (role === null) return [];
     let currentMenuKey: keyof typeof menuConfig | null = null;
 
-    if (pathname.startsWith('/dashboard') || pathname.startsWith('/customers') || pathname.startsWith('/transactions') || pathname.startsWith('/sales-accounts') || pathname.startsWith('/master-data') || pathname.startsWith('/customer-categories') || pathname.startsWith('/area-manager') || pathname.startsWith('/general-manager')) {
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/customers') || pathname.startsWith('/transactions') || pathname.startsWith('/sales-accounts') || pathname.startsWith('/master-data') || pathname.startsWith('/customer-categories') || pathname.startsWith('/area-manager') || pathname.startsWith('/general-manager') || pathname.startsWith('/forms') || pathname.startsWith('/follow-ups')) {
       currentMenuKey = 'menu';
     } else if (pathname.startsWith('/purchasing')) {
       currentMenuKey = 'menu_purchasing';
