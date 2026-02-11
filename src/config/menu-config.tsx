@@ -43,7 +43,7 @@ import { FaTags, FaWpforms } from 'react-icons/fa';
 export type NavItem = {
   name: string;
   icon: React.ReactNode;
-  path?: string; 
+  path?: string;
   roles: number[];
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean, roles: number[] }[];
 };
@@ -66,7 +66,7 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Follow Up',
       icon: <Pointer />,
       path: '/follow-ups',
-      roles: [1,2],
+      roles: [1, 2],
     },
     {
       name: 'Pelanggan',
@@ -74,7 +74,7 @@ export const menuConfig: Record<string, NavItem[]> = {
       path: '/customers',
       roles: [1, 2, 4, 8],
     },
-    
+
     {
       name: 'Manajemen Data Master',
       icon: <Database />,
@@ -151,7 +151,7 @@ export const menuConfig: Record<string, NavItem[]> = {
     },
     {
       name: 'CT',
-      icon: <Gem />, 
+      icon: <Gem />,
       roles: [1, 3, 5],
       subItems: [
         { name: 'Pembelian', path: '/purchasing/orders', roles: [1, 3, 5] },
@@ -160,44 +160,42 @@ export const menuConfig: Record<string, NavItem[]> = {
     },
     {
       name: 'LM',
-      icon: <Diamond />, 
+      icon: <Diamond />,
       roles: [1, 3, 5],
       subItems: [
         { name: 'Pembelian', path: '/purchasing/orders-lm', roles: [1, 3, 5] },
         { name: 'Surat Jalan', path: '/purchasing/work-orders-lm', roles: [1, 3, 5] },
       ]
     },
-    // {
-    //   name: 'Pembelian CT',
-    //   icon: <FileText />,
-    //   path: '/purchasing/orders',
-    //   roles: [1, 3],
-    // },
-    // {
-    //   name: 'Surat Jalan CT',
-    //   icon: <Truck />, 
-    //   path: '/purchasing/work-orders',
-    //   roles: [1, 3],
-    // },
+    {
+      name: 'Rongsok',
+      icon: <Package />,
+      roles: [1, 3, 5],
+      subItems: [
+        { name: 'Rongsok', path: '/purchasing/scrap-golds', roles: [1, 3, 5] },
+        { name: 'Kirim Rongsok', path: '/purchasing/scrap-golds/sends', roles: [1, 3, 5] },
+      ]
+    },
     {
       name: 'Setor Barang',
-      icon: <Archive />, 
+      icon: <Archive />,
       path: '/purchasing/deposits',
       roles: [1, 3, 5],
     },
     {
       name: 'Laporan Stok Global',
-      icon: <PackageSearch />, 
+      icon: <PackageSearch />,
       path: '/purchasing/stock-global',
       roles: [1, 3, 5],
     },
     {
       name: 'Master Data',
-      icon: <Database />, 
+      icon: <Database />,
       roles: [1, 3, 5],
       subItems: [
         { name: 'Supplier', path: '/purchasing/master/suppliers', roles: [1, 3, 5] },
         { name: 'Barang', path: '/purchasing/master/items', roles: [1, 3, 5] },
+        { name: 'Vendor', path: '/purchasing/master/vendors', roles: [1, 3, 5] },
         { name: 'Bank', path: '/purchasing/master/banks', roles: [1, 3, 5] },
         { name: 'Ekspedisi', path: '/purchasing/master/expeditions', roles: [1, 3, 5] },
         { name: 'Karyawan', path: '/purchasing/master/employees', roles: [1, 3, 5] },

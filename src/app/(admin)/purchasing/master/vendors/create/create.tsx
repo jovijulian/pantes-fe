@@ -36,25 +36,25 @@ export default function CreateForm() {
             }
 
             await httpPost(
-                endpointUrl("/master/supplier"),
+                endpointUrl("/master/vendor"),
                 data,
                 true,
             );
-            toast.success("Supplier berhasil ditambahkan!");
-            router.push("/purchasing/master/suppliers");
+            toast.success("Vendor berhasil ditambahkan!");
+            router.push("/purchasing/master/vendors");
         } catch (error: any) {
-            toast.error(error?.response?.data?.errors?.type || "Gagal menambahkan supplier.");
+            toast.error(error?.response?.data?.errors?.type || "Gagal menambahkan vendor.");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <ComponentCard title="Data Supplier">
+        <ComponentCard title="Data Vendor">
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                     <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Kode Supplier<span className="text-red-400 ml-1">*</span>
+                        Kode Vendor<span className="text-red-400 ml-1">*</span>
                     </label>
                     <Input
                         type="text"
@@ -65,7 +65,7 @@ export default function CreateForm() {
                 </div>
                 <div>
                     <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
-                        Nama Supplier<span className="text-red-400 ml-1">*</span>
+                        Nama Vendor<span className="text-red-400 ml-1">*</span>
                     </label>
                     <Input
                         type="text"
@@ -76,7 +76,7 @@ export default function CreateForm() {
                 </div>
                 <div className="flex justify-end gap-2">
                     <button
-                        onClick={() => router.push("/purchasing/master/suppliers")}
+                        onClick={() => router.push("/purchasing/master/vendors")}
                         type="button"
                         className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
                     >

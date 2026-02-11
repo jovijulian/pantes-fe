@@ -19,11 +19,11 @@ const rolePermissions: Record<string, string[]> = {
         '/forms',
     ],
     '2': [
-       '/dashboard',
-       '/customers',
-       '/transactions',
-       '/follow-ups',
-       '/profile'
+        '/dashboard',
+        '/customers',
+        '/transactions',
+        '/follow-ups',
+        '/profile'
     ],
     '3': [
         '/purchasing/dashboard',
@@ -31,6 +31,7 @@ const rolePermissions: Record<string, string[]> = {
         '/purchasing/deposits',
         '/purchasing/work-orders',
         '/purchasing/orders',
+        '/purchasing/scrap-golds',
      ],
      '4': [
         '/dashboard',
@@ -41,8 +42,12 @@ const rolePermissions: Record<string, string[]> = {
         '/profile',
     ],
     '5': [
-        '/profile',
-        '/purchasing',
+        '/purchasing/dashboard',
+        '/purchasing/master',
+        '/purchasing/deposits',
+        '/purchasing/work-orders',
+        '/purchasing/orders',
+        '/purchasing/scrap-golds',
     ],
     '6': [
         '/dashboard',
