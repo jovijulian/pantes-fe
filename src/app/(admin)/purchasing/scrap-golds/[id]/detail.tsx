@@ -81,7 +81,7 @@ export default function ScrapGoldDetailPage() {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case '1': return <Badge color="warning">Baru</Badge>;
+            case '1': return <Badge color="warning">New</Badge>;
             case '2': return <Badge color="success">Diproses</Badge>;
             default: return <Badge color="info">Unknown</Badge>;
         }

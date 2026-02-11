@@ -227,7 +227,7 @@ export default function ScrapGoldsPage() {
                                 hover:from-blue-600 hover:to-indigo-700 
                                 transition-all duration-200"
                             >
-                                {isExporting ? <Loader2 className="animate-spin w-3.5 h-3.5" /> :  <Download className="w-3.5 h-3.5" />}
+                                {isExporting ? <Loader2 className="animate-spin w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
                                 Export
                             </button>
                         )}
@@ -288,7 +288,7 @@ export default function ScrapGoldsPage() {
             id: "status",
             header: "Status",
             cell: ({ row }: { row: IScrapGoldTransaction }) => {
-                if (row.status === "1") return <Badge color="warning">Baru</Badge>;
+                if (row.status === "1") return <Badge color="warning">New</Badge>;
                 if (row.status === "2") return <Badge color="success">Diproses</Badge>;
                 return <Badge color="info">Unknown</Badge>;
             }
@@ -297,19 +297,18 @@ export default function ScrapGoldsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-1 flex flex-col justify-center">
-                    <h1 className="text-2xl font-bold text-gray-800">Data Rongsok</h1>
-                    <p className="text-gray-500 text-sm">Kelola penerimaan emas rongsok</p>
-                </div>
-
+            <div className="flex flex-col gap-1">
+                <h1 className="text-2xl font-bold text-gray-800">Data Rongsok</h1>
+                <p className="text-gray-500 text-sm">Kelola penerimaan emas rongsok</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div
                     onClick={() => handleFilterStatus('1')}
                     className={`bg-white p-4 rounded-xl shadow-sm border border-l-4 border-l-yellow-400 flex items-center justify-between cursor-pointer transition-all hover:shadow-md
                     ${statusFilter === '1' ? 'ring-2 ring-yellow-400 bg-yellow-50' : 'border-gray-100'}`}
                 >
                     <div>
-                        <p className="text-gray-500 text-sm font-medium">Status Baru</p>
+                        <p className="text-gray-500 text-sm font-medium">New</p>
                         <h2 className="text-2xl font-bold text-gray-800 mt-1">{stats.new}</h2>
                     </div>
                     <div className="p-3 bg-gray-50 rounded-full">

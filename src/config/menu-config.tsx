@@ -36,6 +36,7 @@ import {
   User2,
   BookText,
   Pointer,
+  BookOpenCheck,
 } from 'lucide-react';
 import { TbUserDollar } from 'react-icons/tb';
 import { FaTags, FaWpforms } from 'react-icons/fa';
@@ -174,6 +175,16 @@ export const menuConfig: Record<string, NavItem[]> = {
       subItems: [
         { name: 'Rongsok', path: '/purchasing/scrap-golds', roles: [1, 3, 5] },
         { name: 'Kirim Rongsok', path: '/purchasing/scrap-golds/sends', roles: [1, 3, 5] },
+      ]
+    },
+    {
+      name: 'Report View',
+      icon: <BookOpenCheck />,
+      path: '/purchasing/reports',
+      roles: [1, 3, 5],
+      subItems: [
+        { name: 'Kartu Stok Rongsok', path: '/purchasing/reports/scrap-gold/stock-cards', roles: [1, 3, 5] },
+        { name: 'Stok Akhir Rongsok', path: '/purchasing/reports/scrap-gold/stock-finals', roles: [1, 3, 5] },
       ]
     },
     {

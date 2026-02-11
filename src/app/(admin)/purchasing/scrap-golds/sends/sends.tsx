@@ -425,7 +425,7 @@ export default function ScrapGoldSendPage() {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <FilterCard
-                            label="Gudang CT"
+                            label="Gudang"
                             count={purposeStats["gudang"]}
                             isActive={purposeFilter === '1'}
                             onClick={() => handleFilterPurpose('1')}
@@ -461,7 +461,7 @@ export default function ScrapGoldSendPage() {
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Cari No. Rongsok..."
+                        placeholder="Search..."
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
 
