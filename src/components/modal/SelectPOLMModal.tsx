@@ -27,7 +27,7 @@ interface SelectPOModalProps {
     existingPOIds: number[];
 }
 
-const SelectPOModal: React.FC<SelectPOModalProps> = ({ 
+const SelectPOLMModal: React.FC<SelectPOModalProps> = ({ 
     isOpen, 
     onClose, 
     onConfirm, 
@@ -45,7 +45,7 @@ const SelectPOModal: React.FC<SelectPOModalProps> = ({
         
         setIsLoading(true);
         try {
-            const res = await httpGet(endpointUrl(`/work-order/order-by-supplier/${supplierId}?type=1`), true, {
+            const res = await httpGet(endpointUrl(`/work-order/order-by-supplier/${supplierId}?type=2`), true, {
                 search: searchTerm,
             });
             
@@ -208,4 +208,4 @@ const SelectPOModal: React.FC<SelectPOModalProps> = ({
     );
 };
 
-export default SelectPOModal;
+export default SelectPOLMModal;

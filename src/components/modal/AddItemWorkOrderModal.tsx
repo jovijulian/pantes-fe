@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, Fragment, useCallback } from 'react'; 
+import React, { useState, useEffect, useMemo, Fragment, useCallback } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { toast } from 'react-toastify';
 import { alertToast, endpointUrl, endpointUrlv2, httpGet, httpPost } from '@/../helpers';
@@ -19,10 +19,10 @@ interface IExistingItem {
 }
 interface IItemFormState {
     item_id: number | null;
-    weight: number; 
-    kadar: number; 
+    weight: number;
+    kadar: number;
     bruto: number;
-    disc: number; 
+    disc: number;
     sg: number;
     scope: number;
     xray: number;
@@ -33,10 +33,10 @@ interface IItemFormState {
     };
 }
 interface IItemInList extends IItemFormState {
-    id: string; 
+    id: string;
     item_name: string;
-    netto: number; 
-    bayar_nett: number; 
+    netto: number;
+    bayar_nett: number;
     order_no_order: string;
 }
 interface IItemPayload {
@@ -54,22 +54,24 @@ interface AddItemModalProps {
     isOpen: boolean;
     onClose: () => void;
     workOrderId: number;
-    onSuccess: () => void; 
-    baseNominal: number; 
-    baseTotalWeight: number; 
-    existingItems: IExistingItem[]; 
+    onSuccess: () => void;
+    baseNominal: number;
+    baseTotalWeight: number;
+    existingItems: IExistingItem[];
+    type: string;
 }
 
-const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({ 
-    isOpen, 
-    onClose, 
+const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
+    isOpen,
+    onClose,
     workOrderId,
     onSuccess,
     baseNominal,
     baseTotalWeight,
-    existingItems
+    existingItems,
+    type
 }) => {
-    
+
     const [itemOptions, setItemOptions] = useState<SelectOption[]>([]);
     const [itemPOOptions, setItemPOOptions] = useState<SelectOption[]>([]);
     const [loadingOptions, setLoadingOptions] = useState(true);
@@ -77,20 +79,20 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
     const [form, setForm] = useState<IItemFormState>(initialFormState());
     const [itemsList, setItemsList] = useState<IItemInList[]>([]);
     const [calculatedNetto, setCalculatedNetto] = useState(0);
-    const [calculatedBayarNett, setCalculatedBayarNett] = useState(0); 
+    const [calculatedBayarNett, setCalculatedBayarNett] = useState(0);
 
     const { totalBrutoInDetail, totalBrutoInList, selisih } = useMemo(() => {
         const inDetail = existingItems.reduce((acc, item) => acc + Number(item.pcs), 0);
         const inList = itemsList.reduce((acc, item) => acc + item.weight, 0);
         const sisa = baseTotalWeight - (inDetail + inList);
         const roundedSisa = Number(sisa.toFixed(5));
-        
-        return { 
+
+        return {
             totalBrutoInDetail: inDetail,
             totalBrutoInList: inList,
             selisih: roundedSisa
         };
-       
+
     }, [itemsList, existingItems, baseTotalWeight]);
 
     const calculateModalNetto = useCallback((item: { bruto: string | number, kadar: string | number }): number => {
@@ -100,13 +102,13 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
     }, []);
 
     const calculateBayar = useCallback((item: { pcs: string | number, bruto: string | number, kadar: string | number, disc: string | number }): number => {
-        const nominal = baseNominal || 0; 
-        const pcs = Number(item.pcs) || 0;     
-        const bruto = Number(item.bruto) || 0;    
-        const disc = Number(item.disc) || 0;       
-        
+        const nominal = baseNominal || 0;
+        const pcs = Number(item.pcs) || 0;
+        const bruto = Number(item.bruto) || 0;
+        const disc = Number(item.disc) || 0;
+
         const netto = calculateModalNetto(item);
-        
+
         let finalBayar = 0;
         if (bruto > 0) {
             finalBayar = (nominal * (netto / bruto)) * pcs / bruto;
@@ -122,13 +124,13 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
         const inList = itemsList.reduce((acc, item) => acc + item.bayar_nett, 0);
         const sisa = baseNominal - (inDetail + inList);
         const roundedSisa = Number(sisa.toFixed(5));
-        
-        return { 
+
+        return {
             totalBayarInDetail: inDetail,
             totalBayarInList: inList,
             selisihUang: roundedSisa
         };
-       
+
     }, [itemsList, existingItems, baseNominal, calculateBayar]);
 
     useEffect(() => {
@@ -136,7 +138,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
             const fetchItems = async () => {
                 setLoadingOptions(true);
                 try {
-                    const res = await httpGet(endpointUrl("master/item/dropdown"), true);
+                    const res = await httpGet(endpointUrl("master/item/dropdown"), true, { type: type });
                     setItemOptions(res.data.data.map((i: any) => ({
                         value: i.id.toString(),
                         label: `${i.name_item} (${i.code})`,
@@ -151,7 +153,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
             const fetchOrder = async () => {
                 setLoadingOptions(true);
                 try {
-                    const res = await httpGet(endpointUrl(`work-order/${workOrderId}/get-order?type=2` ), true);
+                    const res = await httpGet(endpointUrl(`work-order/${workOrderId}/get-order?type=1`), true);
                     setItemPOOptions(res.data.data.map((i: any) => ({
                         value: i.id.toString(),
                         label: `${i.no_order}`,
@@ -170,24 +172,24 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
         }
     }, [isOpen]);
     useEffect(() => {
-        const pcs = form.weight || 0; 
+        const pcs = form.weight || 0;
         const bruto = form.bruto || 0;
         const kadar = form.kadar || 0;
         const disc = form.disc || 0;
-        const nominal = baseNominal || 0; 
-    
+        const nominal = baseNominal || 0;
+
         const netto = bruto * (kadar / 100);
         setCalculatedNetto(netto);
-    
+
         let finalBayar = 0;
         if (bruto > 0) {
             finalBayar = (nominal * (netto / bruto)) * pcs / bruto;
             if (disc > 0) {
                 finalBayar = finalBayar - (finalBayar * disc / 100);
             }
-        } 
+        }
         setCalculatedBayarNett(finalBayar);
-    
+
     }, [form.weight, form.bruto, form.kadar, form.disc, baseNominal]);
 
     function initialFormState(): IItemFormState {
@@ -196,7 +198,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
             item_id: null,
             weight: 0,
             kadar: 0,
-            bruto: baseTotalWeight, 
+            bruto: baseTotalWeight,
             disc: 0,
             sg: 0,
             scope: 0,
@@ -243,10 +245,10 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
             order_no_order: selectedOrderOption?.label || 'N/A',
         };
 
-        
+
 
         setItemsList(prev => [...prev, newItem]);
-        setForm(initialFormState()); 
+        setForm(initialFormState());
         toast.success("Barang ditambahkan ke list.");
     };
 
@@ -259,7 +261,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
             toast.error("List barang tidak boleh kosong. Harap tambahkan barang terlebih dahulu.");
             return;
         }
-        
+
         if (selisih > 0) {
             toast.error(`Total Berat Diterima masih kurang ${selisih.toLocaleString('id-ID')} gr dari Total Berat SJ.`);
             return;
@@ -336,7 +338,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block font-medium mb-1">Bruto (gr)<span className="text-red-400">*</span></label>
-                                                <CurrencyInput value={form.bruto } onValueChange={v => handleFormChange('bruto', v)} placeholder="0" />
+                                                <CurrencyInput value={form.bruto} onValueChange={v => handleFormChange('bruto', v)} placeholder="0" />
                                             </div>
                                             <div>
                                                 <label className="block font-medium mb-1">Berat Terima (gr)<span className="text-red-400">*</span></label>
@@ -353,7 +355,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
                                                 <CurrencyInput value={form.disc} onValueChange={v => handleFormChange('disc', v)} placeholder="0" />
                                             </div>
                                         </div>
-                                        
+
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block font-medium mb-1">Netto (gr)</label>
@@ -407,13 +409,13 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
                                     <div className="grid grid-cols-3 gap-4">
                                         <CurrencyDisplay title="Total Berat Surat Jalan (Target)" value={baseTotalWeight} unit="gr" />
                                         <CurrencyDisplay title="Total Berat Diterima" value={totalBrutoInList + totalBrutoInDetail} unit="gr" />
-                                        
+
                                         {selisih === 0 ? (
                                             <CurrencyDisplay title="Selisih (Sesuai)" value={0} unit="gr" color="text-green-600" />
                                         ) : selisih > 0 ? (
                                             <CurrencyDisplay title="Selisih (Kurang)" value={selisih} unit="gr" color="text-red-600" />
                                         ) : (
-                                            <CurrencyDisplay title="Selisih (Lebih)" value={Math.abs(selisih)} unit="gr" color="text-yellow-600" /> 
+                                            <CurrencyDisplay title="Selisih (Lebih)" value={Math.abs(selisih)} unit="gr" color="text-yellow-600" />
                                         )}
                                     </div>
 
@@ -439,18 +441,18 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
 
                                 <div className="mt-4 p-4 border rounded-lg bg-gray-50">
                                     <h4 className="font-semibold mb-2 flex items-center gap-2">
-                                        Kalkulasi Uang 
+                                        Kalkulasi Uang
                                     </h4>
                                     <div className="grid grid-cols-3 gap-4">
                                         <CurrencyDisplay title="Total Nominal SJ (Target)" value={baseNominal} unit="Rp" />
                                         <CurrencyDisplay title="Total Bayar" value={totalBayarInList + totalBayarInDetail} unit="Rp" />
-                                        
+
                                         {selisihUang === 0 ? (
                                             <CurrencyDisplay title="Selisih" value={0} unit="Rp" color="text-gray-900" />
                                         ) : selisihUang > 0 ? (
                                             <CurrencyDisplay title="Selisih (Sisa)" value={selisihUang} unit="Rp" color="text-green-600" />
                                         ) : (
-                                            <CurrencyDisplay title="Selisih (Lebih)" value={Math.abs(selisihUang)} unit="Rp" color="text-red-600" /> 
+                                            <CurrencyDisplay title="Selisih (Lebih)" value={Math.abs(selisihUang)} unit="Rp" color="text-red-600" />
                                         )}
                                     </div>
                                 </div>
@@ -520,7 +522,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
                                         type="button"
                                         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50"
                                         onClick={handleConfirmSubmit}
-                                        disabled={selisih > 0 || itemsList.length === 0 || isSubmitting} 
+                                        disabled={selisih > 0 || itemsList.length === 0 || isSubmitting}
                                     >
                                         {isSubmitting ? <Loader2 className="animate-spin w-4 h-4" /> : <Save className="w-4 h-4" />}
                                         Simpan ({itemsList.length}) Barang
@@ -542,28 +544,66 @@ const CurrencyInput: React.FC<{
     disabled?: boolean;
     className?: string;
 }> = ({ value, onValueChange, placeholder, disabled, className = "" }) => {
-
-    const format = (num: number) => {
-        if (num === 0) return "";
-        return num.toLocaleString('id-ID'); 
+    const [displayValue, setDisplayValue] = useState("");
+    const formatThousand = (numStr: string) => {
+        if (!numStr) return "";
+        const rawNum = numStr.replace(/\D/g, '');
+        return Number(rawNum).toLocaleString('id-ID');
     };
+
+    useEffect(() => {
+        const currentNumeric = parse(displayValue);
+
+        if (value !== currentNumeric) {
+            if (!value) {
+                setDisplayValue("");
+            } else {
+                setDisplayValue(value.toLocaleString('id-ID', { maximumFractionDigits: 10 }));
+            }
+        }
+    }, [value]);
 
     const parse = (str: string): number => {
         if (!str) return 0;
-        const numOnly = str.replace(/[^\d]/g, ''); 
-        return parseInt(numOnly, 10) || 0;
+        const cleanStr = str.replace(/\./g, '').replace(/,/g, '.');
+        return parseFloat(cleanStr) || 0;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rawValue = e.target.value;
-        const numberValue = parse(rawValue);
+        let input = e.target.value;
+        input = input.replace(/[^0-9,]/g, '');
+        const parts = input.split(',');
+        if (parts.length > 2) return;
+
+        let integerPart = parts[0];
+        if (integerPart.length > 1 && integerPart.startsWith('0')) {
+            integerPart = integerPart.substring(1);
+        }
+
+        let formattedInteger = "";
+        if (integerPart) {
+            formattedInteger = formatThousand(integerPart);
+        }
+
+        let newDisplayValue = formattedInteger;
+
+        if (parts.length > 1) {
+            newDisplayValue += ',' + parts[1];
+        } else if (input.endsWith(',')) {
+            newDisplayValue += ',';
+        }
+
+        setDisplayValue(newDisplayValue);
+
+        const numberValue = parse(newDisplayValue);
         onValueChange(numberValue);
     };
 
     return (
+
         <Input
             type="text"
-            value={format(value)}
+            value={displayValue}
             onChange={handleChange}
             placeholder={placeholder}
             disabled={disabled}
@@ -571,14 +611,13 @@ const CurrencyInput: React.FC<{
         />
     );
 };
-
 const CurrencyDisplay: React.FC<{ title: string; value: number; unit: string; color?: string }> = ({ title, value, unit, color = 'text-gray-900' }) => (
     <div>
-      <span className="text-sm text-gray-500">{title}</span>
-      <p className={`text-xl font-semibold ${color}`}>
-        {Math.abs(value).toLocaleString('id-ID')} <span className="text-sm font-normal">{unit}</span>
-      </p>
+        <span className="text-sm text-gray-500">{title}</span>
+        <p className={`text-xl font-semibold ${color}`}>
+            {Math.abs(value).toLocaleString('id-ID')} <span className="text-sm font-normal">{unit}</span>
+        </p>
     </div>
-  );
+);
 
 export default AddItemWorkOrderModal;

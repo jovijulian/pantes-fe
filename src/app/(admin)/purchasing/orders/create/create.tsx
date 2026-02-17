@@ -15,15 +15,15 @@ import {
     Save, X, Info
 } from 'lucide-react';
 import SingleDatePicker from "@/components/common/SingleDatePicker";
-import { Dialog, Transition } from '@headlessui/react'; 
+import { Dialog, Transition } from '@headlessui/react';
 
 interface BankOption {
-    value: string; 
+    value: string;
     label: string;
     bank_name: string;
     account_name: string;
     account_number: string;
-    [key: string]: any; 
+    [key: string]: any;
 }
 
 interface FormPaymentType {
@@ -38,9 +38,9 @@ interface FormState {
     payment_date: string;
     staff_id: number | null;
     supplier_id: number | null;
-    weight: string; 
-    cokim: number; 
-    nominal: number; 
+    weight: string;
+    cokim: number;
+    nominal: number;
     payment_type: FormPaymentType[];
 }
 
@@ -87,7 +87,7 @@ export default function CreatePurchaseOrderPage() {
         staff_id: null,
         supplier_id: null,
         weight: "0",
-        cokim: 0, 
+        cokim: 0,
         nominal: 0,
         payment_type: [],
     });
@@ -119,14 +119,14 @@ export default function CreatePurchaseOrderPage() {
                 const res = await httpGet(endpointUrl(`master/supplier/${supplierId}/bank/dropdown`), true);
                 console.log(res.data.data)
                 const formattedBankOptions: BankOption[] = res.data.data.map((b: any) => ({
-                    value: b.id.toString(), 
+                    value: b.id.toString(),
                     label: `${b.bank_name} - ${b.account_number} (${b.account_name})`,
                     bank_name: b.bank_name,
                     account_name: b.account_name,
                     account_number: b.account_number,
                 }));
                 setBankOptions(formattedBankOptions);
-                
+
             } catch (error) {
                 toast.error("Gagal memuat data bank untuk supplier ini.");
                 setBankOptions([]);
@@ -139,7 +139,7 @@ export default function CreatePurchaseOrderPage() {
             fetchSupplierBanks(formData.supplier_id);
             setFormData(prev => ({ ...prev, payment_type: [] }));
             if (formData.payment_type.length > 0) {
-                 toast.info("Supplier diubah, harap pilih ulang bank pembayaran.");
+                toast.info("Supplier diubah, harap pilih ulang bank pembayaran.");
             }
         } else {
             setBankOptions([]);
@@ -149,7 +149,7 @@ export default function CreatePurchaseOrderPage() {
 
     useEffect(() => {
         const weight = parseFloat(formData.weight) || 0;
-        const cokim = formData.cokim || 0; 
+        const cokim = formData.cokim || 0;
         setFormData(prev => ({ ...prev, nominal: weight * cokim }));
     }, [formData.weight, formData.cokim]);
 
@@ -173,7 +173,7 @@ export default function CreatePurchaseOrderPage() {
         (payment[field] as any) = value;
 
         if (field === 'payment_type' && (value !== 'BANK TRANSFER' && value !== 'SETOR TUNAI')) {
-            payment.supplier_bank_id = null; 
+            payment.supplier_bank_id = null;
         }
 
         setFormData(prev => ({ ...prev, payment_type: newPayments }));
@@ -188,7 +188,7 @@ export default function CreatePurchaseOrderPage() {
                 {
                     id: `payment-${Date.now()}`,
                     payment_type: "BANK TRANSFER",
-                    supplier_bank_id: null, 
+                    supplier_bank_id: null,
                     nominal: newNominal,
                 }
             ]
@@ -247,7 +247,7 @@ export default function CreatePurchaseOrderPage() {
         const paymentPayload: PaymentPayload[] = formData.payment_type.map(p => ({
             payment_type: p.payment_type,
             supplier_bank_id: (p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") ? Number(p.supplier_bank_id) : null,
-            nominal: p.nominal 
+            nominal: p.nominal
         }));
 
         const payload: PurchaseOrderPayload = {
@@ -255,11 +255,11 @@ export default function CreatePurchaseOrderPage() {
             staff_id: Number(formData.staff_id),
             supplier_id: Number(formData.supplier_id),
             weight: parseFloat(formData.weight),
-            cokim: formData.cokim, 
+            cokim: formData.cokim,
             nominal: formData.nominal,
             payment_type: paymentPayload,
         };
-        
+
 
         try {
             await httpPost(endpointUrl('/purchase/order'), payload, true);
@@ -322,7 +322,7 @@ export default function CreatePurchaseOrderPage() {
                                     <label className="block font-medium mb-1">Berat (gr)<span className="text-red-400 ml-1">*</span></label>
                                     <Input type="number" value={formData.weight} onChange={(e) => handleFieldChange('weight', e.target.value)} min="0" placeholder='0' />
                                 </div>
-                                
+
                                 <div className="grid grid-cols-1 gap-2">
                                     <div>
                                         <label className="block font-medium mb-1">Cokim<span className="text-red-400 ml-1">*</span></label>
@@ -343,7 +343,7 @@ export default function CreatePurchaseOrderPage() {
                     </ComponentCard>
 
                     <ComponentCard title="Pembayaran">
-                       
+
 
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
@@ -356,9 +356,9 @@ export default function CreatePurchaseOrderPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
-                                {formData.payment_type.map((payment, index) => {
-                                        const selectedBank = payment.supplier_bank_id 
-                                            ? bankOptions.find(b => b.value === payment.supplier_bank_id?.toString()) 
+                                    {formData.payment_type.map((payment, index) => {
+                                        const selectedBank = payment.supplier_bank_id
+                                            ? bankOptions.find(b => b.value === payment.supplier_bank_id?.toString())
                                             : null;
 
                                         return (
@@ -371,14 +371,14 @@ export default function CreatePurchaseOrderPage() {
                                                     />
                                                 </td>
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[500px]">
-                                                {(payment.payment_type === "BANK TRANSFER" || payment.payment_type === "SETOR TUNAI") && (
+                                                    {(payment.payment_type === "BANK TRANSFER" || payment.payment_type === "SETOR TUNAI") && (
                                                         <Select
-                                                            options={bankOptions} 
+                                                            options={bankOptions}
                                                             value={_.find(bankOptions, { value: payment.supplier_bank_id?.toString() })}
                                                             onValueChange={(opt) => handlePaymentChange(index, 'supplier_bank_id', opt ? parseInt(opt.value) : null)}
                                                             placeholder={
-                                                                !formData.supplier_id ? "Pilih supplier dulu..." : 
-                                                                isBankLoading ? "Memuat bank..." : "Pilih bank supplier..."
+                                                                !formData.supplier_id ? "Pilih supplier dulu..." :
+                                                                    isBankLoading ? "Memuat bank..." : "Pilih bank supplier..."
                                                             }
                                                             disabled={loadingOptions || isBankLoading || !formData.supplier_id}
                                                         />
@@ -442,7 +442,7 @@ export default function CreatePurchaseOrderPage() {
                         Cancel
                     </button>
                     <button
-                        type="submit" 
+                        type="submit"
                         disabled={isSubmitting || loadingOptions || remainingBalance !== 0}
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:bg-gray-400"
                     >
@@ -471,29 +471,66 @@ const CurrencyInput: React.FC<{
     disabled?: boolean;
     className?: string;
 }> = ({ value, onValueChange, placeholder, disabled, className = "" }) => {
-
-    const format = (num: number) => {
-        if (num === 0) return "";
-        return num.toLocaleString('id-ID');
+    const [displayValue, setDisplayValue] = useState("");
+    const formatThousand = (numStr: string) => {
+        if (!numStr) return "";
+        const rawNum = numStr.replace(/\D/g, '');
+        return Number(rawNum).toLocaleString('id-ID');
     };
+
+    useEffect(() => {
+        const currentNumeric = parse(displayValue);
+
+        if (value !== currentNumeric) {
+            if (!value) {
+                setDisplayValue("");
+            } else {
+                setDisplayValue(value.toLocaleString('id-ID', { maximumFractionDigits: 10 }));
+            }
+        }
+    }, [value]);
 
     const parse = (str: string): number => {
         if (!str) return 0;
-        const numOnly = str.replace(/[^\d]/g, '');
-        return parseInt(numOnly, 10) || 0;
+        const cleanStr = str.replace(/\./g, '').replace(/,/g, '.');
+        return parseFloat(cleanStr) || 0;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rawValue = e.target.value;
-        const numberValue = parse(rawValue);
-        
+        let input = e.target.value;
+        input = input.replace(/[^0-9,]/g, '');
+        const parts = input.split(',');
+        if (parts.length > 2) return;
+
+        let integerPart = parts[0];
+        if (integerPart.length > 1 && integerPart.startsWith('0')) {
+            integerPart = integerPart.substring(1);
+        }
+
+        let formattedInteger = "";
+        if (integerPart) {
+            formattedInteger = formatThousand(integerPart);
+        }
+
+        let newDisplayValue = formattedInteger;
+
+        if (parts.length > 1) {
+            newDisplayValue += ',' + parts[1];
+        } else if (input.endsWith(',')) {
+            newDisplayValue += ',';
+        }
+
+        setDisplayValue(newDisplayValue);
+
+        const numberValue = parse(newDisplayValue);
         onValueChange(numberValue);
     };
 
     return (
+
         <Input
             type="text"
-            value={format(value)} 
+            value={displayValue}
             onChange={handleChange}
             placeholder={placeholder}
             disabled={disabled}

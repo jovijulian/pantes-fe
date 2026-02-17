@@ -473,29 +473,66 @@ const CurrencyInput: React.FC<{
     disabled?: boolean;
     className?: string;
 }> = ({ value, onValueChange, placeholder, disabled, className = "" }) => {
-
-    const format = (num: number) => {
-        if (num === 0) return "";
-        return num.toLocaleString('id-ID');
+    const [displayValue, setDisplayValue] = useState("");
+    const formatThousand = (numStr: string) => {
+        if (!numStr) return "";
+        const rawNum = numStr.replace(/\D/g, '');
+        return Number(rawNum).toLocaleString('id-ID');
     };
+
+    useEffect(() => {
+        const currentNumeric = parse(displayValue);
+
+        if (value !== currentNumeric) {
+            if (!value) {
+                setDisplayValue("");
+            } else {
+                setDisplayValue(value.toLocaleString('id-ID', { maximumFractionDigits: 10 }));
+            }
+        }
+    }, [value]);
 
     const parse = (str: string): number => {
         if (!str) return 0;
-        const numOnly = str.replace(/[^\d]/g, '');
-        return parseInt(numOnly, 10) || 0;
+        const cleanStr = str.replace(/\./g, '').replace(/,/g, '.');
+        return parseFloat(cleanStr) || 0;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rawValue = e.target.value;
-        const numberValue = parse(rawValue);
-        
+        let input = e.target.value;
+        input = input.replace(/[^0-9,]/g, '');
+        const parts = input.split(',');
+        if (parts.length > 2) return;
+
+        let integerPart = parts[0];
+        if (integerPart.length > 1 && integerPart.startsWith('0')) {
+            integerPart = integerPart.substring(1);
+        }
+
+        let formattedInteger = "";
+        if (integerPart) {
+            formattedInteger = formatThousand(integerPart);
+        }
+
+        let newDisplayValue = formattedInteger;
+
+        if (parts.length > 1) {
+            newDisplayValue += ',' + parts[1];
+        } else if (input.endsWith(',')) {
+            newDisplayValue += ',';
+        }
+
+        setDisplayValue(newDisplayValue);
+
+        const numberValue = parse(newDisplayValue);
         onValueChange(numberValue);
     };
 
     return (
+
         <Input
             type="text"
-            value={format(value)} 
+            value={displayValue}
             onChange={handleChange}
             placeholder={placeholder}
             disabled={disabled}

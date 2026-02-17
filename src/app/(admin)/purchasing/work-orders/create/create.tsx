@@ -339,43 +339,7 @@ export default function CreateWorkOrderPage() {
     );
 }
 
-const CurrencyInput: React.FC<{
-    value: number;
-    onValueChange: (value: number) => void;
-    placeholder?: string;
-    disabled?: boolean;
-    className?: string;
-}> = ({ value, onValueChange, placeholder, disabled, className = "" }) => {
 
-    const format = (num: number) => {
-        if (num === 0) return "";
-        return num.toLocaleString('id-ID');
-    };
-
-    const parse = (str: string): number => {
-        if (!str) return 0;
-        const numOnly = str.replace(/[^\d]/g, '');
-        return parseInt(numOnly, 10) || 0;
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rawValue = e.target.value;
-        const numberValue = parse(rawValue);
-
-        onValueChange(numberValue);
-    };
-
-    return (
-        <Input
-            type="text"
-            value={format(value)}
-            onChange={handleChange}
-            placeholder={placeholder}
-            disabled={disabled}
-            className={className}
-        />
-    );
-};
 
 const CurrencyDisplay: React.FC<{ title: string; value: number; color?: string }> = ({ title, value, color = 'text-gray-900' }) => (
     <div className="text-right">

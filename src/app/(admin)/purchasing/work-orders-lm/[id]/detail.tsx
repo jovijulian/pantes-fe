@@ -581,6 +581,7 @@ export default function WorkOrderDetailPage() {
                     baseNominal={Number(data.nominal) || 0}
                     baseTotalWeight={Number(data.total_weight) || 0}
                     existingItems={data.items || []}
+                    type="2"
                 />
             )}
             {data && selectedItem && (
@@ -598,6 +599,7 @@ export default function WorkOrderDetailPage() {
                         setSelectedItem(null);
                         getDetail();
                     }}
+                    type="2"
                 />
             )}
 
