@@ -153,7 +153,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
             const fetchOrder = async () => {
                 setLoadingOptions(true);
                 try {
-                    const res = await httpGet(endpointUrl(`work-order/${workOrderId}/get-order?type=1`), true);
+                    const res = await httpGet(endpointUrl(`work-order/${workOrderId}/get-order`), true, { type: type });
                     setItemPOOptions(res.data.data.map((i: any) => ({
                         value: i.id.toString(),
                         label: `${i.no_order}`,
