@@ -177,7 +177,7 @@ export default function SendScrapGoldPage() {
             router.push('/purchasing/scrap-golds/sends');
         } catch (error: any) {
             console.error(error);
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

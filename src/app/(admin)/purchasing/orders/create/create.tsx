@@ -266,8 +266,7 @@ export default function CreatePurchaseOrderPage() {
             toast.success("Purchase Order (PO) berhasil dibuat!");
             router.push('/purchasing/orders');
         } catch (error: any) {
-            console.error(error);
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

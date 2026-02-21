@@ -164,7 +164,7 @@ export default function PurchaseOrdersPage() {
         }
     };
     const handleRowClick = (rowData: IPurchaseOrder) => {
-        const detailUrl = `/purchasing/orders/${rowData.id}`;
+        const detailUrl = `/purchasing/orders-lm/${rowData.id}`;
         router.push(detailUrl);
     };
 

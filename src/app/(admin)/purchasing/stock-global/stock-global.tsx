@@ -146,7 +146,7 @@ export default function StockGlobalReportPage() {
             setData(response.data.data || []);
 
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsLoading(false);
         }
@@ -189,7 +189,7 @@ export default function StockGlobalReportPage() {
             URL.revokeObjectURL(blobUrl);
 
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsExporting(false);
         }

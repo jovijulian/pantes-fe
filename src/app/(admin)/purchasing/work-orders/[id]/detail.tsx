@@ -152,7 +152,7 @@ export default function WorkOrderDetailPage() {
                 router.push('/purchasing/work-orders');
             } else {
                 toast.error("Gagal mengambil detail Surat Jalan.");
-                alertToast(error);
+                toast.error(error.response?.data?.message);
             }
             setData(null);
         } finally {

@@ -150,7 +150,6 @@ export default function ScrapGoldSendDetailPage() {
                 router.push('/purchasing/scrap-golds/sends');
             } else {
                 toast.error("Gagal mengambil detail.");
-                alertToast(error);
             }
         } finally {
             setIsLoading(false);
@@ -185,7 +184,7 @@ export default function ScrapGoldSendDetailPage() {
             setIsModalOpen(false);
             getDetail();
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsProcessing(false);
         }
@@ -202,7 +201,7 @@ export default function ScrapGoldSendDetailPage() {
             setIsFGModalOpen(false);
             getDetail();
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsFGSubmitting(false);
         }

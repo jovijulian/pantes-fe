@@ -174,7 +174,7 @@ export default function CreateWorkOrderPage() {
             router.push('/purchasing/work-orders-lm');
         } catch (error: any) {
             console.error(error);
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

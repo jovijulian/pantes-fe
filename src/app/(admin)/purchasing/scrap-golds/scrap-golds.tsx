@@ -147,7 +147,7 @@ export default function ScrapGoldsPage() {
             setIsProcessModalOpen(false);
             getData();
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsProcessing(false);
         }

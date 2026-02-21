@@ -154,7 +154,7 @@ export default function CreateDepositPage() {
             router.push('/purchasing/deposits');
         } catch (error: any) {
             console.error(error);
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

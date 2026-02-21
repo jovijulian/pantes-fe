@@ -122,7 +122,6 @@ export default function DepositDetailPage() {
                 router.push('/purchasing/deposits');
             } else {
                 toast.error("Gagal mengambil detail Setor.");
-                alertToast(error);
             }
             setData(null);
         } finally {
@@ -164,7 +163,7 @@ export default function DepositDetailPage() {
             setIsStatusModalOpen(false);
             getDetail();
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }
@@ -188,7 +187,7 @@ export default function DepositDetailPage() {
             setIsAddItemModalOpen(false);
             getDetail();
         } catch (error: any) {
-            alertToast(error);
+           toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }
@@ -213,7 +212,7 @@ export default function DepositDetailPage() {
             setSelectedItem(null);
             getDetail();
         } catch (error: any) {
-            alertToast(error);
+           toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

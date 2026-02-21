@@ -152,7 +152,7 @@ export default function WorkOrderDetailPage() {
                 router.push('/purchasing/work-orders-lm');
             } else {
                 toast.error("Gagal mengambil detail Surat Jalan.");
-                alertToast(error);
+                toast.error(error.response?.data?.message);
             }
             setData(null);
         } finally {
@@ -182,7 +182,7 @@ export default function WorkOrderDetailPage() {
             setIsReceiptModalOpen(false);
             getDetail();
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }
@@ -250,7 +250,7 @@ export default function WorkOrderDetailPage() {
             setSelectedItem(null);
             getDetail(); // Refresh data
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

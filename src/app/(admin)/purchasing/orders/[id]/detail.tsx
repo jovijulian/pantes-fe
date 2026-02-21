@@ -118,7 +118,6 @@ export default function PurchaseOrderDetailPage() {
                 router.push('/purchasing/orders');
             } else {
                 toast.error("Gagal mengambil detail PO.");
-                alertToast(error);
             }
             setData(null);
         } finally {
@@ -220,7 +219,7 @@ export default function PurchaseOrderDetailPage() {
             setIsModalOpen(false);
             getDetail();
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

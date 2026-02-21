@@ -158,7 +158,7 @@ export default function DepositsPage() {
             setIsModalOpen(false);
             getData();
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

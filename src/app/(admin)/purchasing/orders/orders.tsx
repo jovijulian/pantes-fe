@@ -157,7 +157,7 @@ export default function PurchaseOrdersPage() {
             setIsModalOpen(false);
             getData();
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

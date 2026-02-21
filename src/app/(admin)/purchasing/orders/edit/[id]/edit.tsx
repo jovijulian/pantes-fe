@@ -354,8 +354,7 @@ export default function EditPurchaseOrderPage() {
             router.push('/purchasing/orders');
 
         } catch (error: any) {
-            console.error("Gagal mengupdate:", error);
-            alertToast(error, "Sebagian update mungkin gagal.");
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }

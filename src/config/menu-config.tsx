@@ -157,6 +157,7 @@ export const menuConfig: Record<string, NavItem[]> = {
       subItems: [
         { name: 'Pembelian', path: '/purchasing/orders', roles: [1, 3, 5] },
         { name: 'Surat Jalan', path: '/purchasing/work-orders', roles: [1, 3, 5] },
+        { name: 'Laporan Stok Global', path: '/purchasing/stock-global', roles: [1, 3, 5] },
       ]
     },
     {
@@ -166,6 +167,7 @@ export const menuConfig: Record<string, NavItem[]> = {
       subItems: [
         { name: 'Pembelian', path: '/purchasing/orders-lm', roles: [1, 3, 5] },
         { name: 'Surat Jalan', path: '/purchasing/work-orders-lm', roles: [1, 3, 5] },
+        { name: 'Laporan Stok Global', path: '/purchasing/stock-global', roles: [1, 3, 5] },
       ]
     },
     {
@@ -187,12 +189,7 @@ export const menuConfig: Record<string, NavItem[]> = {
         { name: 'Stok Akhir Rongsok', path: '/purchasing/reports/scrap-gold/stock-finals', roles: [1, 3, 5] },
       ]
     },
-    {
-      name: 'Setor Barang',
-      icon: <Archive />,
-      path: '/purchasing/deposits',
-      roles: [1, 3, 5],
-    },
+   
     {
       name: 'Laporan Stok Global',
       icon: <PackageSearch />,
@@ -202,15 +199,15 @@ export const menuConfig: Record<string, NavItem[]> = {
     {
       name: 'Master Data',
       icon: <Database />,
-      roles: [1, 3, 5],
+      roles: [1, 5],
       subItems: [
-        { name: 'Supplier', path: '/purchasing/master/suppliers', roles: [1, 3, 5] },
-        { name: 'Barang', path: '/purchasing/master/items', roles: [1, 3, 5] },
-        { name: 'Vendor', path: '/purchasing/master/vendors', roles: [1, 3, 5] },
-        { name: 'Bank', path: '/purchasing/master/banks', roles: [1, 3, 5] },
-        { name: 'Ekspedisi', path: '/purchasing/master/expeditions', roles: [1, 3, 5] },
-        { name: 'Karyawan', path: '/purchasing/master/employees', roles: [1, 3, 5] },
-        { name: 'Pemesan', path: '/purchasing/master/staffs', roles: [1, 3, 5] },
+        { name: 'Supplier', path: '/purchasing/master/suppliers', roles: [1, 5] },
+        { name: 'Barang', path: '/purchasing/master/items', roles: [1, 5] },
+        { name: 'Vendor', path: '/purchasing/master/vendors', roles: [1, 5] },
+        { name: 'Bank', path: '/purchasing/master/banks', roles: [1, 5] },
+        { name: 'Ekspedisi', path: '/purchasing/master/expeditions', roles: [1, 5] },
+        { name: 'Karyawan', path: '/purchasing/master/employees', roles: [1, 5] },
+        { name: 'Pemesan', path: '/purchasing/master/staffs', roles: [1, 5] },
       ]
     },
     {
