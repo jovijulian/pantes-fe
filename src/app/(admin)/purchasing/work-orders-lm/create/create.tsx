@@ -77,17 +77,17 @@ export default function CreateWorkOrderPage() {
         fetchInitialData();
     }, []);
 
-    const { total_weight, nominal, total_cokim } = useMemo(() => {
+    const { total_weight, nominal, total_pcs } = useMemo(() => {
         const totalWeight = formData.purchase_orders.reduce((acc, po) => {
             return acc + (Number(po.berat) || 0);
         }, 0);
         const totalNominal = formData.purchase_orders.reduce((acc, po) => {
             return acc + (Number(po.nominal) || 0);
         }, 0);
-        const totalCokim = formData.purchase_orders.reduce((acc, po) => {
-            return acc + (Number(po.cokim) || 0);
+        const totalPcs = formData.purchase_orders.reduce((acc, po) => {
+            return acc + (Number(po.pcs) || 0);
         }, 0);
-        return { total_weight: totalWeight, nominal: totalNominal, total_cokim: totalCokim };
+        return { total_weight: totalWeight, nominal: totalNominal, total_pcs: totalPcs };
     }, [formData.purchase_orders]);
 
 
@@ -252,8 +252,8 @@ export default function CreateWorkOrderPage() {
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Pesanan (PO)</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl Pesan</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pemesan</th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cokim</th>
                                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat (gr)</th>
+                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">PCS</th>
                                         <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
@@ -271,8 +271,8 @@ export default function CreateWorkOrderPage() {
                                             <td className="px-4 py-2 whitespace-nowrap font-medium">{po.no_order}</td>
                                             <td className="px-4 py-2 whitespace-nowrap">{moment(po.tgl_pesan).format('DD MMM YYYY')}</td>
                                             <td className="px-4 py-2 whitespace-nowrap">{po.pemesan}</td>
-                                            <td className="px-4 py-2 whitespace-nowrap text-right">{po.cokim.toLocaleString('id-ID')}</td>
                                             <td className="px-4 py-2 whitespace-nowrap text-right">{po.berat}</td>
+                                            <td className="px-4 py-2 whitespace-nowrap text-right">{po.pcs}</td>
                                             <td className="px-4 py-2 whitespace-nowrap text-right">{po.nominal.toLocaleString('id-ID')}</td>
                                             <td className="px-4 py-2 whitespace-nowrap">
                                                 <button
@@ -289,8 +289,8 @@ export default function CreateWorkOrderPage() {
                                 <tfoot className="bg-gray-100 font-semibold">
                                     <tr>
                                         <td colSpan={3} className="px-4 py-3 text-right text-gray-700">Total</td>
-                                        <td className="px-4 py-3 text-right text-gray-900">{total_cokim.toLocaleString('id-ID')}</td>
                                         <td className="px-4 py-3 text-right text-gray-900">{total_weight} Gram</td>
+                                        <td className="px-4 py-3 text-right text-gray-900">{total_pcs}</td>
                                         <td className="px-4 py-3 text-right text-gray-900">Rp {nominal.toLocaleString('id-ID')}</td>
                                         <td className="px-4 py-3"></td>
                                     </tr>

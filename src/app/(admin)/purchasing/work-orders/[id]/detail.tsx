@@ -256,6 +256,23 @@ export default function WorkOrderDetailPage() {
         }
     };
 
+    const { totalWeight, totalCokim, totalNominal } = useMemo(() => {
+        let weight = 0;
+        let cokim = 0;
+        let nominal = 0
+
+        if (data?.orders) {
+            data.orders.forEach(item => {
+                weight += Number(item.weight);
+                cokim += Number(item.cokim);
+                nominal += Number(item.nominal);
+
+            });
+        }
+
+        return { totalWeight: weight, totalCokim: cokim, totalNominal: nominal };
+    }, [data?.orders]);
+    
     const handleExport = async () => {
         if (!data) return;
         setIsDownloadLoading(true);
@@ -376,9 +393,9 @@ export default function WorkOrderDetailPage() {
                                     disabled={isDownloadLoading}
                                     onClick={handleExport}
                                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
-                                        bg-blue-600 text-white text-sm font-medium shadow-sm 
-                                        hover:bg-blue-700 disabled:opacity-50
-                                        transition-all duration-200"
+                                    bg-indigo-600 text-white text-sm font-medium shadow-sm 
+                                    hover:bg-indigo-700 disabled:opacity-50
+                                    transition-all duration-200"
                                 >
                                     <Download className="w-4 h-4" />
                                     <span>Export Surat Jalan</span>
@@ -390,9 +407,9 @@ export default function WorkOrderDetailPage() {
                                     disabled={isDownloadLoading}
                                     onClick={handleExportReceiptItem}
                                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
-                                        bg-indigo-600 text-white text-sm font-medium shadow-sm 
-                                        hover:bg-indigo-700 disabled:opacity-50
-                                        transition-all duration-200"
+                                    bg-indigo-600 text-white text-sm font-medium shadow-sm 
+                                    hover:bg-indigo-700 disabled:opacity-50
+                                    transition-all duration-200"
                                 >
                                     <Download className="w-4 h-4" />
                                     <span>Export Barang Diterima</span>
@@ -442,6 +459,14 @@ export default function WorkOrderDetailPage() {
                                             </tr>
                                         ))}
                                     </tbody>
+                                    <tfoot className="bg-gray-100 border-t-2 border-gray-300">
+                                        <tr>
+                                            <td colSpan={2} className="px-4 py-3 text-left text-sm font-bold uppercase">Total</td>
+                                            <td className="px-4 py-3 text-right text-sm font-bold">{formatGram(totalWeight)}</td>
+                                            <td className="px-4 py-3 text-right text-sm font-bold">{formatGram(totalCokim)}</td>
+                                            <td className="px-4 py-3 text-right text-sm font-bold">{formatRupiah(totalNominal)}</td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </Section>

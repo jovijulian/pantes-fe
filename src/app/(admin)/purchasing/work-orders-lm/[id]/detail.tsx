@@ -9,12 +9,12 @@ import { endpointUrl, httpGet, httpPut, alertToast, endpointUrlv2, httpPost } fr
 import ComponentCard from "@/components/common/ComponentCard";
 import {
     Loader2, User, Building, Calendar, Info, Check, X,
-    FileText, DollarSign, Scale, UserCheck, Truck, PackagePlus, Package, Edit, Trash2, Download
+    FileText, DollarSign, Scale, UserCheck, Truck, PackagePlus, Package, Edit, Trash2, Download, Hash
 } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
-import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderModal";
-import AddItemWorkOrderModal from "@/components/modal/AddItemWorkOrderModal";
-import EditItemWorkOrderModal from "@/components/modal/edit/EditItemWorkOrderModal";
+import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderLMModal";
+import AddItemWorkOrderModal from "@/components/modal/AddItemWorkOrderLMModal";
+import EditItemWorkOrderModal from "@/components/modal/edit/EditItemWorkOrderLMModal";
 import DeleteConfirmationModal from "@/components/modal/deactive/DeleteItemWorkOrderConfirmationModal";
 import axios from "axios";
 
@@ -43,6 +43,7 @@ interface IPurchaseOrderSimple {
     nominal: string;
     weight: string;
     cokim: string;
+    pcs: string;
 }
 
 interface IWorkOrderData {
@@ -61,6 +62,7 @@ interface IWorkOrderData {
     expedition: IExpedition;
     orders: IPurchaseOrderSimple[];
     items: IWorkOrderItem[];
+    KR: string;
 }
 
 interface IWorkOrderItem {
@@ -80,6 +82,8 @@ interface IWorkOrderItem {
     item: {
         name: string;
     };
+    nominal: string;
+    total_nominal: string;
 }
 
 
@@ -168,12 +172,13 @@ export default function WorkOrderDetailPage() {
         setIsReceiptModalOpen(true);
     };
 
-    const handleConfirmReceipt = async (receiptDate: string) => {
+    const handleConfirmReceipt = async (receiptDate: string, kr: string) => {
         if (!data) return;
 
         setIsSubmitting(true);
         const payload = {
             receipt_date: receiptDate,
+            KR: kr
         };
 
         try {
@@ -212,19 +217,6 @@ export default function WorkOrderDetailPage() {
     }, [data?.nominal, calculateModalNetto]);
 
 
-    const { totalWeightDiterima, totalBayar } = useMemo(() => {
-        let weight = 0;
-        let bayar = 0;
-
-        if (data?.items) {
-            data.items.forEach(item => {
-                weight += Number(item.pcs);
-                bayar += calculateBayar(item);
-            });
-        }
-
-        return { totalWeightDiterima: weight, totalBayar: bayar };
-    }, [data?.items, calculateBayar, calculateModalNetto]);
 
     const handleOpenEditModal = (item: IWorkOrderItem) => {
         setSelectedItem(item);
@@ -342,6 +334,43 @@ export default function WorkOrderDetailPage() {
         }
     };
 
+    const { totalWeight, totalPcs, totalNominal } = useMemo(() => {
+        let weight = 0;
+        let pcs = 0;
+        let nominal = 0
+
+        if (data?.orders) {
+            data.orders.forEach(item => {
+                weight += Number(item.weight);
+                pcs += Number(item.pcs);
+                nominal += Number(item.nominal);
+
+            });
+        }
+
+        return { totalWeight: weight, totalPcs: pcs, totalNominal: nominal };
+    }, [data?.orders]);
+
+    const { totalWeightDiterima, totalPcsItem, totalJumlah, totalNominalItem } = useMemo(() => {
+        let weight = 0;
+        let pcs = 0;
+        let jumlah = 0;
+        let bayar = 0;
+
+        if (data?.items) {
+            data.items.forEach(item => {
+                weight += Number(item.bruto);
+                pcs += Number(item.pcs);
+                jumlah += (Number(item.pcs) * Number(item.bruto));
+                bayar += Number(item.total_nominal);
+
+            });
+        }
+
+        return { totalWeightDiterima: weight, totalPcsItem: pcs, totalJumlah: jumlah, totalNominalItem: bayar };
+    }, [data?.items]);
+
+
 
     if (isLoading) return (
         <div className="flex justify-center items-center h-screen">
@@ -376,9 +405,9 @@ export default function WorkOrderDetailPage() {
                                     disabled={isDownloadLoading}
                                     onClick={handleExport}
                                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
-                                        bg-blue-600 text-white text-sm font-medium shadow-sm 
-                                        hover:bg-blue-700 disabled:opacity-50
-                                        transition-all duration-200"
+                                    bg-indigo-600 text-white text-sm font-medium shadow-sm 
+                                    hover:bg-indigo-700 disabled:opacity-50
+                                    transition-all duration-200"
                                 >
                                     <Download className="w-4 h-4" />
                                     <span>Export Surat Jalan</span>
@@ -403,10 +432,11 @@ export default function WorkOrderDetailPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
                     <DetailItem icon={<Building />} label="Supplier" value={data.supplier.name} />
                     <DetailItem icon={<Truck />} label="Ekspedisi" value={data.expedition.name} />
                     <DetailItem icon={<Calendar />} label="Tanggal Surat Jalan" value={formatDate(data.date)} />
+                    <DetailItem icon={<Hash />} label="KR" value={data.KR} />
                     <DetailItem icon={<UserCheck />} label="Dibuat Oleh" value={data.created_by.name} />
                 </div>
 
@@ -424,7 +454,7 @@ export default function WorkOrderDetailPage() {
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Pesanan (PO)</th>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cokim</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">PCS</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                         </tr>
                                     </thead>
@@ -437,11 +467,19 @@ export default function WorkOrderDetailPage() {
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{po.no_order}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm">{formatDate(po.date)}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(po.weight)}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(po.cokim)}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{po.pcs}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(po.nominal)}</td>
                                             </tr>
                                         ))}
                                     </tbody>
+                                    <tfoot className="bg-gray-100 border-t-2 border-gray-300">
+                                        <tr>
+                                            <td colSpan={2} className="px-4 py-3 text-left text-sm font-bold uppercase">Total</td>
+                                            <td className="px-4 py-3 text-right text-sm font-bold">{formatGram(totalWeight)}</td>
+                                            <td className="px-4 py-3 text-right text-sm font-bold">{totalPcs}</td>
+                                            <td className="px-4 py-3 text-right text-sm font-bold">{formatRupiah(totalNominal)}</td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         </Section>
@@ -454,15 +492,11 @@ export default function WorkOrderDetailPage() {
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Pesanan</th>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Barang</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bruto (gr)</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat (gr)</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Kadar (%)</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Disc (%)</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Netto (gr)</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Bayar</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">SG</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Scope</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">X-Ray</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">PCS</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Jumlah</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
                                         </tr>
                                     </thead>
 
@@ -494,14 +528,12 @@ export default function WorkOrderDetailPage() {
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{item.no_order}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{item.item_type}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(item.bruto)}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(item.pcs)}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatPersen(item.kadar)}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatPersen(item.disc)}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatGram(nettoValue)}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(bayarValue)}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatNumber(item.sg)}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatNumber(item.scope)}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatNumber(item.xray)}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{item.pcs}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">
+                                                        {(Number(item.pcs || 0) * Number(item.bruto || 0)).toLocaleString()}
+                                                    </td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatRupiah(item.nominal)}</td>
+                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatRupiah(item.total_nominal)}</td>
                                                 </tr>
                                             );
                                         })}
@@ -511,9 +543,9 @@ export default function WorkOrderDetailPage() {
                                         <tr>
                                             <td colSpan={3} className="px-4 py-3 text-left text-sm font-bold uppercase">Total</td>
                                             <td className="px-4 py-3 text-right text-sm font-bold">{formatGram(totalWeightDiterima)}</td>
-                                            <td colSpan={4}></td>
-                                            <td className="px-4 py-3 text-right text-sm font-bold">{formatRupiah(totalBayar)}</td>
-                                            <td colSpan={4}></td>
+                                            <td className="px-4 py-3 text-right text-sm font-bold">{totalPcsItem}</td>
+                                            <td className="px-4 py-3 text-right text-sm font-bold">{totalJumlah}</td>
+                                            <td colSpan={2} className="px-4 py-3 text-right text-sm font-bold">{formatRupiah(totalNominalItem)}</td>
                                         </tr>
                                     </tfoot>
                                 </table>

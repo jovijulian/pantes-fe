@@ -13,7 +13,7 @@ import {
 } from "react-icons/fa";
 import Select from '@/components/form/Select-custom';
 import _ from "lodash";
-import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderModal";
+import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderLMModal";
 import { Download, Loader2, PackagePlus } from "lucide-react";
 import axios from "axios";
 
@@ -130,12 +130,13 @@ export default function WorkOrdersPage() {
         setIsReceiptModalOpen(true);
     };
 
-    const handleConfirmReceipt = async (receiptDate: string) => {
+    const handleConfirmReceipt = async (receiptDate: string, kr: string) => {
         if (!selectedWorkOrder) return;
 
         setIsSubmitting(true);
         const payload = {
             receipt_date: receiptDate,
+            KR: kr,
         };
 
         try {

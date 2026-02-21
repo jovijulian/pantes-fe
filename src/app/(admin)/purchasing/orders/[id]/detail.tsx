@@ -9,7 +9,7 @@ import { endpointUrl, httpGet, httpPut, alertToast, endpointUrlv2, httpPost } fr
 import ComponentCard from "@/components/common/ComponentCard";
 import {
     Loader2, User, Building, Calendar, Hash, Info, Check, X,
-    FileText, DollarSign, Scale, UserCheck, Download
+    FileText, DollarSign, Scale, UserCheck, Download, Edit
 } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
 import ChangeStatusOrderModal from "@/components/modal/ChangeStatusOrderModal";
@@ -253,14 +253,20 @@ export default function PurchaseOrderDetailPage() {
                     <div className="flex justify-end items-center gap-3">
                         {getStatusBadge(data.status)}
                         <>
+                        <button
+                            type="button"
+                            onClick={() => router.push(`/purchasing/orders/edit/${data.id}`)}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-all"
+                        >
+                            <Edit className="w-4 h-4" /> Edit
+                        </button>
                             <button
                                 type="button"
                                 disabled={isDownloadLoading}
                                 onClick={handleExport}
-                                className="flex items-center gap-2 px-5 py-2.5 rounded-lg 
-                                bg-gradient-to-r from-blue-500 to-indigo-600 
-                                text-white font-medium shadow-md hover:shadow-lg 
-                                hover:from-blue-600 hover:to-indigo-700 
+                                className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
+                                bg-indigo-600 text-white text-sm font-medium shadow-sm 
+                                hover:bg-indigo-700 disabled:opacity-50
                                 transition-all duration-200"
                             >
                                 <Download className="w-4 h-4" />

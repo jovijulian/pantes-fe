@@ -295,10 +295,9 @@ export default function PurchaseOrdersPage() {
                                             handleExport(row.id);
                                         }}
                                         title="Export"
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md 
-                                        bg-gradient-to-r from-blue-500 to-indigo-600 
-                                        text-white text-xs font-medium shadow-md hover:shadow-lg 
-                                        hover:from-blue-600 hover:to-indigo-700 
+                                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
+                                        bg-indigo-600 text-white text-sm font-medium shadow-sm 
+                                        hover:bg-indigo-700 disabled:opacity-50
                                         transition-all duration-200"
                                     >
                                         <Download className="w-3.5 h-3.5" />

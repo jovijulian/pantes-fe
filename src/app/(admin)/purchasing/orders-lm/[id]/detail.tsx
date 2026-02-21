@@ -316,7 +316,10 @@ export default function PurchaseOrderDetailPage() {
                             type="button"
                             disabled={isDownloadLoading}
                             onClick={handleExport}
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50"
+                            className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
+                            bg-indigo-600 text-white text-sm font-medium shadow-sm 
+                            hover:bg-indigo-700 disabled:opacity-50
+                            transition-all duration-200"
                         >
                             {isDownloadLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                             <span>Export</span>

@@ -17,6 +17,7 @@ export interface PurchaseOrderForTable {
     cokim: number;
     nominal: number;
     supplier: string;
+    pcs: string;
 }
 
 interface SelectPOModalProps {
@@ -58,6 +59,7 @@ const SelectPOLMModal: React.FC<SelectPOModalProps> = ({
                 cokim: Number(po.cokim) || 0,
                 nominal: Number(po.nominal) || 0,
                 supplier: po.supplier.name,
+                pcs: po.pcs || '0',
             }));
 
             setAvailablePOs(mappedPOs);
@@ -94,7 +96,7 @@ const SelectPOLMModal: React.FC<SelectPOModalProps> = ({
 
     return (
         <Transition appear show={isOpen} as={Fragment}>
-            <Dialog as="div" className="relative z-40" onClose={onClose}>
+            <Dialog as="div" className="relative z-99999" onClose={onClose}>
                 {/* Backdrop */}
                 <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
                     <div className="fixed inset-0 h-full w-full bg-black/30" /> 
@@ -140,7 +142,7 @@ const SelectPOLMModal: React.FC<SelectPOModalProps> = ({
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl Pesan</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pemesan</th>
                                                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat (gr)</th>
-                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cokim</th>
+                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">PCS</th>
                                                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                             </tr>
                                         </thead>
@@ -171,7 +173,7 @@ const SelectPOLMModal: React.FC<SelectPOModalProps> = ({
                                                         <td className="px-4 py-2">{moment(po.tgl_pesan).format('DD MMM YYYY')}</td>
                                                         <td className="px-4 py-2 font-medium">{po.supplier}</td>
                                                         <td className="px-4 py-2 text-right">{po.berat}</td>
-                                                        <td className="px-4 py-2 text-right">{po.cokim.toLocaleString('id-ID')}</td>
+                                                        <td className="px-4 py-2 text-right">{po.pcs}</td>
                                                         <td className="px-4 py-2 text-right">{po.nominal.toLocaleString('id-ID')}</td>
                                                     </tr>
                                                 );
