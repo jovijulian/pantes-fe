@@ -66,7 +66,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
             // Kita gunakan bruto jika weight tidak tersedia dari response API lama, 
             // namun jika backend sudah mengembalikan weight, kita prioritize weight.
             const initialWeight = Number(itemToEdit.weight) || Number(itemToEdit.bruto) || 0;
-            
+
             setForm({
                 weight: initialWeight,
                 pcs: Number(itemToEdit.pcs) || 0,
@@ -156,30 +156,30 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block text-sm font-semibold mb-1 text-gray-700">Berat (gr)<span className="text-red-500 ml-1">*</span></label>
-                                                <Input 
-                                                    type="number" 
-                                                    value={form.weight || ''} 
-                                                    onChange={(e) => handleFormChange('weight', parseFloat(e.target.value) || 0)} 
-                                                    min="0" 
-                                                    placeholder="0" 
+                                                <Input
+                                                    type="number"
+                                                    value={form.weight || ''}
+                                                    onChange={(e) => handleFormChange('weight', e.target.value || 0)}
+
+                                                    placeholder="0"
                                                 />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-semibold mb-1 text-gray-700">PCS<span className="text-red-500 ml-1">*</span></label>
-                                                <Input 
-                                                    type="number" 
-                                                    value={form.pcs || ''} 
-                                                    onChange={(e) => handleFormChange('pcs', parseInt(e.target.value) || 0)} 
-                                                    min="0" 
-                                                    placeholder="0" 
+                                                <Input
+                                                    type="number"
+                                                    value={form.pcs || ''}
+                                                    onChange={(e) => handleFormChange('pcs', parseInt(e.target.value) || 0)}
+
+                                                    placeholder="0"
                                                 />
                                             </div>
                                             <div className="col-span-2">
                                                 <label className="block text-sm font-semibold mb-1 text-gray-700">Harga Satuan<span className="text-red-500 ml-1">*</span></label>
-                                                <CurrencyInput 
-                                                    value={form.nominal} 
-                                                    onValueChange={v => handleFormChange('nominal', v)} 
-                                                    placeholder="Rp 0" 
+                                                <CurrencyInput
+                                                    value={form.nominal}
+                                                    onValueChange={v => handleFormChange('nominal', v)}
+                                                    placeholder="Rp 0"
                                                 />
                                             </div>
                                         </div>
@@ -228,62 +228,56 @@ const CurrencyInput: React.FC<{
     className?: string;
 }> = ({ value, onValueChange, placeholder, disabled, className = "" }) => {
     const [displayValue, setDisplayValue] = useState("");
-    
+
     const formatThousand = (numStr: string) => {
         if (!numStr) return "";
-        const rawNum = numStr.replace(/\D/g, '');
-        return Number(rawNum).toLocaleString('id-ID');
+        return Number(numStr).toLocaleString("id-ID");
+    };
+
+    const parseToNumber = (str: string): number => {
+        if (!str) return 0;
+        const cleanStr = str.replace(/\./g, "").replace(/,/g, ".");
+        return parseFloat(cleanStr) || 0;
     };
 
     useEffect(() => {
-        const parse = (str: string): number => {
-            if (!str) return 0;
-            const cleanStr = str.replace(/\./g, '').replace(/,/g, '.');
-            return parseFloat(cleanStr) || 0;
-        };
-
-        const currentNumeric = parse(displayValue);
+        const currentNumeric = parseToNumber(displayValue);
 
         if (value !== currentNumeric) {
             if (!value) {
                 setDisplayValue("");
             } else {
-                setDisplayValue(value.toLocaleString('id-ID', { maximumFractionDigits: 10 }));
+                setDisplayValue(
+                    value.toLocaleString("id-ID", { maximumFractionDigits: 10 })
+                );
             }
         }
-    }, [value, displayValue]);
+    }, [value]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let input = e.target.value;
-        input = input.replace(/[^0-9,]/g, '');
-        const parts = input.split(',');
+
+        input = input.replace(/[^0-9,]/g, "");
+
+        const parts = input.split(",");
         if (parts.length > 2) return;
 
-        let integerPart = parts[0];
-        if (integerPart.length > 1 && integerPart.startsWith('0')) {
-            integerPart = integerPart.substring(1);
-        }
+        const integerPart = parts[0];
+        const decimalPart = parts[1] ?? "";
 
         let formattedInteger = "";
-        if (integerPart) {
+
+        if (integerPart !== "") {
             formattedInteger = formatThousand(integerPart);
         }
 
         let newDisplayValue = formattedInteger;
 
-        if (parts.length > 1) {
-            newDisplayValue += ',' + parts[1];
-        } else if (input.endsWith(',')) {
-            newDisplayValue += ',';
+        if (input.includes(",")) {
+            newDisplayValue += "," + decimalPart;
         }
 
         setDisplayValue(newDisplayValue);
-
-        const parseToNumber = (str: string): number => {
-            if (!str) return 0;
-            const cleanStr = str.replace(/\./g, '').replace(/,/g, '.');
-            return parseFloat(cleanStr) || 0;
-        };
         onValueChange(parseToNumber(newDisplayValue));
     };
 

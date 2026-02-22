@@ -162,7 +162,7 @@ export default function EditPurchaseOrderPage() {
                             nominal: Number(p.nominal),
                         })),
                     });
-                    
+
                     setViewingMonthDate(new Date(d.date));
                 }
 
@@ -205,7 +205,7 @@ export default function EditPurchaseOrderPage() {
                 setFormData(prev => ({ ...prev, payment_type: [] }));
                 toast.info("Supplier diubah, harap pilih ulang bank pembayaran.");
             }
-            
+
             prevSupplierIdRef.current = formData.supplier_id;
         } else {
             setBankOptions([]);
@@ -384,7 +384,7 @@ export default function EditPurchaseOrderPage() {
             router.push(`/purchasing/orders-lm/${id}`);
         } catch (error: any) {
             toast.error(error.response?.data?.message);
-        }finally {
+        } finally {
             setIsSubmitting(false);
         }
     };
@@ -482,7 +482,7 @@ export default function EditPurchaseOrderPage() {
                                                         placeholder="Rp 0"
                                                     />
                                                 </td>
-                                              
+
                                             </tr>
                                         );
                                     })}
@@ -490,7 +490,7 @@ export default function EditPurchaseOrderPage() {
                             </table>
                         </div>
 
-                      
+
                         <div className="flex justify-end gap-6 p-4 mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg mt-4">
                             <CurrencyDisplay title="Total Nominal Pembayaran" value={totalPayment} />
                         </div>
@@ -523,10 +523,10 @@ export default function EditPurchaseOrderPage() {
                                                     />
                                                 </td>
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[150px]">
-                                                    <Input type="number" value={item.weight || ''} onChange={(e) => handleItemChange(index, 'weight', parseFloat(e.target.value) || 0)} min="0" placeholder='0' />
+                                                    <Input type="number" value={item.weight || ''} onChange={(e) => handleItemChange(index, 'weight', e.target.value || 0)} placeholder='0' />
                                                 </td>
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[120px]">
-                                                    <Input type="number" value={item.pcs || ''} onChange={(e) => handleItemChange(index, 'pcs', parseInt(e.target.value) || 0)} min="0" placeholder='0' />
+                                                    <Input type="number" value={item.pcs || ''} onChange={(e) => handleItemChange(index, 'pcs', parseInt(e.target.value) || 0)} placeholder='0' />
                                                 </td>
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[180px]">
                                                     <CurrencyInput
@@ -540,7 +540,7 @@ export default function EditPurchaseOrderPage() {
                                                         Rp {subtotal.toLocaleString('id-ID')}
                                                     </div>
                                                 </td>
-                                              
+
                                             </tr>
                                         );
                                     })}
@@ -548,7 +548,7 @@ export default function EditPurchaseOrderPage() {
                             </table>
                         </div>
 
-                      
+
                         <div className="flex justify-end gap-6 p-4 mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg mt-4">
                             <GramDisplay title="Total Berat (gr)" value={totalWeight} />
                             <CurrencyDisplay
@@ -618,58 +618,57 @@ const CurrencyInput: React.FC<{
     className?: string;
 }> = ({ value, onValueChange, placeholder, disabled, className = "" }) => {
     const [displayValue, setDisplayValue] = useState("");
+
     const formatThousand = (numStr: string) => {
         if (!numStr) return "";
-        const rawNum = numStr.replace(/\D/g, '');
-        return Number(rawNum).toLocaleString('id-ID');
+        return Number(numStr).toLocaleString("id-ID");
+    };
+
+    const parseToNumber = (str: string): number => {
+        if (!str) return 0;
+        const cleanStr = str.replace(/\./g, "").replace(/,/g, ".");
+        return parseFloat(cleanStr) || 0;
     };
 
     useEffect(() => {
-        const currentNumeric = parse(displayValue);
+        const currentNumeric = parseToNumber(displayValue);
 
         if (value !== currentNumeric) {
             if (!value) {
                 setDisplayValue("");
             } else {
-                setDisplayValue(value.toLocaleString('id-ID', { maximumFractionDigits: 10 }));
+                setDisplayValue(
+                    value.toLocaleString("id-ID", { maximumFractionDigits: 10 })
+                );
             }
         }
     }, [value]);
 
-    const parse = (str: string): number => {
-        if (!str) return 0;
-        const cleanStr = str.replace(/\./g, '').replace(/,/g, '.');
-        return parseFloat(cleanStr) || 0;
-    };
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let input = e.target.value;
-        input = input.replace(/[^0-9,]/g, '');
-        const parts = input.split(',');
+
+        input = input.replace(/[^0-9,]/g, "");
+
+        const parts = input.split(",");
         if (parts.length > 2) return;
 
-        let integerPart = parts[0];
-        if (integerPart.length > 1 && integerPart.startsWith('0')) {
-            integerPart = integerPart.substring(1);
-        }
+        const integerPart = parts[0];
+        const decimalPart = parts[1] ?? "";
 
         let formattedInteger = "";
-        if (integerPart) {
+
+        if (integerPart !== "") {
             formattedInteger = formatThousand(integerPart);
         }
 
         let newDisplayValue = formattedInteger;
 
-        if (parts.length > 1) {
-            newDisplayValue += ',' + parts[1];
-        } else if (input.endsWith(',')) {
-            newDisplayValue += ',';
+        if (input.includes(",")) {
+            newDisplayValue += "," + decimalPart;
         }
 
         setDisplayValue(newDisplayValue);
-
-        const numberValue = parse(newDisplayValue);
-        onValueChange(numberValue);
+        onValueChange(parseToNumber(newDisplayValue));
     };
 
     return (
@@ -679,7 +678,7 @@ const CurrencyInput: React.FC<{
             onChange={handleChange}
             placeholder={placeholder}
             disabled={disabled}
-            className={`dark:bg-gray-800 dark:text-white dark:border-gray-600 ${className}`}
+            className={className}
         />
     );
 };

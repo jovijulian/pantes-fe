@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, Fragment } from 'react';
-import { useRouter, useParams } from 'next/navigation'; 
+import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-toastify';
 import moment from 'moment';
 import _ from "lodash";
 
 import {
-    endpointUrl, httpGet, httpPost, httpPut, httpDelete, 
+    endpointUrl, httpGet, httpPost, httpPut, httpDelete,
     alertToast, endpointUrlv2
 } from '@/../helpers';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -76,7 +76,7 @@ export default function EditPurchaseOrderPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [staffOptions, setStaffOptions] = useState<SelectOption[]>([]);
     const [supplierOptions, setSupplierOptions] = useState<SelectOption[]>([]);
-    const [bankOptions, setBankOptions] = useState<BankOption[]>([]); 
+    const [bankOptions, setBankOptions] = useState<BankOption[]>([]);
     const [isBankLoading, setIsBankLoading] = useState(false);
     const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
     const [paymentsToDelete, setPaymentsToDelete] = useState<number[]>([]);
@@ -122,10 +122,10 @@ export default function EditPurchaseOrderPage() {
                 const data = res.data.data;
 
                 const mappedPayments: FormPaymentType[] = data.payment_types.map((p: any) => ({
-                    id: `payment-react-${p.id}`, 
-                    order_payment_type_id: p.id, 
+                    id: `payment-react-${p.id}`,
+                    order_payment_type_id: p.id,
                     payment_type: p.payment_type,
-                    supplier_bank_id: p.supplier_bank_id ? Number(p.supplier_bank_id) : null, 
+                    supplier_bank_id: p.supplier_bank_id ? Number(p.supplier_bank_id) : null,
                     nominal: Number(p.nominal) || 0,
                 }));
                 setFormData({
@@ -157,7 +157,7 @@ export default function EditPurchaseOrderPage() {
             setIsBankLoading(true);
             try {
                 const res = await httpGet(endpointUrl(`master/supplier/${supplierId}/bank/dropdown`), true);
-                
+
                 const formattedBankOptions: BankOption[] = res.data.data.map((b: any) => ({
                     value: b.id.toString(),
                     label: `${b.bank_name} - ${b.account_number} (${b.account_name})`,
@@ -166,10 +166,10 @@ export default function EditPurchaseOrderPage() {
                     account_number: b.account_number,
                 }));
                 setBankOptions(formattedBankOptions);
-                
+
             } catch (error) {
                 toast.error("Gagal memuat data bank untuk supplier ini.");
-                setBankOptions([]); 
+                setBankOptions([]);
             } finally {
                 setIsBankLoading(false);
             }
@@ -206,15 +206,15 @@ export default function EditPurchaseOrderPage() {
                     .filter(p => p.order_payment_type_id)
                     .map(p => p.order_payment_type_id!)
             ]);
-            
-            setFormData(prev => ({ 
-                ...prev, 
+
+            setFormData(prev => ({
+                ...prev,
                 [field]: value,
                 payment_type: []
             }));
-            
+
             if (value) {
-                 toast.info("Supplier diubah, harap pilih ulang bank pembayaran.");
+                toast.info("Supplier diubah, harap pilih ulang bank pembayaran.");
             }
         } else {
             setFormData(prev => ({ ...prev, [field]: value }));
@@ -227,9 +227,9 @@ export default function EditPurchaseOrderPage() {
         (payment[field] as any) = value;
 
         if (field === 'payment_type' && (value !== 'BANK TRANSFER' && value !== 'SETOR TUNAI')) {
-            payment.supplier_bank_id = null; 
+            payment.supplier_bank_id = null;
         }
-        
+
         setFormData(prev => ({ ...prev, payment_type: newPayments }));
     };
 
@@ -242,7 +242,7 @@ export default function EditPurchaseOrderPage() {
                 {
                     id: `payment-new-${Date.now()}`,
                     payment_type: "BANK TRANSFER",
-                    supplier_bank_id: null, 
+                    supplier_bank_id: null,
                     nominal: newNominal,
                 }
             ]
@@ -297,7 +297,7 @@ export default function EditPurchaseOrderPage() {
         setIsSubmitting(true);
 
         const separatePromises = [];
-        
+
         for (const paymentIdToDelete of paymentsToDelete) {
             const payload = {
                 order_payment_type_id: paymentIdToDelete,
@@ -344,9 +344,9 @@ export default function EditPurchaseOrderPage() {
                 weight: parseFloat(formData.weight),
                 cokim: formData.cokim,
                 nominal: formData.nominal,
-                payment_type: payloadExisintgPayments 
+                payment_type: payloadExisintgPayments
             };
-            
+
 
             await httpPost(endpointUrl(`/purchase/order/${id}/update`), mainPayload, true);
 
@@ -418,16 +418,17 @@ export default function EditPurchaseOrderPage() {
                             <div className="md:col-span-6 space-y-4">
                                 <div>
                                     <label className="block font-medium mb-1">Berat (gr)<span className="text-red-400 ml-1">*</span></label>
-                                    <Input type="number" value={formData.weight} onChange={(e) => handleFieldChange('weight', e.target.value)} min="0" placeholder='0' />
+                                    <Input type="number" value={formData.weight} onChange={(e) => handleFieldChange('weight', e.target.value)} placeholder='0' />
                                 </div>
                                 <div className="grid grid-cols-1 gap-2">
                                     <div>
                                         <label className="block font-medium mb-1">Cokim<span className="text-red-400 ml-1">*</span></label>
-                                        <CurrencyInput
+                                        <Input type="number" value={formData.cokim} onChange={(e) => handleFieldChange('cokim', e.target.value)} placeholder='0' />
+                                        {/* <CurrencyInput
                                             value={formData.cokim}
                                             onValueChange={(value) => handleFieldChange('cokim', value)}
                                             placeholder="0"
-                                        />
+                                        /> */}
                                     </div>
                                 </div>
                                 <div>
@@ -460,14 +461,14 @@ export default function EditPurchaseOrderPage() {
                                                 />
                                             </td>
                                             <td className="px-4 py-2 whitespace-nowrap min-w-[500px]">
-                                            {(payment.payment_type === "BANK TRANSFER" || payment.payment_type === "SETOR TUNAI") && (
+                                                {(payment.payment_type === "BANK TRANSFER" || payment.payment_type === "SETOR TUNAI") && (
                                                     <Select
-                                                        options={bankOptions} 
+                                                        options={bankOptions}
                                                         value={_.find(bankOptions, { value: payment.supplier_bank_id?.toString() })}
                                                         onValueChange={(opt) => handlePaymentChange(index, 'supplier_bank_id', opt ? parseInt(opt.value) : null)}
                                                         placeholder={
-                                                            !formData.supplier_id ? "Pilih supplier dulu..." : 
-                                                            isBankLoading ? "Memuat bank..." : "Pilih bank supplier..."
+                                                            !formData.supplier_id ? "Pilih supplier dulu..." :
+                                                                isBankLoading ? "Memuat bank..." : "Pilih bank supplier..."
                                                         }
                                                         disabled={loadingOptions || isBankLoading || !formData.supplier_id}
                                                     />
@@ -506,7 +507,7 @@ export default function EditPurchaseOrderPage() {
                             </button>
                         </div>
                         {!formData.supplier_id && (
-                             <p className="text-xs text-red-500 mt-1">Pilih Supplier terlebih dahulu untuk menambah pembayaran.</p>
+                            <p className="text-xs text-red-500 mt-1">Pilih Supplier terlebih dahulu untuk menambah pembayaran.</p>
                         )}
                         <div className="flex justify-end gap-6 p-2 mb-4">
                             <CurrencyDisplay title="Total Nominal" value={formData.nominal} />
@@ -531,7 +532,7 @@ export default function EditPurchaseOrderPage() {
                     </button>
                     <button
                         type="submit"
-                        disabled={isSubmitting || loadingOptions || loadingData || remainingBalance !== 0} 
+                        disabled={isSubmitting || loadingOptions || loadingData || remainingBalance !== 0}
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:bg-gray-400"
                     >
                         {isSubmitting ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5" />}
@@ -561,62 +562,60 @@ const CurrencyInput: React.FC<{
     className?: string;
 }> = ({ value, onValueChange, placeholder, disabled, className = "" }) => {
     const [displayValue, setDisplayValue] = useState("");
+
     const formatThousand = (numStr: string) => {
         if (!numStr) return "";
-        const rawNum = numStr.replace(/\D/g, '');
-        return Number(rawNum).toLocaleString('id-ID');
+        return Number(numStr).toLocaleString("id-ID");
+    };
+
+    const parseToNumber = (str: string): number => {
+        if (!str) return 0;
+        const cleanStr = str.replace(/\./g, "").replace(/,/g, ".");
+        return parseFloat(cleanStr) || 0;
     };
 
     useEffect(() => {
-        const currentNumeric = parse(displayValue);
+        const currentNumeric = parseToNumber(displayValue);
 
         if (value !== currentNumeric) {
             if (!value) {
                 setDisplayValue("");
             } else {
-                setDisplayValue(value.toLocaleString('id-ID', { maximumFractionDigits: 10 }));
+                setDisplayValue(
+                    value.toLocaleString("id-ID", { maximumFractionDigits: 10 })
+                );
             }
         }
     }, [value]);
 
-    const parse = (str: string): number => {
-        if (!str) return 0;
-        const cleanStr = str.replace(/\./g, '').replace(/,/g, '.');
-        return parseFloat(cleanStr) || 0;
-    };
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let input = e.target.value;
-        input = input.replace(/[^0-9,]/g, '');
-        const parts = input.split(',');
+
+        input = input.replace(/[^0-9,]/g, "");
+
+        const parts = input.split(",");
         if (parts.length > 2) return;
 
-        let integerPart = parts[0];
-        if (integerPart.length > 1 && integerPart.startsWith('0')) {
-            integerPart = integerPart.substring(1);
-        }
+        const integerPart = parts[0];
+        const decimalPart = parts[1] ?? "";
 
         let formattedInteger = "";
-        if (integerPart) {
+
+        if (integerPart !== "") {
             formattedInteger = formatThousand(integerPart);
         }
 
         let newDisplayValue = formattedInteger;
 
-        if (parts.length > 1) {
-            newDisplayValue += ',' + parts[1];
-        } else if (input.endsWith(',')) {
-            newDisplayValue += ',';
+        if (input.includes(",")) {
+            newDisplayValue += "," + decimalPart;
         }
 
         setDisplayValue(newDisplayValue);
-
-        const numberValue = parse(newDisplayValue);
-        onValueChange(numberValue);
+        onValueChange(parseToNumber(newDisplayValue));
     };
 
     return (
-
         <Input
             type="text"
             value={displayValue}

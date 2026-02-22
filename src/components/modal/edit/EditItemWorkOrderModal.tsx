@@ -341,62 +341,60 @@ const CurrencyInput: React.FC<{
     className?: string;
 }> = ({ value, onValueChange, placeholder, disabled, className = "" }) => {
     const [displayValue, setDisplayValue] = useState("");
+
     const formatThousand = (numStr: string) => {
         if (!numStr) return "";
-        const rawNum = numStr.replace(/\D/g, '');
-        return Number(rawNum).toLocaleString('id-ID');
+        return Number(numStr).toLocaleString("id-ID");
+    };
+
+    const parseToNumber = (str: string): number => {
+        if (!str) return 0;
+        const cleanStr = str.replace(/\./g, "").replace(/,/g, ".");
+        return parseFloat(cleanStr) || 0;
     };
 
     useEffect(() => {
-        const currentNumeric = parse(displayValue);
+        const currentNumeric = parseToNumber(displayValue);
 
         if (value !== currentNumeric) {
             if (!value) {
                 setDisplayValue("");
             } else {
-                setDisplayValue(value.toLocaleString('id-ID', { maximumFractionDigits: 10 }));
+                setDisplayValue(
+                    value.toLocaleString("id-ID", { maximumFractionDigits: 10 })
+                );
             }
         }
     }, [value]);
 
-    const parse = (str: string): number => {
-        if (!str) return 0;
-        const cleanStr = str.replace(/\./g, '').replace(/,/g, '.');
-        return parseFloat(cleanStr) || 0;
-    };
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let input = e.target.value;
-        input = input.replace(/[^0-9,]/g, '');
-        const parts = input.split(',');
+
+        input = input.replace(/[^0-9,]/g, "");
+
+        const parts = input.split(",");
         if (parts.length > 2) return;
 
-        let integerPart = parts[0];
-        if (integerPart.length > 1 && integerPart.startsWith('0')) {
-            integerPart = integerPart.substring(1);
-        }
+        const integerPart = parts[0];
+        const decimalPart = parts[1] ?? "";
 
         let formattedInteger = "";
-        if (integerPart) {
+
+        if (integerPart !== "") {
             formattedInteger = formatThousand(integerPart);
         }
 
         let newDisplayValue = formattedInteger;
 
-        if (parts.length > 1) {
-            newDisplayValue += ',' + parts[1];
-        } else if (input.endsWith(',')) {
-            newDisplayValue += ',';
+        if (input.includes(",")) {
+            newDisplayValue += "," + decimalPart;
         }
 
         setDisplayValue(newDisplayValue);
-
-        const numberValue = parse(newDisplayValue);
-        onValueChange(numberValue);
+        onValueChange(parseToNumber(newDisplayValue));
     };
 
     return (
-
         <Input
             type="text"
             value={displayValue}

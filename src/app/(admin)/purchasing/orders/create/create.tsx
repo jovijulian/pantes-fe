@@ -319,17 +319,18 @@ export default function CreatePurchaseOrderPage() {
                             <div className="md:col-span-6 space-y-4">
                                 <div>
                                     <label className="block font-medium mb-1">Berat (gr)<span className="text-red-400 ml-1">*</span></label>
-                                    <Input type="number" value={formData.weight} onChange={(e) => handleFieldChange('weight', e.target.value)} min="0" placeholder='0' />
+                                    <Input type="number" value={formData.weight} onChange={(e) => handleFieldChange('weight', e.target.value)} placeholder='0' />
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-2">
                                     <div>
                                         <label className="block font-medium mb-1">Cokim<span className="text-red-400 ml-1">*</span></label>
-                                        <CurrencyInput
+                                        <Input type="number" value={formData.cokim} onChange={(e) => handleFieldChange('cokim', e.target.value)} placeholder='0' />
+                                        {/* <CurrencyInput
                                             value={formData.cokim}
                                             onValueChange={(value) => handleFieldChange('cokim', value)}
                                             placeholder="0"
-                                        />
+                                        /> */}
                                     </div>
                                 </div>
 
@@ -471,62 +472,60 @@ const CurrencyInput: React.FC<{
     className?: string;
 }> = ({ value, onValueChange, placeholder, disabled, className = "" }) => {
     const [displayValue, setDisplayValue] = useState("");
+
     const formatThousand = (numStr: string) => {
         if (!numStr) return "";
-        const rawNum = numStr.replace(/\D/g, '');
-        return Number(rawNum).toLocaleString('id-ID');
+        return Number(numStr).toLocaleString("id-ID");
+    };
+
+    const parseToNumber = (str: string): number => {
+        if (!str) return 0;
+        const cleanStr = str.replace(/\./g, "").replace(/,/g, ".");
+        return parseFloat(cleanStr) || 0;
     };
 
     useEffect(() => {
-        const currentNumeric = parse(displayValue);
+        const currentNumeric = parseToNumber(displayValue);
 
         if (value !== currentNumeric) {
             if (!value) {
                 setDisplayValue("");
             } else {
-                setDisplayValue(value.toLocaleString('id-ID', { maximumFractionDigits: 10 }));
+                setDisplayValue(
+                    value.toLocaleString("id-ID", { maximumFractionDigits: 10 })
+                );
             }
         }
     }, [value]);
 
-    const parse = (str: string): number => {
-        if (!str) return 0;
-        const cleanStr = str.replace(/\./g, '').replace(/,/g, '.');
-        return parseFloat(cleanStr) || 0;
-    };
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let input = e.target.value;
-        input = input.replace(/[^0-9,]/g, '');
-        const parts = input.split(',');
+
+        input = input.replace(/[^0-9,]/g, "");
+
+        const parts = input.split(",");
         if (parts.length > 2) return;
 
-        let integerPart = parts[0];
-        if (integerPart.length > 1 && integerPart.startsWith('0')) {
-            integerPart = integerPart.substring(1);
-        }
+        const integerPart = parts[0];
+        const decimalPart = parts[1] ?? "";
 
         let formattedInteger = "";
-        if (integerPart) {
+
+        if (integerPart !== "") {
             formattedInteger = formatThousand(integerPart);
         }
 
         let newDisplayValue = formattedInteger;
 
-        if (parts.length > 1) {
-            newDisplayValue += ',' + parts[1];
-        } else if (input.endsWith(',')) {
-            newDisplayValue += ',';
+        if (input.includes(",")) {
+            newDisplayValue += "," + decimalPart;
         }
 
         setDisplayValue(newDisplayValue);
-
-        const numberValue = parse(newDisplayValue);
-        onValueChange(numberValue);
+        onValueChange(parseToNumber(newDisplayValue));
     };
 
     return (
-
         <Input
             type="text"
             value={displayValue}

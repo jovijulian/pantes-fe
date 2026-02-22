@@ -276,12 +276,7 @@ export default function CreatePurchaseOrderPage() {
             return false;
         }
 
-        // VALIDASI INI DIHAPUS AGAR BISA TETAP SUBMIT MESKI TIDAK BALANCE
-        // if (remainingBalance !== 0) {
-        //     toast.error(`Pembayaran tidak seimbang. Sisa saldo: Rp ${remainingBalance.toLocaleString('id-ID')}`);
-        //     return false;
-        // }
-
+       
         for (const p of formData.payment_type) {
             if (p.nominal <= 0) {
                 toast.error("Nominal di setiap baris pembayaran harus lebih besar dari 0.");
@@ -490,10 +485,12 @@ export default function CreatePurchaseOrderPage() {
                                                     />
                                                 </td>
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[150px]">
-                                                    <Input type="number" value={item.weight || ''} onChange={(e) => handleItemChange(index, 'weight', parseFloat(e.target.value) || 0)} min="0" placeholder='0' />
+
+                                                    <Input type="number" value={item.weight || ''} onChange={(e) => handleItemChange(index, 'weight', e.target.value || 0)} placeholder='0' />
                                                 </td>
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[120px]">
-                                                    <Input type="number" value={item.pcs || ''} onChange={(e) => handleItemChange(index, 'pcs', parseInt(e.target.value) || 0)} min="0" placeholder='0' />
+
+                                                    <Input type="number" value={item.pcs || ''} onChange={(e) => handleItemChange(index, 'pcs', parseInt(e.target.value) || 0)} placeholder='0' />
                                                 </td>
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[180px]">
                                                     <CurrencyInput
@@ -604,58 +601,57 @@ const CurrencyInput: React.FC<{
     className?: string;
 }> = ({ value, onValueChange, placeholder, disabled, className = "" }) => {
     const [displayValue, setDisplayValue] = useState("");
+
     const formatThousand = (numStr: string) => {
         if (!numStr) return "";
-        const rawNum = numStr.replace(/\D/g, '');
-        return Number(rawNum).toLocaleString('id-ID');
+        return Number(numStr).toLocaleString("id-ID");
+    };
+
+    const parseToNumber = (str: string): number => {
+        if (!str) return 0;
+        const cleanStr = str.replace(/\./g, "").replace(/,/g, ".");
+        return parseFloat(cleanStr) || 0;
     };
 
     useEffect(() => {
-        const currentNumeric = parse(displayValue);
+        const currentNumeric = parseToNumber(displayValue);
 
         if (value !== currentNumeric) {
             if (!value) {
                 setDisplayValue("");
             } else {
-                setDisplayValue(value.toLocaleString('id-ID', { maximumFractionDigits: 10 }));
+                setDisplayValue(
+                    value.toLocaleString("id-ID", { maximumFractionDigits: 10 })
+                );
             }
         }
     }, [value]);
 
-    const parse = (str: string): number => {
-        if (!str) return 0;
-        const cleanStr = str.replace(/\./g, '').replace(/,/g, '.');
-        return parseFloat(cleanStr) || 0;
-    };
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let input = e.target.value;
-        input = input.replace(/[^0-9,]/g, '');
-        const parts = input.split(',');
+
+        input = input.replace(/[^0-9,]/g, "");
+
+        const parts = input.split(",");
         if (parts.length > 2) return;
 
-        let integerPart = parts[0];
-        if (integerPart.length > 1 && integerPart.startsWith('0')) {
-            integerPart = integerPart.substring(1);
-        }
+        const integerPart = parts[0];
+        const decimalPart = parts[1] ?? "";
 
         let formattedInteger = "";
-        if (integerPart) {
+
+        if (integerPart !== "") {
             formattedInteger = formatThousand(integerPart);
         }
 
         let newDisplayValue = formattedInteger;
 
-        if (parts.length > 1) {
-            newDisplayValue += ',' + parts[1];
-        } else if (input.endsWith(',')) {
-            newDisplayValue += ',';
+        if (input.includes(",")) {
+            newDisplayValue += "," + decimalPart;
         }
 
         setDisplayValue(newDisplayValue);
-
-        const numberValue = parse(newDisplayValue);
-        onValueChange(numberValue);
+        onValueChange(parseToNumber(newDisplayValue));
     };
 
     return (
@@ -665,11 +661,10 @@ const CurrencyInput: React.FC<{
             onChange={handleChange}
             placeholder={placeholder}
             disabled={disabled}
-            className={`dark:bg-gray-800 dark:text-white dark:border-gray-600 ${className}`}
+            className={className}
         />
     );
 };
-
 const CurrencyDisplay: React.FC<{ title: string; value: number; color?: string }> = ({ title, value, color = 'text-gray-900 dark:text-white' }) => (
     <div className="text-right">
         <span className="text-sm text-gray-500 dark:text-gray-400">{title}</span>
