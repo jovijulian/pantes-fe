@@ -190,12 +190,12 @@ export const menuConfig: Record<string, NavItem[]> = {
       ]
     },
    
-    {
-      name: 'Laporan Stok Global',
-      icon: <PackageSearch />,
-      path: '/purchasing/stock-global',
-      roles: [1, 3, 5],
-    },
+    // {
+    //   name: 'Laporan Stok Global',
+    //   icon: <PackageSearch />,
+    //   path: '/purchasing/stock-global',
+    //   roles: [1, 3, 5],
+    // },
     {
       name: 'Master Data',
       icon: <Database />,

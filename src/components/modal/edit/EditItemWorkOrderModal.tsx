@@ -168,12 +168,12 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
         if (!form.item_id) {
             toast.error("Jenis Barang wajib diisi."); return false;
         }
-        if (form.bruto <= 0) {
-            toast.error("Bruto harus lebih besar dari 0."); return false;
-        }
-        if (form.weight <= 0) {
-            toast.error("Berat Terima harus lebih besar dari 0."); return false;
-        }
+        // if (form.bruto <= 0) {
+        //     toast.error("Bruto harus lebih besar dari 0."); return false;
+        // }
+        // if (form.weight <= 0) {
+        //     toast.error("Berat Terima harus lebih besar dari 0."); return false;
+        // }
         if (form.kadar <= 0 || form.kadar > 100) {
             toast.error("Kadar harus di antara 1 - 100."); return false;
         }

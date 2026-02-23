@@ -265,8 +265,8 @@ export default function CreatePurchaseOrderPage() {
         }
 
         for (const item of formData.items) {
-            if (!item.item_id || item.weight <= 0 || item.pcs <= 0 || item.nominal <= 0) {
-                toast.error("Pastikan semua item sudah dipilih dan memiliki berat, pcs, serta nominal lebih dari 0.");
+            if (!item.item_id ) {
+                toast.error("Pastikan semua item sudah dipilih.");
                 return false;
             }
         }

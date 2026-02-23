@@ -119,6 +119,17 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
         return finalBayar;
     }, [baseNominal, calculateModalNetto]);
 
+
+    const formatRupiah = (value: string | number | null): string => {
+        const num = Number(value || 0);
+        return "Rp " + num.toLocaleString('id-ID');
+    };
+
+    const formatGram = (value: string | number | null): string => {
+        const num = Number(value || 0);
+        return num.toLocaleString('id-ID') + " gram";
+    };
+
     const { totalBayarInDetail, totalBayarInList, selisihUang } = useMemo(() => {
         const inDetail = existingItems.reduce((acc, item) => acc + calculateBayar(item), 0);
         const inList = itemsList.reduce((acc, item) => acc + item.bayar_nett, 0);
@@ -217,12 +228,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
         if (!form.item_id) {
             toast.error("Jenis Barang wajib diisi."); return false;
         }
-        if (form.bruto <= 0) {
-            toast.error("Bruto harus lebih besar dari 0."); return false;
-        }
-        if (form.weight <= 0) {
-            toast.error("Berat Terima harus lebih besar dari 0."); return false;
-        }
+      
         if (form.kadar <= 0 || form.kadar > 100) {
             toast.error("Kadar harus di antara 1 - 100."); return false;
         }
@@ -262,11 +268,6 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
             return;
         }
 
-        if (selisih > 0) {
-            toast.error(`Total Berat Diterima masih kurang ${selisih.toLocaleString('id-ID')} gr dari Total Berat SJ.`);
-            return;
-        }
-
         setIsSubmitting(true);
 
         const itemsPayload: IItemPayload[] = itemsList.map(item => ({
@@ -296,6 +297,19 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
             setIsSubmitting(false);
         }
     };
+
+    const { totalWeightDiterima, totalBayar } = useMemo(() => {
+        let weight = 0;
+        let bayar = 0;
+
+        // Loop melalui state itemsList yang ada di komponen ini
+        itemsList.forEach(item => {
+            weight += item.weight; // Ambil nilai dari field weight (Berat Terima)
+            bayar += item.bayar_nett; // Ambil nilai dari field bayar_nett
+        });
+
+        return { totalWeightDiterima: weight, totalBayar: bayar };
+    }, [itemsList]);
 
     return (
         <Transition appear show={isOpen} as={Fragment}>
@@ -505,6 +519,15 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
                                                     </tr>
                                                 ))}
                                             </tbody>
+                                            <tfoot className="bg-gray-100 border-t-2 border-gray-300">
+                                                <tr>
+                                                    <td colSpan={3} className="px-4 py-3 text-left text-sm font-bold uppercase">Total</td>
+                                                    <td className="px-4 py-3 text-right text-sm font-bold">{formatGram(totalWeightDiterima)}</td>
+                                                    <td colSpan={3}></td>
+                                                    <td className="px-4 py-3 text-right text-sm font-bold">{formatRupiah(totalBayar)}</td>
+                                                    <td colSpan={4}></td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
                                     </div>
                                 </div>
@@ -522,7 +545,7 @@ const AddItemWorkOrderModal: React.FC<AddItemModalProps> = ({
                                         type="button"
                                         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50"
                                         onClick={handleConfirmSubmit}
-                                        disabled={selisih > 0 || itemsList.length === 0 || isSubmitting}
+                                        disabled={itemsList.length === 0 || isSubmitting}
                                     >
                                         {isSubmitting ? <Loader2 className="animate-spin w-4 h-4" /> : <Save className="w-4 h-4" />}
                                         Simpan ({itemsList.length}) Barang

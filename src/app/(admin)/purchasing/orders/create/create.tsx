@@ -207,18 +207,18 @@ export default function CreatePurchaseOrderPage() {
             toast.error("Harap isi Tanggal, Pemesan, dan Supplier.");
             return false;
         }
-        if (formData.nominal <= 0 || formData.weight === "0" || formData.cokim === 0) {
-            toast.error("Weight, Cokim, dan Nominal harus lebih besar dari 0.");
-            return false;
-        }
+        // if (formData.nominal <= 0 || formData.weight === "0" || formData.cokim === 0) {
+        //     toast.error("Weight, Cokim, dan Nominal harus lebih besar dari 0.");
+        //     return false;
+        // }
         if (formData.payment_type.length === 0) {
             toast.error("Harap tambahkan minimal satu metode pembayaran.");
             return false;
         }
-        if (remainingBalance !== 0) {
-            toast.error(`Pembayaran tidak seimbang. Sisa saldo: Rp ${remainingBalance.toLocaleString('id-ID')}`);
-            return false;
-        }
+        // if (remainingBalance !== 0) {
+        //     toast.error(`Pembayaran tidak seimbang. Sisa saldo: Rp ${remainingBalance.toLocaleString('id-ID')}`);
+        //     return false;
+        // }
 
         for (const p of formData.payment_type) {
             if (p.nominal <= 0) {

@@ -80,12 +80,12 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
     };
 
     const validateItem = (): boolean => {
-        if (form.weight <= 0) {
-            toast.error("Berat harus lebih besar dari 0."); return false;
-        }
-        if (form.pcs <= 0) {
-            toast.error("PCS harus lebih besar dari 0."); return false;
-        }
+        // if (form.weight <= 0) {
+        //     toast.error("Berat harus lebih besar dari 0."); return false;
+        // }
+        // if (form.pcs <= 0) {
+        //     toast.error("PCS harus lebih besar dari 0."); return false;
+        // }
         if (form.nominal <= 0) {
             toast.error("Nominal Harga harus lebih besar dari 0."); return false;
         }

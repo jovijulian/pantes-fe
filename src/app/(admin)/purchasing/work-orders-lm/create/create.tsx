@@ -138,10 +138,10 @@ export default function CreateWorkOrderPage() {
             toast.error("Harap tambahkan minimal satu Purchase Order ke dalam Surat Jalan.");
             return false;
         }
-        if (total_weight <= 0 || nominal <= 0) {
-            toast.error("Total Berat dan Nominal tidak boleh nol.");
-            return false;
-        }
+        // if (total_weight <= 0 || nominal <= 0) {
+        //     toast.error("Total Berat dan Nominal tidak boleh nol.");
+        //     return false;
+        // }
         return true;
     };
 

@@ -86,6 +86,11 @@ export default function PurchaseOrderDetailPage() {
         return num.toLocaleString('id-ID') + " gram";
     };
 
+    const formatCokim = (value: string | number | null): string => {
+        const num = Number(value || 0);
+        return num.toLocaleString('id-ID')
+    };
+
     const formatDate = (dateStr: string | null): string => {
         if (!dateStr) return "-";
         return moment(dateStr).format('DD MMMM YYYY');
@@ -288,7 +293,7 @@ export default function PurchaseOrderDetailPage() {
                     <div className="lg:col-span-3 space-y-6">
                         <Section title="Detail Transaksi" icon={<DollarSign />}>
                             <InfoRow label="Berat" value={formatGram(data.weight)} />
-                            <InfoRow label="Cokim" value={formatRupiah(data.cokim)} />
+                            <InfoRow label="Cokim" value={formatCokim(data.cokim)} />
                             <InfoRow label="Total Nominal" value={formatRupiah(data.nominal)} isTotal />
                         </Section>
 
