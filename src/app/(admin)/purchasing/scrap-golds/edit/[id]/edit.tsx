@@ -52,7 +52,7 @@ export default function EditScrapGoldPage() {
         const fetchMaster = async () => {
             try {
                 const res = await httpGet(endpointUrl("master/item/dropdown"), true, { type: 3 });
-                setItemOptions(res.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name_item })));
+                setItemOptions(res.data.data.map((s: any) => ({ value: s.id.toString(), label: `${s.name_item} (${s.code})` })));
             } catch (err) {
                 console.error(err);
             }

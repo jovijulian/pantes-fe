@@ -111,6 +111,7 @@ export default function ScrapGoldDetailPage() {
         getDetail();
     }, [getDetail]);
 
+
     const handleExport = async () => {
         if (!data) return;
         setIsDownloadLoading(true);
@@ -118,25 +119,42 @@ export default function ScrapGoldDetailPage() {
         try {
             const response = await axios.get(endpointUrl(`purchase/scrap-gold/${data.id}/export`), {
                 responseType: 'blob',
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
             });
+            console.log(response.headers['content-disposition'])
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
 
-            const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `purchase_order.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
             link.href = blobUrl;
-            link.setAttribute('download', `Rongsok_${data.no_scrap_gold}.pdf`);
+
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
-            link.remove();
+            document.body.removeChild(link);
 
-            toast.success("Berhasil download laporan.");
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
         } catch (error) {
-            console.error("Export error:", error);
-            toast.error("Gagal export PDF.");
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
         } finally {
             setIsDownloadLoading(false);
         }
     };
+
 
     const handleProcessSubmit = async () => {
         if (!data) return;
@@ -149,7 +167,7 @@ export default function ScrapGoldDetailPage() {
             setIsModalOpen(false);
             getDetail();
         } catch (error: any) {
-            alertToast(error);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsProcessing(false);
         }

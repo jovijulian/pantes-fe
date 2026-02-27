@@ -259,17 +259,49 @@ export default function PurchaseOrderDetailPage() {
         finally { setIsSubmitting(false); }
     };
 
+
+
     const handleExport = async () => {
         if (!data) return;
         setIsDownloadLoading(true);
+
         try {
-            const response = await axios.get(endpointUrl(`purchase/order/${data.id}/export`), { responseType: 'blob', headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
-            const pdfBlob = response.data; const blobUrl = URL.createObjectURL(pdfBlob);
-            const link = document.createElement('a'); link.href = blobUrl; link.download = `purchase_order-${moment().format("YYYY-MM-DD")}.pdf`;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const response = await axios.get(endpointUrl(`purchase/order-lm/${data.id}/export`), {
+                responseType: 'blob',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            console.log(response.headers['content-disposition'])
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
+
+            const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `purchase_order.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            link.href = blobUrl;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
             setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-        } catch (error) { toast.error("Failed to generate report."); }
-        finally { setIsDownloadLoading(false); }
+        } catch (error) {
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
+        } finally {
+            setIsDownloadLoading(false);
+        }
     };
 
     if (isLoading) return (
@@ -288,7 +320,7 @@ export default function PurchaseOrderDetailPage() {
         </div>
     );
 
-    const totalItemNominal = Number(data.nominal);
+    const totalItemNominal = data.order_items?.reduce((sum, item) => sum + Number(item.total_nominal), 0);
     const totalPayment = data.payment_types.reduce((sum, p) => sum + Number(p.nominal), 0);
     const remainingBalance = totalItemNominal - totalPayment;
     const isUnbalanced = remainingBalance !== 0;
@@ -305,13 +337,15 @@ export default function PurchaseOrderDetailPage() {
                     </div>
                     <div className="flex justify-end items-center gap-3">
                         {getStatusBadge(data.status)}
-                        <button
-                            type="button"
-                            onClick={() => router.push(`/purchasing/orders-lm/edit/${data.id}`)}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-all"
-                        >
-                            <Edit className="w-4 h-4" /> Edit
-                        </button>
+                        {data.status == "1" && (
+                            <button
+                                type="button"
+                                onClick={() => router.push(`/purchasing/orders-lm/edit/${data.id}`)}
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-all"
+                            >
+                                <Edit className="w-4 h-4" /> Edit
+                            </button>
+                        )}
                         <button
                             type="button"
                             disabled={isDownloadLoading}

@@ -33,7 +33,7 @@ export default function RootLayout({
     <html lang="en" className="notranslate">
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <ToastContainer
-          style={{ marginTop: '4rem' }}
+          style={{ marginTop: '4rem', zIndex: 9999999 }}
           position="top-right"
           autoClose={2000}
           hideProgressBar={false}

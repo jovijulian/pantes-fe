@@ -172,7 +172,7 @@ export default function PurchaseOrdersPage() {
         setIsDownloadLoading(true);
 
         try {
-            const response = await axios.get(endpointUrl(`purchase/order/${id}/export`), {
+            const response = await axios.get(endpointUrl(`purchase/order-lm/${id}/export`), {
                 responseType: 'blob',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,

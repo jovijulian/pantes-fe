@@ -258,13 +258,16 @@ export default function PurchaseOrderDetailPage() {
                     <div className="flex justify-end items-center gap-3">
                         {getStatusBadge(data.status)}
                         <>
-                        <button
-                            type="button"
-                            onClick={() => router.push(`/purchasing/orders/edit/${data.id}`)}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-all"
-                        >
-                            <Edit className="w-4 h-4" /> Edit
-                        </button>
+                        {data.status == "1" && (
+                            <button
+                                type="button"
+                                onClick={() => router.push(`/purchasing/orders/edit/${data.id}`)}
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-all"
+                            >
+                                <Edit className="w-4 h-4" /> Edit
+                            </button>
+                        )}
+                     
                             <button
                                 type="button"
                                 disabled={isDownloadLoading}

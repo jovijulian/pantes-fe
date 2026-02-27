@@ -208,26 +208,45 @@ export default function ScrapGoldSendPage() {
         }
     };
 
-    const handleExport = async (id: number, no_doc: string) => {
+   
+
+    const handleExport = async (id: number) => {
         setIsExporting(true);
+
         try {
             const response = await axios.get(endpointUrl(`purchase/scrap-gold/send/${id}/export`), {
                 responseType: 'blob',
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
             });
+            console.log(response.headers['content-disposition'])
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
 
-            const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `purchase_order.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
             link.href = blobUrl;
-            link.setAttribute('download', `Kirim_Rongsok_${no_doc}.pdf`);
+
+            link.download = filename;
             document.body.appendChild(link);
             link.click();
-            link.remove();
+            document.body.removeChild(link);
 
-            toast.success("Berhasil mengunduh laporan.");
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
         } catch (error) {
-            console.error("Export error:", error);
-            toast.error("Gagal melakukan export PDF.");
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
         } finally {
             setIsExporting(false);
         }
@@ -252,13 +271,6 @@ export default function ScrapGoldSendPage() {
 
                         {currentStatus === "1" && (
                             <>
-                                <button
-                                    onClick={() => router.push(`/purchasing/scrap-golds/sends/edit/${row.id}`)}
-                                    title="Edit Data"
-                                    className="p-2 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                                >
-                                    <FaEdit className="w-4 h-4" />
-                                </button>
                                 <button
                                     onClick={() => handleOpenProcessModal(row.id, 2)}
                                     title="Proses Kirim (Ubah ke Dikirim)"
@@ -295,7 +307,7 @@ export default function ScrapGoldSendPage() {
 
                         {currentStatus !== "1" && (
                             <button
-                                onClick={() => handleExport(row.id, row.no_scrap_gold_send)}
+                                onClick={() => handleExport(row.id)}
                                 disabled={isExporting}
                                 title="Export PDF"
                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md 

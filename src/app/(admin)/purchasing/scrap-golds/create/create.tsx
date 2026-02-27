@@ -58,7 +58,7 @@ export default function CreateScrapGoldPage() {
                 ]);
 
                 setStaffOptions(staffRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
-                setItemOptions(itemRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name_item })));
+                setItemOptions(itemRes.data.data.map((s: any) => ({ value: s.id.toString(), label: `${s.name_item} (${s.code})` })));
 
             } catch (error) {
                 console.error(error);
@@ -130,7 +130,7 @@ export default function CreateScrapGoldPage() {
             router.push('/purchasing/scrap-golds');
         } catch (error: any) {
             console.error(error);
-           toast.error("Gagal menyimpan data. " + (error?.response?.data?.message || ""));
+            toast.error("Gagal menyimpan data. " + (error?.response?.data?.message || ""));
         } finally {
             setIsSubmitting(false);
         }

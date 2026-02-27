@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, Fragment } from 'react';
+import React, { useState, useEffect, Fragment, useMemo } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { X, Calculator, Plus, Loader2, Package } from 'lucide-react';
+import { X, Calculator, Plus, Loader2, Package, AlertCircle } from 'lucide-react';
 import { toast } from 'react-toastify';
-import Select from '@/components/form/Select-custom'; 
+import Select from '@/components/form/Select-custom';
 import { endpointUrl, httpGet } from '@/../helpers';
 
 export interface IStockItem {
@@ -43,13 +43,56 @@ export default function AddSendItemModal({ isOpen, onClose, onConfirm }: AddSend
 
     const [bruto, setBruto] = useState<number | ''>('');
     const [kadar, setKadar] = useState<number | ''>('');
-
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [nettoError, setNettoError] = useState<string | null>(null);
     useEffect(() => {
         if (isOpen) {
             fetchStock();
             resetForm();
         }
     }, [isOpen]);
+
+    useEffect(() => {
+        if (selectedStockDetail && bruto !== '') {
+            const brutoNumber = Number(bruto);
+            const kadarNumber = Number(kadar);
+            const calculatedNetto = brutoNumber * (kadarNumber / 100);
+
+            if (brutoNumber <= 0) {
+                setErrorMsg("Jumlah harus lebih dari 0");
+            }
+            else if (brutoNumber > selectedStockDetail.stock.bruto) {
+                console.log("Bruto:", brutoNumber, "Stok Bruto:", selectedStockDetail.stock.bruto);
+                setErrorMsg(
+                    `Jumlah bruto melebihi stok tersedia (${selectedStockDetail.stock.bruto} Gr)`
+                );
+            }
+
+            else {
+                setErrorMsg(null);
+            }
+
+        } else {
+            setErrorMsg(null);
+        }
+    }, [bruto, kadar, selectedStockDetail]);
+
+    useEffect(() => {
+        if (!selectedStockDetail) return;
+
+        const brutoNumber = Number(bruto);
+        const kadarNumber = Number(kadar);
+
+        const calculatedNetto = brutoNumber * (kadarNumber / 100);
+
+        if (calculatedNetto > selectedStockDetail.stock.netto) {
+            setNettoError(
+                `Jumlah Netto melebihi stok tersedia (${selectedStockDetail.stock.netto} Gr)`
+            );
+        } else {
+            setNettoError(null);
+        }
+    }, [bruto, kadar, selectedStockDetail]);
 
     const fetchStock = async () => {
         setIsLoadingStock(true);
@@ -59,7 +102,7 @@ export default function AddSendItemModal({ isOpen, onClose, onConfirm }: AddSend
             setRawStockData(items);
             setStockOptions(items.map((item: IStockItem) => ({
                 value: item.id.toString(),
-                label: `${item.code} - ${item.name_item}`
+                label: `${item.code} - ${item.name_item} (Bruto: ${item.stock.bruto.toLocaleString('id-ID')} Gr - Netto: ${item.stock.netto.toLocaleString('id-ID')} Gr)`
             })));
         } catch (error) {
             console.error(error);
@@ -76,7 +119,7 @@ export default function AddSendItemModal({ isOpen, onClose, onConfirm }: AddSend
             setSelectedStockDetail(found || null);
             if (found && found.stock) {
                 setBruto(found.stock.bruto);
-               
+
             } else {
                 setBruto('');
                 setKadar('');
@@ -88,9 +131,22 @@ export default function AddSendItemModal({ isOpen, onClose, onConfirm }: AddSend
         }
     };
 
-    const netto = (typeof bruto === 'number' && typeof kadar === 'number')
-        ? (bruto * (kadar / 100))
-        : 0;
+    // const netto = (typeof bruto === 'number' && typeof kadar === 'number')
+    //     ? (bruto * (kadar / 100))
+    //     : 0;
+
+    const netto = useMemo(() => {
+        if (
+            bruto === '' ||
+            kadar === '' ||
+            isNaN(Number(bruto)) ||
+            isNaN(Number(kadar))
+        ) {
+            return 0;
+        }
+
+        return Number(bruto) * (Number(kadar) / 100);
+    }, [bruto, kadar]);
 
     const resetForm = () => {
         setSelectedItemOption(null);
@@ -105,8 +161,9 @@ export default function AddSendItemModal({ isOpen, onClose, onConfirm }: AddSend
             return;
         }
 
-        if (selectedStockDetail && (Number(bruto) > selectedStockDetail.stock.bruto)) {
-            toast.warn("Peringatan: Jumlah kirim melebihi stok bruto yang tersedia.");
+        if (errorMsg || nettoError) {
+            toast.error("Terdapat nilai yang melebihi stok. Silakan periksa kembali.");
+            return;
         }
 
         const newItem: ISendItem = {
@@ -167,14 +224,22 @@ export default function AddSendItemModal({ isOpen, onClose, onConfirm }: AddSend
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Kirim Bruto (Gr)</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Kirim Bruto (Gr) <span className="text-red-500">*</span></label>
                                             <input
                                                 type="number"
-                                                className="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 outline-none transition-all"
+                                                className={`w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all ${errorMsg ? 'border-red-500 focus:ring-red-200 bg-red-50' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                                                    }`}
                                                 placeholder="0"
-                                                value={bruto} 
-                                                onChange={(e) => setBruto(e.target.valueAsNumber)}
+                                                value={bruto}
+                                                onChange={(e) => setBruto(e.target.value === '' ? '' : e.target.valueAsNumber)}
+                                                min="0"
                                             />
+                                            {errorMsg && (
+                                                <div className="flex items-center gap-1 mt-1 text-xs text-red-600 font-medium animate-pulse">
+                                                    <AlertCircle className="w-3 h-3" />
+                                                    {errorMsg}
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div>
@@ -199,7 +264,15 @@ export default function AddSendItemModal({ isOpen, onClose, onConfirm }: AddSend
                                             <span className="text-xl font-bold text-gray-800">
                                                 {netto.toLocaleString('id-ID', { maximumFractionDigits: 2 })} <span className="text-sm font-normal text-gray-500">Gram</span>
                                             </span>
+
                                         </div>
+                                        {nettoError && (
+                                            <div className="flex items-center gap-1 mt-1 text-xs text-red-600 font-medium animate-pulse">
+                                                <AlertCircle className="w-3 h-3" />
+                                                {nettoError}
+                                            </div>
+                                        )}
+
                                     </div>
                                 </div>
 
@@ -215,6 +288,7 @@ export default function AddSendItemModal({ isOpen, onClose, onConfirm }: AddSend
                                         type="button"
                                         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none shadow-md flex items-center gap-2"
                                         onClick={handleSubmit}
+                                        disabled={!!errorMsg || !!nettoError}
                                     >
                                         <Plus className="w-4 h-4" />
                                         Tambah ke List

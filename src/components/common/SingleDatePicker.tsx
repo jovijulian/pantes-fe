@@ -351,7 +351,7 @@ export default function SingleDatePicker({
               let dayClasses = "h-8 w-8 flex items-center justify-center text-sm rounded-full transition-colors duration-150";
 
               if (disabledDay) {
-                dayClasses += " text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-50";
+                dayClasses += " text-gray-500 border-gray-300 cursor-not-allowed dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700";
               } else if (selected) {
                 dayClasses += " bg-blue-600 dark:bg-blue-500 text-white font-bold cursor-pointer";
               } else if (today) {

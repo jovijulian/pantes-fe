@@ -13,6 +13,7 @@ import Select from '@/components/form/Select-custom';
 import SingleDatePicker from "@/components/common/SingleDatePicker";
 import AddSendItemModal, { ISendItem } from '@/components/modal/scrap-gold/AddSendItemModal';
 import ConfirmationModal from '@/components/modal/scrap-gold/ConfirmationModal';
+import Input from '@/components/form/input/InputField';
 
 interface SelectOption { value: string; label: string; }
 
@@ -143,7 +144,7 @@ export default function SendScrapGoldPage() {
         setFormData(prev => ({
             ...prev,
             type_purpose: newType,
-            purpose_id: null 
+            purpose_id: null
         }));
     };
 
@@ -195,10 +196,12 @@ export default function SendScrapGoldPage() {
                                     placeholderText="Pilih tanggal"
                                     selectedDate={formData.date ? new Date(formData.date) : null}
                                     onChange={(date: any) => handleFieldChange('date', moment(date).format('YYYY-MM-DD'))}
-                                    onClearFilter={() => handleFieldChange('date', '')}
+                                    onClearFilter={() => null}
                                     viewingMonthDate={viewingMonthDate}
                                     onMonthChange={setViewingMonthDate}
+                                    disabled
                                 />
+                                {/* <Input type="text" value={moment(new Date(formData.date)).format("YYYY-MM-DD")} onChange={(date: any) => handleFieldChange('date', moment(date).format('YYYY-MM-DD'))} disabled /> */}
                             </div>
 
                             <div>
