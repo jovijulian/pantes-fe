@@ -222,7 +222,8 @@ export default function PurchaseOrdersPage() {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    router.push(`/purchasing/orders-lm/${row.id}`)
+                                    window.open(`/purchasing/orders-lm/${row.id}`, "_blank");
+                                    // router.push(`/purchasing/orders-lm/${row.id}`)
                                 }}
                                 title="Lihat Detail"
                                 className="p-3 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -230,7 +231,7 @@ export default function PurchaseOrdersPage() {
                                 <FaEye className="w-4 h-4" />
                             </button>
 
-                            {status === '1' && (
+                            {/* {status === '1' && (
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -304,7 +305,7 @@ export default function PurchaseOrdersPage() {
                                         <span>Export</span>
                                     </button>
                                 </>
-                            )}
+                            )} */}
                         </div>
                     );
                 },
@@ -397,7 +398,7 @@ export default function PurchaseOrdersPage() {
                 loading={isLoading}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
-                onRowClick={handleRowClick}
+                // onRowClick={handleRowClick}
             />
 
             <ChangeStatusOrderModal

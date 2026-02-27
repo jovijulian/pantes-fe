@@ -207,14 +207,17 @@ export default function ScrapGoldsPage() {
                 return (
                     <div className="flex items-center gap-2">
                         <button
-                            onClick={() => router.push(`/purchasing/scrap-golds/${row.id}`)}
+                            onClick={(e) => {
+                                // router.push(`/purchasing/scrap-golds/${row.id}`)
+                                window.open(`/purchasing/scrap-golds/${row.id}`, "_blank");
+                            }}
                             title="Lihat Detail"
                             className="p-2 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                         >
                             <FaEye className="w-4 h-4" />
                         </button>
 
-                        {isNew && (
+                        {/* {isNew && (
                             <>
                                 <button
                                     onClick={() => router.push(`/purchasing/scrap-golds/edit/${row.id}`)}
@@ -245,10 +248,10 @@ export default function ScrapGoldsPage() {
                                 hover:from-blue-600 hover:to-indigo-700 
                                 transition-all duration-200"
                             >
-                                {isExporting ? <Loader2 className="animate-spin w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
+                                {<Download className="w-3.5 h-3.5" />}
                                 Export
                             </button>
-                        )}
+                        )} */}
                     </div>
                 );
             }

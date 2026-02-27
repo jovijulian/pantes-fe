@@ -235,6 +235,8 @@ export default function WorkOrdersPage() {
         }
     };
 
+
+
     const columnsNew = useMemo(() => {
         return [
             {
@@ -244,17 +246,33 @@ export default function WorkOrdersPage() {
                     const status = row.status;
                     return (
                         <div className="flex flex-wrap gap-2">
-                            {/* <button
+                            <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    router.push(`/purchasing/work-orders/${row.id}`)
+                                    window.open(`/purchasing/work-orders-lm/${row.id}`, "_blank");
+                                    // router.push(`/purchasing/work-orders/${row.id}`)
                                 }}
                                 title="Lihat Detail"
                                 className="p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
                             >
                                 <FaEye className="w-4 h-4" />
-                            </button> */}
-
+                            </button>
+                            {/* <button
+                                type="button"
+                                disabled={isDownloadLoading}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleExport(row.id);
+                                }}
+                                title="Export Surat Jalan"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md 
+                                        bg-blue-600 text-white text-xs font-medium shadow-sm 
+                                        hover:bg-blue-700 disabled:opacity-50
+                                        transition-all duration-200"
+                            >
+                                <Download className="w-3.5 h-3.5" />
+                                <span>Export SJ</span>
+                            </button>
                             {status === '1' && (
                                 <>
                                     <button
@@ -268,22 +286,7 @@ export default function WorkOrdersPage() {
                                         <FaCheckCircle className="w-3.5 h-3.5" />
                                         <span>Terima</span>
                                     </button>
-                                    <button
-                                        type="button"
-                                        disabled={isDownloadLoading}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleExport(row.id);
-                                        }}
-                                        title="Export Surat Jalan"
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-md 
-                                        bg-blue-600 text-white text-xs font-medium shadow-sm 
-                                        hover:bg-blue-700 disabled:opacity-50
-                                        transition-all duration-200"
-                                    >
-                                        <Download className="w-3.5 h-3.5" />
-                                        <span>Export SJ</span>
-                                    </button>
+
                                 </>
                             )}
                             {status === '2' && (
@@ -316,7 +319,7 @@ export default function WorkOrdersPage() {
                                         <span>Export Item</span>
                                     </button>
                                 </>
-                            )}
+                            )} */}
                         </div>
                     );
                 },
@@ -434,7 +437,7 @@ export default function WorkOrdersPage() {
                 loading={isLoading}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
-                onRowClick={handleRowClick}
+                // onRowClick={handleRowClick}
             />
 
             <ChangeStatusWorkOrderModal

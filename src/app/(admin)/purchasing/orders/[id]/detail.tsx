@@ -39,6 +39,7 @@ interface IPaymentType {
     name: string | null;
     nominal: string;
     bank: { bank_name: string, account_name: string } | null;
+    notes: string;
 }
 
 interface IPurchaseOrderData {
@@ -116,6 +117,10 @@ export default function PurchaseOrderDetailPage() {
         setIsLoading(true);
         try {
             const response = await httpGet(endpointUrl(`purchase/order/${id}`), true);
+            // response.data.data.payment_types = response.data.data.payment_types.map((payment: any) => ({
+            //     ...payment,
+            //     name: "Lotus"
+            // }));
             setData(response.data.data);
         } catch (error: any) {
             if (error.response?.status === 404 || error.response?.status === 403) {
@@ -309,15 +314,17 @@ export default function PurchaseOrderDetailPage() {
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Atas Nama</th>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Info Bank</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Keterangan</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {data.payment_types.map((payment) => (
                                             <tr key={payment.id}>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.payment_type}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.bank_id ? `${payment.name}` : "-"}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.bank_id != null ? `${payment.name}` : `-`}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.bank_id ? `${payment.bank?.bank_name}` : "-"}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(payment.nominal)}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-right text-sm">{payment.notes || "-"}</td>
                                             </tr>
                                         ))}
                                     </tbody>

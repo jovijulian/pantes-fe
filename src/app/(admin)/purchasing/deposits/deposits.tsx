@@ -175,7 +175,8 @@ export default function DepositsPage() {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    router.push(`/purchasing/deposits/${row.id}`)
+                                    window.open(`/purchasing/deposits/${row.id}`, "_blank");
+                                    // router.push(`/purchasing/deposits/${row.id}`)
                                 }}
                                 title="Lihat Detail"
                                 className="p-3 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -183,7 +184,7 @@ export default function DepositsPage() {
                                 <FaEye className="w-4 h-4" />
                             </button>
 
-                            {status === '1' && (
+                            {/* {status === '1' && (
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleOpenModal(row, 'Validasi'); }}
                                     title="Validasi"
@@ -212,7 +213,7 @@ export default function DepositsPage() {
                                     <FaDollarSign className="w-3.5 h-3.5" />
                                     <span>Lunas</span>
                                 </button>
-                            )}
+                            )} */}
                         </div>
                     );
                 },

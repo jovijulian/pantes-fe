@@ -242,18 +242,19 @@ export default function WorkOrdersPage() {
                     const status = row.status;
                     return (
                         <div className="flex flex-wrap gap-2">
-                            {/* <button
+                            <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    router.push(`/purchasing/work-orders/${row.id}`)
+                                    // router.push(`/purchasing/work-orders/${row.id}`)
+                                    window.open(`/purchasing/work-orders/${row.id}`, "_blank");
                                 }}
                                 title="Lihat Detail"
                                 className="p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
                             >
                                 <FaEye className="w-4 h-4" />
-                            </button> */}
+                            </button>
 
-                            {status === '1' && (
+                            {/* {status === '1' && (
                                 <>
                                     <button
                                         onClick={(e) => {
@@ -314,7 +315,7 @@ export default function WorkOrdersPage() {
                                         <span>Export Item</span>
                                     </button>
                                 </>
-                            )}
+                            )} */}
                         </div>
                     );
                 },
@@ -432,7 +433,7 @@ export default function WorkOrdersPage() {
                 loading={isLoading}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
-                onRowClick={handleRowClick}
+                // onRowClick={handleRowClick}
             />
 
             <ChangeStatusWorkOrderModal

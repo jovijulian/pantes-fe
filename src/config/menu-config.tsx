@@ -167,7 +167,7 @@ export const menuConfig: Record<string, NavItem[]> = {
       subItems: [
         { name: 'Pembelian', path: '/purchasing/orders-lm', roles: [1, 3, 5] },
         { name: 'Surat Jalan', path: '/purchasing/work-orders-lm', roles: [1, 3, 5] },
-        { name: 'Laporan Stok Global', path: '/purchasing/stock-global', roles: [1, 3, 5] },
+        { name: 'Laporan Stok Global', path: '/purchasing/stock-global-lm', roles: [1, 3, 5] },
       ]
     },
     {
@@ -188,6 +188,12 @@ export const menuConfig: Record<string, NavItem[]> = {
         { name: 'Kartu Stok Rongsok', path: '/purchasing/reports/scrap-gold/stock-cards', roles: [1, 3, 5] },
         { name: 'Stok Akhir Rongsok', path: '/purchasing/reports/scrap-gold/stock-finals', roles: [1, 3, 5] },
       ]
+    },
+    {
+      name: 'Setor Barang',
+      icon: <Archive />, 
+      path: '/purchasing/deposits',
+      roles: [1, 3, 5],
     },
    
     // {

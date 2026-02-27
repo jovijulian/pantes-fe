@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import moment from 'moment';
 import _ from "lodash";
 
-import { endpointUrl, httpGet, httpPost, alertToast, endpointUrlv2 } from '@/../helpers';
+import { endpointUrl, httpGet, httpPost } from '@/../helpers';
 import ComponentCard from '@/components/common/ComponentCard';
 import Select from '@/components/form/Select-custom';
 import Input from '@/components/form/input/InputField';
@@ -20,6 +20,7 @@ import { Dialog, Transition } from '@headlessui/react';
 interface BankOption {
     value: string;
     label: string;
+    bank_id: number;
     bank_name: string;
     account_name: string;
     account_number: string;
@@ -30,6 +31,10 @@ interface FormPaymentType {
     id: string;
     payment_type: string;
     supplier_bank_id: number | null;
+    bank_id: number | null;
+    account_number: string;
+    account_name: string;
+    notes: string;
     nominal: number;
 }
 
@@ -49,6 +54,10 @@ interface SelectOption { value: string; label: string; }
 interface PaymentPayload {
     payment_type: string;
     supplier_bank_id: number | null;
+    bank_id: number | null;
+    account_number: string;
+    account_name: string;
+    notes: string;
     nominal: number;
 }
 
@@ -77,6 +86,7 @@ export default function CreatePurchaseOrderPage() {
 
     const [staffOptions, setStaffOptions] = useState<SelectOption[]>([]);
     const [supplierOptions, setSupplierOptions] = useState<SelectOption[]>([]);
+    const [masterBankOptions, setMasterBankOptions] = useState<SelectOption[]>([]);
     const [bankOptions, setBankOptions] = useState<BankOption[]>([]);
     const [isBankLoading, setIsBankLoading] = useState(false);
     const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
@@ -95,13 +105,15 @@ export default function CreatePurchaseOrderPage() {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [staffRes, supplierRes] = await Promise.all([
+                const [staffRes, supplierRes, masterBankRes] = await Promise.all([
                     httpGet(endpointUrl("master/staff/dropdown"), true),
                     httpGet(endpointUrl("master/supplier/dropdown"), true),
+                    httpGet(endpointUrl("master/bank/dropdown"), true),
                 ]);
 
                 setStaffOptions(staffRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
                 setSupplierOptions(supplierRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
+                setMasterBankOptions(masterBankRes.data.data.map((b: any) => ({ value: b.id.toString(), label: `${b.bank_name} (${b.alias})` })));
 
             } catch (error) {
                 toast.error("Gagal memuat data master untuk form.");
@@ -117,10 +129,10 @@ export default function CreatePurchaseOrderPage() {
             setIsBankLoading(true);
             try {
                 const res = await httpGet(endpointUrl(`master/supplier/${supplierId}/bank/dropdown`), true);
-                console.log(res.data.data)
                 const formattedBankOptions: BankOption[] = res.data.data.map((b: any) => ({
                     value: b.id.toString(),
                     label: `${b.bank_name} - ${b.account_number} (${b.account_name})`,
+                    bank_id: b.bank_id,
                     bank_name: b.bank_name,
                     account_name: b.account_name,
                     account_number: b.account_number,
@@ -139,7 +151,7 @@ export default function CreatePurchaseOrderPage() {
             fetchSupplierBanks(formData.supplier_id);
             setFormData(prev => ({ ...prev, payment_type: [] }));
             if (formData.payment_type.length > 0) {
-                toast.info("Supplier diubah, harap pilih ulang bank pembayaran.");
+                toast.info("Supplier diubah, harap sesuaikan ulang pembayaran.");
             }
         } else {
             setBankOptions([]);
@@ -161,6 +173,13 @@ export default function CreatePurchaseOrderPage() {
         return { totalPayment, remainingBalance };
     }, [formData.nominal, formData.payment_type]);
 
+    // Mengecek apakah ada setidaknya satu baris pembayaran yang membutuhkan input manual
+    const hasManualPayment = useMemo(() => {
+        return formData.payment_type.some(
+            p => p.payment_type !== "BANK TRANSFER" && p.payment_type !== "SETOR TUNAI"
+        );
+    }, [formData.payment_type]);
+
 
     const handleFieldChange = (field: keyof FormState, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -172,8 +191,27 @@ export default function CreatePurchaseOrderPage() {
 
         (payment[field] as any) = value;
 
-        if (field === 'payment_type' && (value !== 'BANK TRANSFER' && value !== 'SETOR TUNAI')) {
+        // --- BAGIAN INI YANG DIUBAH: Reset semua field bank saat Jenis Pembayaran berganti ---
+        if (field === 'payment_type') {
             payment.supplier_bank_id = null;
+            payment.bank_id = null;
+            payment.account_number = '';
+            payment.account_name = '';
+            payment.notes = ''; // Reset notes juga agar bersih
+        }
+
+        // Auto-fill account details jika pilih dari dropdown Supplier Bank (Bank Transfer / Setor Tunai)
+        if (field === 'supplier_bank_id') {
+            const selectedBank = bankOptions.find(b => b.value === value?.toString());
+            if (selectedBank) {
+                payment.bank_id = selectedBank.bank_id || null;
+                payment.account_number = selectedBank.account_number || '';
+                payment.account_name = selectedBank.account_name || '';
+            } else {
+                payment.bank_id = null;
+                payment.account_number = '';
+                payment.account_name = '';
+            }
         }
 
         setFormData(prev => ({ ...prev, payment_type: newPayments }));
@@ -189,6 +227,10 @@ export default function CreatePurchaseOrderPage() {
                     id: `payment-${Date.now()}`,
                     payment_type: "BANK TRANSFER",
                     supplier_bank_id: null,
+                    bank_id: null,
+                    account_number: "",
+                    account_name: "",
+                    notes: "",
                     nominal: newNominal,
                 }
             ]
@@ -207,16 +249,14 @@ export default function CreatePurchaseOrderPage() {
             toast.error("Harap isi Tanggal, Pemesan, dan Supplier.");
             return false;
         }
-        // if (formData.nominal <= 0 || formData.weight === "0" || formData.cokim === 0) {
-        //     toast.error("Weight, Cokim, dan Nominal harus lebih besar dari 0.");
-        //     return false;
-        // }
+
         if (formData.payment_type.length === 0) {
             toast.error("Harap tambahkan minimal satu metode pembayaran.");
             return false;
         }
+
         // if (remainingBalance !== 0) {
-        //     toast.error(`Pembayaran tidak seimbang. Sisa saldo: Rp ${remainingBalance.toLocaleString('id-ID')}`);
+        //     toast.error(`Total pembayaran tidak balance. Sisa saldo harus 0 (Saat ini: Rp ${remainingBalance.toLocaleString('id-ID')})`);
         //     return false;
         // }
 
@@ -225,9 +265,21 @@ export default function CreatePurchaseOrderPage() {
                 toast.error("Nominal di setiap baris pembayaran harus lebih besar dari 0.");
                 return false;
             }
-            if ((p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") && !p.supplier_bank_id) {
-                toast.error("Untuk Bank Transfer / Setor Tunai, harap pilih Bank.");
-                return false;
+
+            if (p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") {
+                if (!p.supplier_bank_id) {
+                    toast.error("Untuk Bank Transfer / Setor Tunai, harap pilih Bank Supplier.");
+                    return false;
+                }
+            } else {
+                if (!p.bank_id) {
+                    toast.error(`Untuk metode ${p.payment_type}, harap pilih Bank dari dropdown.`);
+                    return false;
+                }
+                if (!p.account_number || !p.account_name) {
+                    toast.error("No. Rekening dan Atas Nama harus diisi di setiap baris pembayaran manual.");
+                    return false;
+                }
             }
         }
         return true;
@@ -247,6 +299,10 @@ export default function CreatePurchaseOrderPage() {
         const paymentPayload: PaymentPayload[] = formData.payment_type.map(p => ({
             payment_type: p.payment_type,
             supplier_bank_id: (p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") ? Number(p.supplier_bank_id) : null,
+            bank_id: Number(p.bank_id),
+            account_number: p.account_number,
+            account_name: p.account_name,
+            notes: p.notes,
             nominal: p.nominal
         }));
 
@@ -260,13 +316,12 @@ export default function CreatePurchaseOrderPage() {
             payment_type: paymentPayload,
         };
 
-
         try {
             await httpPost(endpointUrl('/purchase/order'), payload, true);
             toast.success("Purchase Order (PO) berhasil dibuat!");
             router.push('/purchasing/orders');
         } catch (error: any) {
-            toast.error(error.response?.data?.message);
+            toast.error(error.response?.data?.message || "Terjadi kesalahan saat menyimpan data.");
         } finally {
             setIsSubmitting(false);
         }
@@ -326,11 +381,6 @@ export default function CreatePurchaseOrderPage() {
                                     <div>
                                         <label className="block font-medium mb-1">Cokim<span className="text-red-400 ml-1">*</span></label>
                                         <Input type="number" value={formData.cokim} onChange={(e) => handleFieldChange('cokim', e.target.value)} placeholder='0' />
-                                        {/* <CurrencyInput
-                                            value={formData.cokim}
-                                            onValueChange={(value) => handleFieldChange('cokim', value)}
-                                            placeholder="0"
-                                        /> */}
                                     </div>
                                 </div>
 
@@ -343,23 +393,28 @@ export default function CreatePurchaseOrderPage() {
                     </ComponentCard>
 
                     <ComponentCard title="Pembayaran">
-
-
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200">
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bank Supplier</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            {hasManualPayment ? "Bank" : "Bank Supplier"}
+                                        </th>
+                                        {hasManualPayment && (
+                                            <>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Rekening</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Atas Nama</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                                            </>
+                                        )}
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                     {formData.payment_type.map((payment, index) => {
-                                        const selectedBank = payment.supplier_bank_id
-                                            ? bankOptions.find(b => b.value === payment.supplier_bank_id?.toString())
-                                            : null;
+                                        const isTransferOrSetor = payment.payment_type === "BANK TRANSFER" || payment.payment_type === "SETOR TUNAI";
 
                                         return (
                                             <tr key={payment.id}>
@@ -370,22 +425,73 @@ export default function CreatePurchaseOrderPage() {
                                                         onValueChange={(opt) => handlePaymentChange(index, 'payment_type', opt ? opt.value : '')}
                                                     />
                                                 </td>
-                                                <td className="px-4 py-2 whitespace-nowrap min-w-[500px]">
-                                                    {(payment.payment_type === "BANK TRANSFER" || payment.payment_type === "SETOR TUNAI") && (
+                                                <td className="px-4 py-2 whitespace-nowrap min-w-[300px]">
+                                                    {isTransferOrSetor ? (
                                                         <Select
                                                             options={bankOptions}
-                                                            value={_.find(bankOptions, { value: payment.supplier_bank_id?.toString() })}
+                                                            value={_.find(bankOptions, { value: payment.supplier_bank_id?.toString() }) || null}
                                                             onValueChange={(opt) => handlePaymentChange(index, 'supplier_bank_id', opt ? parseInt(opt.value) : null)}
                                                             placeholder={
                                                                 !formData.supplier_id ? "Pilih supplier dulu..." :
-                                                                    isBankLoading ? "Memuat bank..." : "Pilih bank supplier..."
+                                                                    isBankLoading ? "Memuat bank..." : "Pilih Bank Supplier..."
                                                             }
                                                             disabled={loadingOptions || isBankLoading || !formData.supplier_id}
+                                                        />
+                                                    ) : (
+                                                        <Select
+                                                            options={masterBankOptions}
+                                                            value={_.find(masterBankOptions, { value: payment.bank_id?.toString() }) || null}
+                                                            onValueChange={(opt) => handlePaymentChange(index, 'bank_id', opt ? parseInt(opt.value) : null)}
+                                                            placeholder="Pilih Bank..."
+                                                            disabled={loadingOptions}
                                                         />
                                                     )}
                                                 </td>
 
-                                                <td className="px-4 py-2 whitespace-nowrap min-w-[150px]">
+                                                {/* Rendering Dinamis untuk Kolom Manual */}
+                                                {hasManualPayment && (
+                                                    isTransferOrSetor ? (
+                                                        <td colSpan={3} className="px-4 py-2 text-center text-gray-400 bg-gray-50/50 italic text-sm border-x border-gray-100">
+                                                            Detail rekening otomatis mengikuti Bank Supplier
+                                                        </td>
+                                                    ) : (
+                                                        <>
+                                                            <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
+                                                                <Input
+                                                                    type="text"
+                                                                    value={payment.account_number}
+                                                                    onChange={(e) => handlePaymentChange(index, 'account_number', e.target.value)}
+                                                                    placeholder="Input No. Rekening"
+                                                                />
+                                                            </td>
+                                                            <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
+                                                                <Input
+                                                                    type="text"
+                                                                    value={payment.account_name}
+                                                                    onChange={(e) => handlePaymentChange(index, 'account_name', e.target.value)}
+                                                                    placeholder="Input Atas Nama"
+                                                                />
+                                                            </td>
+                                                            {/* <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
+                                                                <Input 
+                                                                    type="text" 
+                                                                    value={payment.notes} 
+                                                                    onChange={(e) => handlePaymentChange(index, 'notes', e.target.value)} 
+                                                                    placeholder="Catatan..." 
+                                                                />
+                                                            </td> */}
+                                                        </>
+                                                    )
+                                                )}
+                                                <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
+                                                    <Input
+                                                        type="text"
+                                                        value={payment.notes}
+                                                        onChange={(e) => handlePaymentChange(index, 'notes', e.target.value)}
+                                                        placeholder="Catatan..."
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
                                                     <CurrencyInput
                                                         value={payment.nominal}
                                                         onValueChange={(value) => handlePaymentChange(index, 'nominal', value)}
@@ -556,7 +662,7 @@ const ConfirmationModal: React.FC<{
 }> = ({ isOpen, onClose, onConfirm, isSubmitting, totalNominal, paymentCount }) => {
     return (
         <Transition appear show={isOpen} as={Fragment}>
-            <Dialog as="div" className="relative z-50 " onClose={onClose}>
+            <Dialog as="div" className="relative z-99999 " onClose={onClose}>
                 <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
                     <div className="fixed inset-0 h-full w-full" />
                 </Transition.Child>
@@ -599,3 +705,4 @@ const ConfirmationModal: React.FC<{
         </Transition>
     );
 };
+// ... Sisanya biarkan sama persis seperti file original (CurrencyInput, CurrencyDisplay, dsb.)

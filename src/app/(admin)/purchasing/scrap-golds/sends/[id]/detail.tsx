@@ -106,7 +106,7 @@ export default function ScrapGoldSendDetailPage() {
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const [isOpen, setIsOpen] = useState(false);
     const [isRongsokModalOpen, setIsRongsokModalOpen] = useState(false);
     const [isRongsokSubmitting, setIsRongsokSubmitting] = useState(false);
     const [isManageRongsokModalOpen, setIsManageRongsokModalOpen] = useState(false);
@@ -268,6 +268,49 @@ export default function ScrapGoldSendDetailPage() {
         }
     };
 
+    const handleExportReceipt = async () => {
+        if (!data) return;
+        setIsDownloadLoading(true);
+
+        try {
+            const response = await axios.get(endpointUrl(`purchase/scrap-gold/send/${id}/export-stock`), {
+                responseType: 'blob',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            console.log(response.headers['content-disposition'])
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
+
+            const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `purchase_order.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            link.href = blobUrl;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } catch (error) {
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
+        } finally {
+            setIsDownloadLoading(false);
+        }
+    };
+
     const openEditModal = (fg: IFinishedGood) => {
         setSelectedItem(fg);
         setIsManageModalOpen(true);
@@ -356,6 +399,17 @@ export default function ScrapGoldSendDetailPage() {
         }
     };
 
+    useEffect(() => {
+        const handleClickOutside = (event: any) => {
+            if (!event.target.closest(".relative")) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, []);
+
     const handleDeleteRongsok = async () => {
         if (!selectedRongsok) return;
         setIsSubmitting(true);
@@ -410,19 +464,84 @@ export default function ScrapGoldSendDetailPage() {
                         {getStatusBadge(data.status)}
 
                         {data.status !== '1' && (
+                           
+                            <div className="relative inline-block text-left">
+                            {/* Main Button */}
                             <button
-                                type="button"
-                                disabled={isDownloadLoading}
-                                onClick={handleExport}
-                                className="flex items-center gap-2 px-5 py-2.5 rounded-lg 
-                                bg-gradient-to-r from-blue-500 to-indigo-600 
-                                text-white font-medium shadow-md hover:shadow-lg 
-                                hover:from-blue-600 hover:to-indigo-700 
+                              type="button"
+                              disabled={isDownloadLoading}
+                              onClick={() => setIsOpen(!isOpen)}
+                              className="flex items-center gap-2 px-5 py-2.5 rounded-lg
+                                bg-blue-600 text-white text-sm font-medium shadow-md
+                                hover:bg-blue-700 active:scale-[0.98]
+                                disabled:opacity-50 disabled:cursor-not-allowed
                                 transition-all duration-200"
                             >
-                                {isDownloadLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                                <span>Export</span>
+                              <Download className="w-4 h-4" />
+                              <span>Export</span>
+                              <svg
+                                className={`w-4 h-4 transition-transform duration-200 ${
+                                  isOpen ? "rotate-180" : ""
+                                }`}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                              </svg>
                             </button>
+                          
+                            {/* Dropdown */}
+                            {isOpen && (
+                              <div
+                                className="absolute right-0 mt-2 w-60 origin-top-right
+                                  rounded-xl bg-white shadow-xl ring-1 ring-black/5
+                                  animate-in fade-in zoom-in-95 duration-150 z-50"
+                              >
+                                <div className="p-2">
+                                  {/* Export Surat Jalan: untuk status >= 2 */}
+                                  {parseInt(data.status) >= 2 && (
+                                    <button
+                                      onClick={() => {
+                                        handleExport();
+                                        setIsOpen(false);
+                                      }}
+                                      className="group flex items-center gap-3 w-full
+                                        px-4 py-2.5 rounded-lg text-sm font-medium
+                                        text-gray-700 hover:bg-blue-50 hover:text-blue-600
+                                        transition-all duration-150"
+                                    >
+                                      <Download className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                                      Export Surat Jalan
+                                    </button>
+                                  )}
+                          
+                                  {/* Divider */}
+                                  {parseInt(data.status) >= 2 && parseInt(data.status) === 4 && (
+                                    <div className="my-2 border-t border-gray-100" />
+                                  )}
+                          
+                                  {/* Export Surat Terima: hanya status === 4 */}
+                                  {parseInt(data.status) === 4 && (
+                                    <button
+                                      onClick={() => {
+                                        handleExportReceipt();
+                                        setIsOpen(false);
+                                      }}
+                                      className="group flex items-center gap-3 w-full
+                                        px-4 py-2.5 rounded-lg text-sm font-medium
+                                        text-gray-700 hover:bg-indigo-50 hover:text-indigo-600
+                                        transition-all duration-150"
+                                    >
+                                      <Download className="w-4 h-4 text-gray-400 group-hover:text-indigo-600" />
+                                      Export Surat Terima Stock
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         )}
                     </div>
                 </div>

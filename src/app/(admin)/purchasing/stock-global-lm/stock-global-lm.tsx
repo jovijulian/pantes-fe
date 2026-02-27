@@ -140,7 +140,8 @@ export default function StockGlobalReportPage() {
         setIsLoading(true);
 
         const params = buildActiveFilters(appliedFilters);
-        params.type = 1;
+        params.type = 2;
+
         try {
             const response = await httpGet(endpointUrl("stock-global"), true, params);
             setData(response.data.data || []);
@@ -210,71 +211,77 @@ export default function StockGlobalReportPage() {
 
     const columns = useMemo(() => [
         {
-            id: "numbering",
-            header: "No",
-            cell: ({ row }: any) => {
-                const index = data.indexOf(row);
-                return <span className="font-medium">{index + 1}</span>;
-            }
+          id: "numbering",
+          header: "No",
+          cell: ({ row }: any) => {
+            const index = data.indexOf(row);
+            return <span className="font-medium">{index + 1}</span>;
+          }
         },
         {
-            id: "code_item",
-            header: "Kode Barang",
-            accessorKey: "code_item",
-            cell: ({ row }: any) => <span className="font-medium">{row.code_item}</span>
+          id: "code_item",
+          header: "Kode Barang",
+          accessorKey: "code_item",
+          cell: ({ row }: any) => <span className="font-medium">{row.code_item}</span>
         },
         {
-            id: "order_date",
-            header: "Tanggal Pesan",
-            accessorKey: "order_date",
-            cell: ({ row }: any) => formatDate(row.order_date)
+          id: "order_date",
+          header: "Tanggal Pesan",
+          accessorKey: "order_date",
+          cell: ({ row }: any) => formatDate(row.order_date)
         },
         {
-            id: "wo_date",
-            header: "Tanggal Surat Jalan",
-            accessorKey: "wo_date",
-            cell: ({ row }: any) => formatDate(row.wo_date)
+          id: "wo_date",
+          header: "Tanggal Surat Jalan",
+          accessorKey: "wo_date",
+          cell: ({ row }: any) => formatDate(row.wo_date)
         },
         {
-            id: "receipt_date",
-            header: "Tanggal Datang",
-            accessorKey: "receipt_date",
-            cell: ({ row }: any) => formatDateTime(row.receipt_date)
+          id: "receipt_date",
+          header: "Tanggal Datang",
+          accessorKey: "receipt_date",
+          cell: ({ row }: any) => formatDateTime(row.receipt_date)
         },
         {
-            id: "deposit_date",
-            header: "Tanggal Setor",
-            accessorKey: "deposit_date",
-            cell: ({ row }: any) => formatDate(row.deposit_date)
-        },
-        { id: "item_type", header: "Jenis Barang", accessorKey: "item_type" },
-        { id: "supplier", header: "Supplier", accessorKey: "supplier" },
-        { id: "orderer", header: "Pemesan", accessorKey: "orderer" },
-        // {
-        //     id: "status_setor",
-        //     header: "Status Setor",
-        //     cell: ({ row }: any) => (
-        //         row.deposit_date ?
-        //             <Badge color="success">Sudah Setor</Badge> :
-        //             <Badge color="warning">Belum Setor</Badge>
-        //     )
-        // },
-        {
-            id: "weight",
-            header: "Berat",
-            accessorKey: "weight",
-            cell: ({ row }: any) => <span className="text-right block">{formatGram(row.weight)}</span>
+          id: "deposit_date",
+          header: "Tanggal Setor",
+          accessorKey: "deposit_date",
+          cell: ({ row }: any) => formatDate(row.deposit_date)
         },
         {
-            id: "cokim",
-            header: "Cokim",
-            accessorKey: "cokim",
-            cell: ({ row }: any) => <span className="text-right block">{formatNumber(row.cokim)}</span>
+          id: "item_type",
+          header: "Jenis Barang",
+          accessorKey: "item_type"
         },
-        { id: "scope", header: "Scope", accessorKey: "scope" },
-        { id: "sg", header: "SG", accessorKey: "sg" },
-        { id: "xray", header: "X-Ray", accessorKey: "xray" },
-    ], [data]);
+        {
+          id: "supplier",
+          header: "Supplier",
+          accessorKey: "supplier"
+        },
+        {
+          id: "orderer",
+          header: "Pemesan",
+          accessorKey: "orderer"
+        },
+        {
+          id: "weight",
+          header: "Berat",
+          accessorKey: "weight",
+          cell: ({ row }: any) => <span className="text-right block">{formatGram(row.weight)}</span>
+        },
+        {
+          id: "pcs",
+          header: "PCS",
+          accessorKey: "pcs",
+          cell: ({ row }: any) => <span className="text-right block">{row.pcs ?? "-"}</span>
+        },
+        {
+          id: "total_nominal",
+          header: "Total Nominal",
+          accessorKey: "total_nominal",
+          cell: ({ row }: any) => <span className="text-right block">{formatNumber(row.total_nominal)}</span>
+        }
+      ], [data]);
 
     return (
         <div className="space-y-4">

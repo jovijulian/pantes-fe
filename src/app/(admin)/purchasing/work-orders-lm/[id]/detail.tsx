@@ -94,7 +94,7 @@ export default function WorkOrderDetailPage() {
     const params = useParams();
     const id = Number(params.id);
     moment.locale('id');
-
+    const [isOpen, setIsOpen] = useState(false);
     const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
@@ -370,6 +370,16 @@ export default function WorkOrderDetailPage() {
         return { totalWeightDiterima: weight, totalPcsItem: pcs, totalJumlah: jumlah, totalNominalItem: bayar };
     }, [data?.items]);
 
+    useEffect(() => {
+        const handleClickOutside = (event: any) => {
+            if (!event.target.closest(".relative")) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, []);
 
 
     if (isLoading) return (
@@ -399,34 +409,84 @@ export default function WorkOrderDetailPage() {
                     <div className="flex items-center justify-end gap-3">
                         {getStatusBadge(data.status)}
                         <>
-                            {data.status === "1" && (
+                            <div className="relative inline-block text-left">
+                                {/* Main Button */}
                                 <button
                                     type="button"
                                     disabled={isDownloadLoading}
-                                    onClick={handleExport}
-                                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
-                                    bg-indigo-600 text-white text-sm font-medium shadow-sm 
-                                    hover:bg-indigo-700 disabled:opacity-50
-                                    transition-all duration-200"
+                                    onClick={() => setIsOpen(!isOpen)}
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg
+      bg-blue-600 text-white text-sm font-medium shadow-md
+      hover:bg-blue-700 active:scale-[0.98]
+      disabled:opacity-50 disabled:cursor-not-allowed
+      transition-all duration-200"
                                 >
                                     <Download className="w-4 h-4" />
-                                    <span>Export Surat Jalan</span>
+                                    <span>Export</span>
+                                    <svg
+                                        className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                                            }`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
                                 </button>
-                            )}
-                            {data.status === "2" && (
-                                <button
-                                    type="button"
-                                    disabled={isDownloadLoading}
-                                    onClick={handleExportReceiptItem}
-                                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
-                                        bg-indigo-600 text-white text-sm font-medium shadow-sm 
-                                        hover:bg-indigo-700 disabled:opacity-50
-                                        transition-all duration-200"
-                                >
-                                    <Download className="w-4 h-4" />
-                                    <span>Export Barang Diterima</span>
-                                </button>
-                            )}
+
+                                {/* Dropdown */}
+                                {isOpen && (
+                                    <div
+                                        className="absolute right-0 mt-2 w-60 origin-top-right
+        rounded-xl bg-white
+        shadow-xl ring-1 ring-black/5
+        animate-in fade-in zoom-in-95
+        duration-150 z-50"
+                                    >
+                                        <div className="p-2">
+
+                                            {/* Item 1 */}
+                                            <button
+                                                onClick={() => {
+                                                    handleExport();
+                                                    setIsOpen(false);
+                                                }}
+                                                className="group flex items-center gap-3 w-full
+            px-4 py-2.5 rounded-lg text-sm font-medium
+            text-gray-700 hover:bg-blue-50 hover:text-blue-600
+            transition-all duration-150"
+                                            >
+                                                <Download className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                                                Export Surat Jalan
+                                            </button>
+
+                                            {/* Divider */}
+                                            {data.status === "2" && (
+                                                <div className="my-2 border-t border-gray-100" />
+                                            )}
+
+                                            {/* Item 2 */}
+                                            {data.status === "2" && (
+                                                <button
+                                                    onClick={() => {
+                                                        handleExportReceiptItem();
+                                                        setIsOpen(false);
+                                                    }}
+                                                    className="group flex items-center gap-3 w-full
+              px-4 py-2.5 rounded-lg text-sm font-medium
+              text-gray-700 hover:bg-indigo-50 hover:text-indigo-600
+              transition-all duration-150"
+                                                >
+                                                    <Download className="w-4 h-4 text-gray-400 group-hover:text-indigo-600" />
+                                                    Export Barang Diterima
+                                                </button>
+                                            )}
+
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
 
                         </>
                     </div>

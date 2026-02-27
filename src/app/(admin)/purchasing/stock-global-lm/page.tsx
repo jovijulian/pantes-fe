@@ -1,16 +1,16 @@
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import IndexPage from "./stock-global";
+import IndexPage from "./stock-global-lm";
 import { Metadata } from "next";
 import React, { Suspense } from "react";
 export const metadata: Metadata = {
-    title: "Stok Global | Pantes Gold App",
+    title: "Stok Global LM| Pantes Gold App",
 };
 
 
 export default function BasicTables() {
     return (
         <div>
-            <PageBreadcrumb pageTitle="Kelola Stock Global CT" />
+            <PageBreadcrumb pageTitle="Kelola Stock Global LM" />
             <div className="space-y-6">
                 <div
                     className={`rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]`}

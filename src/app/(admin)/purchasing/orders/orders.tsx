@@ -218,10 +218,12 @@ export default function PurchaseOrdersPage() {
                     const status = row.status;
                     return (
                         <div className="flex flex-wrap items-center gap-2">
+                            
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    router.push(`/purchasing/orders/${row.id}`)
+                                    window.open(`/purchasing/orders/${row.id}`, "_blank");
+                                    // router.push(`/purchasing/deposits/${row.id}`)
                                 }}
                                 title="Lihat Detail"
                                 className="p-3 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -229,7 +231,7 @@ export default function PurchaseOrdersPage() {
                                 <FaEye className="w-4 h-4" />
                             </button>
 
-                            {status === '1' && (
+                            {/* {status === '1' && (
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -303,7 +305,7 @@ export default function PurchaseOrdersPage() {
                                         <span>Export</span>
                                     </button>
                                 </>
-                            )}
+                            )} */}
                         </div>
                     );
                 },
@@ -396,7 +398,7 @@ export default function PurchaseOrdersPage() {
                 loading={isLoading}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
-                onRowClick={handleRowClick}
+                // onRowClick={handleRowClick}
             />
 
             <ChangeStatusOrderModal

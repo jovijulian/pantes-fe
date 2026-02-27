@@ -30,7 +30,10 @@ interface IPaymentType {
     supplier_bank_id: number | null;
     name: string | null;
     nominal: string;
+    account_number?: string;
+    account_name?: string;
     bank: { bank_name: string, account_name: string, alias: string } | null;
+    notes: string;
 }
 
 interface IOrderItem {
@@ -86,8 +89,19 @@ export default function PurchaseOrderDetailPage() {
     const [deleteConfig, setDeleteConfig] = useState<{ type: 'item' | 'payment', id: number } | null>(null);
     const [itemOptions, setItemOptions] = useState<SelectOption[]>([]);
     const [bankOptions, setBankOptions] = useState<SelectOption[]>([]);
+    const [masterBankOptions, setMasterBankOptions] = useState<SelectOption[]>([]); // Tambahan Master Bank
     const [newItemForm, setNewItemForm] = useState({ item_id: '', weight: 0, pcs: 0, nominal: 0 });
-    const [newPaymentForm, setNewPaymentForm] = useState({ payment_type: 'BANK TRANSFER', supplier_bank_id: '', nominal: 0 });
+    
+    // Penyesuaian form payment dengan field manual
+    const [newPaymentForm, setNewPaymentForm] = useState({ 
+        payment_type: 'BANK TRANSFER', 
+        supplier_bank_id: '', 
+        bank_id: '', 
+        account_number: '', 
+        account_name: '', 
+        notes: '', 
+        nominal: 0 
+    });
 
     const paymentMethodOptions: SelectOption[] = [
         { value: "BANK TRANSFER", label: "Bank Transfer" },
@@ -162,7 +176,22 @@ export default function PurchaseOrderDetailPage() {
         } catch (error) { toast.error("Gagal memuat bank supplier"); }
     };
 
-    useEffect(() => { getDetail(); fetchItems(); }, [getDetail]);
+    const fetchMasterBanks = async () => {
+        if (masterBankOptions.length > 0) return;
+        try {
+            const res = await httpGet(endpointUrl("master/bank/dropdown"), true);
+            setMasterBankOptions(res.data.data.map((b: any) => ({
+                value: b.id.toString(),
+                label: `${b.bank_name} (${b.alias})`
+            })));
+        } catch (error) { toast.error("Gagal memuat master bank"); }
+    };
+
+    useEffect(() => { 
+        getDetail(); 
+        fetchItems(); 
+        fetchMasterBanks(); 
+    }, [getDetail]);
 
     const handleDeleteConfirm = async () => {
         if (!deleteConfig || !data) return;
@@ -212,20 +241,32 @@ export default function PurchaseOrderDetailPage() {
     const handleAddPayment = async () => {
         if (!data) return;
         if (newPaymentForm.nominal <= 0) return toast.error("Nominal harus lebih dari 0.");
-        if ((newPaymentForm.payment_type === "BANK TRANSFER" || newPaymentForm.payment_type === "SETOR TUNAI") && !newPaymentForm.supplier_bank_id) {
-            return toast.error("Harap pilih bank supplier.");
+        
+        const isTransferOrSetor = newPaymentForm.payment_type === "BANK TRANSFER" || newPaymentForm.payment_type === "SETOR TUNAI";
+
+        if (isTransferOrSetor) {
+            if (!newPaymentForm.supplier_bank_id) return toast.error("Harap pilih bank supplier.");
+        } else {
+            if (!newPaymentForm.bank_id) return toast.error("Harap pilih Bank.");
+            if (!newPaymentForm.account_number || !newPaymentForm.account_name) return toast.error("No. Rekening dan Atas Nama harus diisi.");
         }
+
         setIsSubmitting(true);
         try {
             const payload = {
                 payment_type: newPaymentForm.payment_type,
-                supplier_bank_id: (newPaymentForm.payment_type === "BANK TRANSFER" || newPaymentForm.payment_type === "SETOR TUNAI") ? Number(newPaymentForm.supplier_bank_id) : null,
+                supplier_bank_id: isTransferOrSetor ? Number(newPaymentForm.supplier_bank_id) : null,
+                bank_id: !isTransferOrSetor ? Number(newPaymentForm.bank_id) : null,
+                account_number: !isTransferOrSetor ? newPaymentForm.account_number : "",
+                account_name: !isTransferOrSetor ? newPaymentForm.account_name : "",
+                notes: newPaymentForm.notes,
                 nominal: newPaymentForm.nominal
             };
+            
             await httpPost(endpointUrl(`purchase/order/${data.id}/payment-type`), payload, true);
             toast.success("Pembayaran berhasil ditambahkan");
             setIsAddPaymentModalOpen(false);
-            setNewPaymentForm({ payment_type: 'BANK TRANSFER', supplier_bank_id: '', nominal: 0 });
+            setNewPaymentForm({ payment_type: 'BANK TRANSFER', supplier_bank_id: '', bank_id: '', account_number: '', account_name: '', notes: '', nominal: 0 });
             getDetail();
         } catch (error: any) {
             toast.error(error.response?.data?.message);
@@ -259,8 +300,6 @@ export default function PurchaseOrderDetailPage() {
         finally { setIsSubmitting(false); }
     };
 
-
-
     const handleExport = async () => {
         if (!data) return;
         setIsDownloadLoading(true);
@@ -272,10 +311,8 @@ export default function PurchaseOrderDetailPage() {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
-            console.log(response.headers['content-disposition'])
             const pdfBlob = response.data;
             const blobUrl = URL.createObjectURL(pdfBlob);
-            // window.open(blobUrl, '_blank');
 
             const link = document.createElement('a');
             const contentDisposition = response.headers['content-disposition'];
@@ -324,8 +361,9 @@ export default function PurchaseOrderDetailPage() {
     const totalPayment = data.payment_types.reduce((sum, p) => sum + Number(p.nominal), 0);
     const remainingBalance = totalItemNominal - totalPayment;
     const isUnbalanced = remainingBalance !== 0;
-
     const isEditable = data.status === "1";
+
+    const isTransferOrSetorForm = newPaymentForm.payment_type === "BANK TRANSFER" || newPaymentForm.payment_type === "SETOR TUNAI";
 
     return (
         <div className="dark:bg-gray-900 min-h-screen pb-10 transition-colors">
@@ -375,34 +413,46 @@ export default function PurchaseOrderDetailPage() {
                                     <thead className="bg-gray-50 dark:bg-gray-800/50">
                                         <tr>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jenis</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Info Bank Supplier</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Info Bank</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nominal</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Keterangan</th>
                                             {isEditable && <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase w-16">Aksi</th>}
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
                                         {data.payment_types && data.payment_types.length > 0 ? (
-                                            data.payment_types.map((payment) => (
-                                                <tr key={payment.id}>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">{payment.payment_type}</td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">
-                                                        {payment.bank ? `${payment.bank.bank_name} - ${payment.name}` : "-"}
-                                                    </td>
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
-                                                        {formatRupiah(payment.nominal)}
-                                                    </td>
-                                                    {isEditable && (
-                                                        <td className="px-4 py-3 whitespace-nowrap text-center">
-                                                            <button onClick={() => setDeleteConfig({ type: 'payment', id: payment.id })} className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded-md transition-colors">
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
+                                            data.payment_types.map((payment) => {
+                                                const isManual = payment.payment_type !== "BANK TRANSFER" && payment.payment_type !== "SETOR TUNAI";
+                                                return (
+                                                    <tr key={payment.id}>
+                                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">{payment.payment_type}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
+                                                            {isManual ? (
+                                                                <div>
+                                                                    <p className="font-semibold">{payment.bank?.bank_name || "-"}</p>
+                                                                    <p className="text-xs text-gray-500">{payment.account_number} - {payment.account_name}</p>
+                                                                </div>
+                                                            ) : (
+                                                                <p>{payment.bank ? `${payment.bank.bank_name} - ${payment.name}` : "-"}</p>
+                                                            )}
                                                         </td>
-                                                    )}
-                                                </tr>
-                                            ))
+                                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
+                                                            {formatRupiah(payment.nominal)}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-right text-sm text-gray-800 dark:text-gray-200 break-words max-w-[150px]">{payment.notes || "-"}</td>
+                                                        {isEditable && (
+                                                            <td className="px-4 py-3 whitespace-nowrap text-center">
+                                                                <button onClick={() => setDeleteConfig({ type: 'payment', id: payment.id })} className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded-md transition-colors">
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </td>
+                                                        )}
+                                                    </tr>
+                                                );
+                                            })
                                         ) : (
                                             <tr>
-                                                <td colSpan={isEditable ? 4 : 3} className="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                                <td colSpan={isEditable ? 5 : 4} className="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                                                     Tidak ada data pembayaran.
                                                 </td>
                                             </tr>
@@ -569,7 +619,7 @@ export default function PurchaseOrderDetailPage() {
             />
 
             <Transition appear show={deleteConfig !== null} as={Fragment}>
-                <Dialog as="div" className="relative z-99999" onClose={() => setDeleteConfig(null)}>
+                <Dialog as="div" className="relative z-[99999]" onClose={() => setDeleteConfig(null)}>
                     <div className="fixed inset-0 bg-black/70" />
                     <div className="fixed inset-0 overflow-y-auto">
                         <div className="flex min-h-full items-center justify-center p-4 text-center">
@@ -595,7 +645,7 @@ export default function PurchaseOrderDetailPage() {
             </Transition>
 
             <Transition appear show={isAddItemModalOpen} as={Fragment}>
-                <Dialog as="div" className="relative z-99999" onClose={() => setIsAddItemModalOpen(false)}>
+                <Dialog as="div" className="relative z-[99999]" onClose={() => setIsAddItemModalOpen(false)}>
                     <div className="fixed inset-0 bg-black/70" />
                     <div className="fixed inset-0 overflow-y-auto">
                         <div className="flex min-h-full items-center justify-center p-4">
@@ -638,7 +688,7 @@ export default function PurchaseOrderDetailPage() {
             </Transition>
 
             <Transition appear show={isAddPaymentModalOpen} as={Fragment}>
-                <Dialog as="div" className="relative z-99999" onClose={() => setIsAddPaymentModalOpen(false)}>
+                <Dialog as="div" className="relative z-[99999]" onClose={() => setIsAddPaymentModalOpen(false)}>
                     <div className="fixed inset-0 bg-black/70" />
                     <div className="fixed inset-0 overflow-y-auto">
                         <div className="flex min-h-full items-center justify-center p-4">
@@ -647,14 +697,47 @@ export default function PurchaseOrderDetailPage() {
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jenis Pembayaran</label>
-                                        <Select options={paymentMethodOptions} value={paymentMethodOptions.find(o => o.value === newPaymentForm.payment_type)} onValueChange={(opt) => setNewPaymentForm(p => ({ ...p, payment_type: opt ? opt.value : 'BANK TRANSFER' }))} />
+                                        <Select 
+                                            options={paymentMethodOptions} 
+                                            value={paymentMethodOptions.find(o => o.value === newPaymentForm.payment_type)} 
+                                            onValueChange={(opt) => setNewPaymentForm(p => ({ 
+                                                ...p, 
+                                                payment_type: opt ? opt.value : 'BANK TRANSFER',
+                                                supplier_bank_id: '',
+                                                bank_id: '',
+                                                account_number: '',
+                                                account_name: '',
+                                                notes: '' 
+                                            }))} 
+                                        />
                                     </div>
-                                    {(newPaymentForm.payment_type === "BANK TRANSFER" || newPaymentForm.payment_type === "SETOR TUNAI") && (
+                                    
+                                    {isTransferOrSetorForm ? (
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bank Supplier</label>
-                                            <Select options={bankOptions} value={bankOptions.find(o => o.value === newPaymentForm.supplier_bank_id)} onValueChange={(opt) => setNewPaymentForm(p => ({ ...p, supplier_bank_id: opt ? opt.value : '' }))} placeholder="Pilih bank supplier..." />
+                                            <Select options={bankOptions} value={bankOptions.find(o => o.value === newPaymentForm.supplier_bank_id) || null} onValueChange={(opt) => setNewPaymentForm(p => ({ ...p, supplier_bank_id: opt ? opt.value : '' }))} placeholder="Pilih bank supplier..." />
                                         </div>
+                                    ) : (
+                                        <>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bank</label>
+                                                <Select options={masterBankOptions} value={masterBankOptions.find(o => o.value === newPaymentForm.bank_id) || null} onValueChange={(opt) => setNewPaymentForm(p => ({ ...p, bank_id: opt ? opt.value : '' }))} placeholder="Pilih Bank..." />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">No. Rekening</label>
+                                                <Input type="text" value={newPaymentForm.account_number} onChange={(e) => setNewPaymentForm(p => ({...p, account_number: e.target.value}))} placeholder="Input No. Rekening" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Atas Nama</label>
+                                                <Input type="text" value={newPaymentForm.account_name} onChange={(e) => setNewPaymentForm(p => ({...p, account_name: e.target.value}))} placeholder="Input Atas Nama" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
+                                                <Input type="text" value={newPaymentForm.notes} onChange={(e) => setNewPaymentForm(p => ({...p, notes: e.target.value}))} placeholder="Catatan tambahan" />
+                                            </div>
+                                        </>
                                     )}
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nominal</label>
                                         <CurrencyInput value={newPaymentForm.nominal} onValueChange={(val) => setNewPaymentForm(p => ({ ...p, nominal: val }))} placeholder="Rp 0" />

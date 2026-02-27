@@ -208,13 +208,55 @@ export default function ScrapGoldSendPage() {
         }
     };
 
-   
+
 
     const handleExport = async (id: number) => {
         setIsExporting(true);
 
         try {
             const response = await axios.get(endpointUrl(`purchase/scrap-gold/send/${id}/export`), {
+                responseType: 'blob',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            console.log(response.headers['content-disposition'])
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
+
+            const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `purchase_order.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            link.href = blobUrl;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } catch (error) {
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
+    const handleExportReceipt = async (id: number) => {
+        setIsExporting(true);
+
+        try {
+            const response = await axios.get(endpointUrl(`purchase/scrap-gold/send/${id}/export-stock`), {
                 responseType: 'blob',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -260,69 +302,88 @@ export default function ScrapGoldSendPage() {
                 const currentStatus = row.status;
 
                 return (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-2">
+                        {/* Detail */}
                         <button
-                            onClick={() => router.push(`/purchasing/scrap-golds/sends/${row.id}`)}
+                            onClick={() => {
+                                // router.push(`/purchasing/scrap-golds/sends/${row.id}`)
+                                window.open(`/purchasing/scrap-golds/sends/${row.id}`, "_blank");
+                            }}
                             title="Lihat Detail"
-                            className="p-2 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                            className="flex items-center justify-center h-9 w-full rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                         >
-                            <FaEye className="w-4 h-4" />
+                            <FaEye className="w-4 h-4 mr-1" />
+                            Detail
                         </button>
 
-                        {currentStatus === "1" && (
-                            <>
-                                <button
-                                    onClick={() => handleOpenProcessModal(row.id, 2)}
-                                    title="Proses Kirim (Ubah ke Dikirim)"
-                                    className="flex items-center gap-1 px-3 py-2 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors text-xs font-semibold"
-                                >
-                                    {/* <FaTruck className="w-3.5 h-3.5" /> */}
-                                    Kirim
-                                </button>
-                            </>
-                        )}
+                        {/* Status 1 -> Kirim */}
+                        {/* {currentStatus === "1" && (
+                            <button
+                                onClick={() => handleOpenProcessModal(row.id, 2)}
+                                className="flex items-center justify-center h-9 w-full rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold transition-colors"
+                            >
+                                Kirim
+                            </button>
+                        )} */}
 
-                        {/* Status 2 (Kirim) -> Button Terima (ke Status 3) */}
-                        {currentStatus === "2" && (
+                        {/* Status 2 -> Terima */}
+                        {/* {currentStatus === "2" && (
                             <button
                                 onClick={() => handleOpenProcessModal(row.id, 3)}
-                                title="Proses Terima (Ubah ke Diterima)"
-                                className="flex items-center gap-1 px-3 py-2 rounded-md bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors text-xs font-semibold"
+                                className="flex items-center justify-center h-9 w-full rounded-md bg-emerald-50 text-emerald-600 hover:bg-emerald-100 text-xs font-semibold transition-colors"
                             >
-                                {/* <FaCheckCircle className="w-3.5 h-3.5" /> */}
                                 Terima
                             </button>
-                        )}
+                        )} */}
 
-                        {currentStatus === "3" && (
+                        {/* Status 3 -> Stock */}
+                        {/* {currentStatus === "3" && (
                             <button
                                 onClick={() => handleOpenProcessModal(row.id, 4)}
-                                title="Masuk Stock (Selesai)"
-                                className="flex items-center gap-1 px-3 py-2 rounded-md bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors text-xs font-semibold"
+                                className="flex items-center justify-center h-9 w-full rounded-md bg-purple-50 text-purple-600 hover:bg-purple-100 text-xs font-semibold transition-colors"
                             >
-                                {/* <FaDolly className="w-3.5 h-3.5" /> */}
                                 Stock
                             </button>
-                        )}
+                        )} */}
 
-                        {currentStatus !== "1" && (
+                        {/* Export Surat Kirim (Status 2 & 3) */}
+                        {/* {(currentStatus === "2" || currentStatus === "3") && (
                             <button
                                 onClick={() => handleExport(row.id)}
                                 disabled={isExporting}
-                                title="Export PDF"
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md 
-                                        bg-gradient-to-r from-blue-500 to-indigo-600 
-                                        text-white text-xs font-medium shadow-md hover:shadow-lg 
-                                        hover:from-blue-600 hover:to-indigo-700 
-                                        transition-all duration-200"
+                                className="flex items-center justify-center gap-1.5 h-9 w-full rounded-md bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-medium shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50"
                             >
-                                {isExporting ? <Loader2 className="animate-spin w-3.5 h-3.5" /> : <Download className="w-3.5 h-3.5" />}
-                                Export
+                                <Download className="w-3.5 h-3.5" />
+                                Export Surat Jalan
                             </button>
-                        )}
+                        )} */}
+
+                        {/* Status 4 -> 2 Export */}
+                        {/* {currentStatus === "4" && (
+                            <>
+                                <button
+                                    onClick={() => handleExport(row.id)}
+                                    disabled={isExporting}
+                                    className="flex items-center justify-center gap-1.5 h-9 w-full rounded-md bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-medium shadow-md hover:shadow-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50"
+                                >
+                                    <Download className="w-3.5 h-3.5" />
+                                    Export Surat Jalan
+                                </button>
+
+                                <button
+                                    onClick={() => handleExportReceipt(row.id)}
+                                    disabled={isExporting}
+                                    className="flex items-center justify-center gap-1.5 h-9 w-full rounded-md bg-indigo-600 text-white text-xs font-medium shadow-sm hover:bg-indigo-700 transition-all duration-200 disabled:opacity-50"
+                                >
+                                    <Download className="w-3.5 h-3.5" />
+                                    Export Surat Terima Stock
+                                </button>
+                            </>
+                        )} */}
                     </div>
                 );
-            }
+            },
+
         },
         {
             id: "no_scrap_gold_send",
@@ -561,7 +622,7 @@ const ProcessModal = ({
     onMonthChange: (date: Date) => void,
     nextStatus: number | null
 }) => {
-   
+
     const modalContent = useMemo(() => {
         switch (nextStatus) {
             case 2:
