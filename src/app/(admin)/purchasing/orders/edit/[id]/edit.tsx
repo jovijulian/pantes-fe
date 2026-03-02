@@ -140,8 +140,8 @@ export default function EditPurchaseOrderPage() {
                     payment_type: p.payment_type,
                     supplier_bank_id: p.supplier_bank_id ? Number(p.supplier_bank_id) : null,
                     bank_id: p.bank_id ? Number(p.bank_id) : null,
-                    account_number: p.account_number || '',
-                    account_name: p.account_name || '',
+                    account_number: p.number || '',
+                    account_name: p.name || '',
                     notes: p.notes || '',
                     nominal: Number(p.nominal) || 0,
                 }));
@@ -161,7 +161,7 @@ export default function EditPurchaseOrderPage() {
 
             } catch (error: any) {
                 toast.error("Gagal memuat data order.");
-                router.push('/purchasing/orders');
+                router.push(`/purchasing/orders/${id}`);
             } finally {
                 setLoadingData(false);
             }

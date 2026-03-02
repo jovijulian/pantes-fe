@@ -34,6 +34,7 @@ interface IPaymentType {
     account_name?: string;
     bank: { bank_name: string, account_name: string, alias: string } | null;
     notes: string;
+    number: string | null;
 }
 
 interface IOrderItem {
@@ -91,16 +92,16 @@ export default function PurchaseOrderDetailPage() {
     const [bankOptions, setBankOptions] = useState<SelectOption[]>([]);
     const [masterBankOptions, setMasterBankOptions] = useState<SelectOption[]>([]); // Tambahan Master Bank
     const [newItemForm, setNewItemForm] = useState({ item_id: '', weight: 0, pcs: 0, nominal: 0 });
-    
+
     // Penyesuaian form payment dengan field manual
-    const [newPaymentForm, setNewPaymentForm] = useState({ 
-        payment_type: 'BANK TRANSFER', 
-        supplier_bank_id: '', 
-        bank_id: '', 
-        account_number: '', 
-        account_name: '', 
-        notes: '', 
-        nominal: 0 
+    const [newPaymentForm, setNewPaymentForm] = useState({
+        payment_type: 'BANK TRANSFER',
+        supplier_bank_id: '',
+        bank_id: '',
+        account_number: '',
+        account_name: '',
+        notes: '',
+        nominal: 0
     });
 
     const paymentMethodOptions: SelectOption[] = [
@@ -187,10 +188,10 @@ export default function PurchaseOrderDetailPage() {
         } catch (error) { toast.error("Gagal memuat master bank"); }
     };
 
-    useEffect(() => { 
-        getDetail(); 
-        fetchItems(); 
-        fetchMasterBanks(); 
+    useEffect(() => {
+        getDetail();
+        fetchItems();
+        fetchMasterBanks();
     }, [getDetail]);
 
     const handleDeleteConfirm = async () => {
@@ -241,7 +242,7 @@ export default function PurchaseOrderDetailPage() {
     const handleAddPayment = async () => {
         if (!data) return;
         if (newPaymentForm.nominal <= 0) return toast.error("Nominal harus lebih dari 0.");
-        
+
         const isTransferOrSetor = newPaymentForm.payment_type === "BANK TRANSFER" || newPaymentForm.payment_type === "SETOR TUNAI";
 
         if (isTransferOrSetor) {
@@ -262,7 +263,7 @@ export default function PurchaseOrderDetailPage() {
                 notes: newPaymentForm.notes,
                 nominal: newPaymentForm.nominal
             };
-            
+
             await httpPost(endpointUrl(`purchase/order/${data.id}/payment-type`), payload, true);
             toast.success("Pembayaran berhasil ditambahkan");
             setIsAddPaymentModalOpen(false);
@@ -429,8 +430,12 @@ export default function PurchaseOrderDetailPage() {
                                                         <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
                                                             {isManual ? (
                                                                 <div>
-                                                                    <p className="font-semibold">{payment.bank?.bank_name || "-"}</p>
-                                                                    <p className="text-xs text-gray-500">{payment.account_number} - {payment.account_name}</p>
+                                                                    {/* <p className="font-semibold">{payment.bank?.bank_name || "-"}</p>
+                                                                    <p className="text-xs text-gray-500">{payment.account_number} - {payment.account_name}</p> */}
+                                                                    <div>
+                                                                        <p className="font-semibold">{payment.bank?.bank_name || "-"}</p>
+                                                                        <p className="text-xs text-gray-500">{payment.number} - {payment.name}</p>
+                                                                    </div>
                                                                 </div>
                                                             ) : (
                                                                 <p>{payment.bank ? `${payment.bank.bank_name} - ${payment.name}` : "-"}</p>
@@ -697,21 +702,21 @@ export default function PurchaseOrderDetailPage() {
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Jenis Pembayaran</label>
-                                        <Select 
-                                            options={paymentMethodOptions} 
-                                            value={paymentMethodOptions.find(o => o.value === newPaymentForm.payment_type)} 
-                                            onValueChange={(opt) => setNewPaymentForm(p => ({ 
-                                                ...p, 
+                                        <Select
+                                            options={paymentMethodOptions}
+                                            value={paymentMethodOptions.find(o => o.value === newPaymentForm.payment_type)}
+                                            onValueChange={(opt) => setNewPaymentForm(p => ({
+                                                ...p,
                                                 payment_type: opt ? opt.value : 'BANK TRANSFER',
                                                 supplier_bank_id: '',
                                                 bank_id: '',
                                                 account_number: '',
                                                 account_name: '',
-                                                notes: '' 
-                                            }))} 
+                                                notes: ''
+                                            }))}
                                         />
                                     </div>
-                                    
+
                                     {isTransferOrSetorForm ? (
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bank Supplier</label>
@@ -725,15 +730,15 @@ export default function PurchaseOrderDetailPage() {
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">No. Rekening</label>
-                                                <Input type="text" value={newPaymentForm.account_number} onChange={(e) => setNewPaymentForm(p => ({...p, account_number: e.target.value}))} placeholder="Input No. Rekening" />
+                                                <Input type="text" value={newPaymentForm.account_number} onChange={(e) => setNewPaymentForm(p => ({ ...p, account_number: e.target.value }))} placeholder="Input No. Rekening" />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Atas Nama</label>
-                                                <Input type="text" value={newPaymentForm.account_name} onChange={(e) => setNewPaymentForm(p => ({...p, account_name: e.target.value}))} placeholder="Input Atas Nama" />
+                                                <Input type="text" value={newPaymentForm.account_name} onChange={(e) => setNewPaymentForm(p => ({ ...p, account_name: e.target.value }))} placeholder="Input Atas Nama" />
                                             </div>
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
-                                                <Input type="text" value={newPaymentForm.notes} onChange={(e) => setNewPaymentForm(p => ({...p, notes: e.target.value}))} placeholder="Catatan tambahan" />
+                                                <Input type="text" value={newPaymentForm.notes} onChange={(e) => setNewPaymentForm(p => ({ ...p, notes: e.target.value }))} placeholder="Catatan tambahan" />
                                             </div>
                                         </>
                                     )}

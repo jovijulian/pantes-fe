@@ -40,6 +40,7 @@ interface IPaymentType {
     nominal: string;
     bank: { bank_name: string, account_name: string } | null;
     notes: string;
+    number: string;
 }
 
 interface IPurchaseOrderData {
@@ -263,16 +264,16 @@ export default function PurchaseOrderDetailPage() {
                     <div className="flex justify-end items-center gap-3">
                         {getStatusBadge(data.status)}
                         <>
-                        {data.status == "1" && (
-                            <button
-                                type="button"
-                                onClick={() => router.push(`/purchasing/orders/edit/${data.id}`)}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-all"
-                            >
-                                <Edit className="w-4 h-4" /> Edit
-                            </button>
-                        )}
-                     
+                            {data.status == "1" && (
+                                <button
+                                    type="button"
+                                    onClick={() => router.push(`/purchasing/orders/edit/${data.id}`)}
+                                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 font-medium transition-all"
+                                >
+                                    <Edit className="w-4 h-4" /> Edit
+                                </button>
+                            )}
+
                             <button
                                 type="button"
                                 disabled={isDownloadLoading}
@@ -321,7 +322,12 @@ export default function PurchaseOrderDetailPage() {
                                         {data.payment_types.map((payment) => (
                                             <tr key={payment.id}>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.payment_type}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.bank_id != null ? `${payment.name}` : `-`}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                                    <div>
+                                                        <p className="font-semibold">{payment.name || "-"}</p>
+                                                        <p className="text-xs text-gray-500">{payment.number}</p>
+                                                    </div>
+                                                </td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.bank_id ? `${payment.bank?.bank_name}` : "-"}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(payment.nominal)}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-right text-sm">{payment.notes || "-"}</td>

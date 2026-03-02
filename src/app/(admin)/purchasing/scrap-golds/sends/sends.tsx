@@ -313,7 +313,6 @@ export default function ScrapGoldSendPage() {
                             className="flex items-center justify-center h-9 w-full rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                         >
                             <FaEye className="w-4 h-4 mr-1" />
-                            Detail
                         </button>
 
                         {/* Status 1 -> Kirim */}
