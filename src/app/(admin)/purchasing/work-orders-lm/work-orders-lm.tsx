@@ -16,6 +16,7 @@ import _ from "lodash";
 import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrderLMModal";
 import { Download, Loader2, PackagePlus } from "lucide-react";
 import axios from "axios";
+import { useTableFilters } from "@/hooks/useTableFilters";
 
 interface IWorkOrder {
     id: number;
@@ -45,16 +46,18 @@ export default function WorkOrdersPage() {
 
     const [data, setData] = useState<IWorkOrder[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
     const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedWorkOrder, setSelectedWorkOrder] = useState<IWorkOrder | null>(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [perPage, setPerPage] = useState(20);
     const [lastPage, setLastPage] = useState(1);
     const [count, setCount] = useState(0);
-    const [statusFilter, setStatusFilter] = useState<string>("");
     const [isDownloadLoading, setIsDownloadLoading] = useState(false);
+    const { filters, setFilter } = useTableFilters({
+        page: 1,
+        per_page: 20,
+        search: '',
+        status: ''
+    });
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
         return "Rp " + num.toLocaleString('id-ID');
@@ -78,15 +81,11 @@ export default function WorkOrdersPage() {
 
     const getData = async () => {
         setIsLoading(true);
-        const search = searchTerm.trim();
-        const page = searchParams.get("page") || currentPage;
-        const perPageParam = searchParams.get("per_page") || perPage;
-
         const params: any = {
-            ...(search ? { search } : {}),
-            per_page: perPageParam,
-            ...(statusFilter ? { status: statusFilter } : {}),
-            page: page,
+            ...(filters.search ? { search: filters.search.trim() } : {}),
+            per_page: filters.per_page,
+            ...(filters.status ? { status: filters.status } : {}),
+            page: filters.page,
             type: 2,
         };
 
@@ -107,17 +106,20 @@ export default function WorkOrdersPage() {
 
     useEffect(() => {
         getData();
-    }, [searchParams, currentPage, perPage, searchTerm, statusFilter]);
+    }, [filters]);
 
     const handlePageChange = (page: number) => {
-        setCurrentPage(page);
+        setFilter("page", page);
     };
+    
     const handlePerPageChange = (newPerPage: number) => {
-        setPerPage(newPerPage);
-        setCurrentPage(1);
+        setFilter("per_page", newPerPage);
+        setFilter("page", 1);
     };
+    
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(e.target.value);
+        setFilter("search", e.target.value);
+        setFilter("page", 1);
     };
 
     const handleRowClick = (rowData: IWorkOrder) => {
@@ -249,8 +251,8 @@ export default function WorkOrdersPage() {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    window.open(`/purchasing/work-orders-lm/${row.id}`, "_blank");
-                                    // router.push(`/purchasing/work-orders/${row.id}`)
+                                    // window.open(`/purchasing/work-orders-lm/${row.id}`, "_blank");
+                                    router.push(`/purchasing/work-orders/${row.id}`)
                                 }}
                                 title="Lihat Detail"
                                 className="p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -405,16 +407,17 @@ export default function WorkOrdersPage() {
                 <div className="w-48 w-full sm:w-auto">
                     <Select
                         options={statusOptions}
-                        value={_.find(statusOptions, { value: statusFilter })}
-                        onValueChange={(opt) =>
-                            setStatusFilter(opt ? opt.value : "")
-                        }
+                        value={_.find(statusOptions, { value: filters.status })}
+                        onValueChange={(opt) => {
+                            setFilter("status", opt ? opt.value : "");
+                            setFilter("page", 1); 
+                        }}
                         placeholder="Filter Status..."
                     />
                 </div>
                 <input
                     type="text"
-                    value={searchTerm}
+                    value={filters.search}
                     onChange={handleSearch}
                     placeholder="Cari No. Surat Jalan..."
                     className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -437,6 +440,8 @@ export default function WorkOrdersPage() {
                 loading={isLoading}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
+                currentPage={filters.page} 
+                perPage={filters.per_page}
                 // onRowClick={handleRowClick}
             />
 

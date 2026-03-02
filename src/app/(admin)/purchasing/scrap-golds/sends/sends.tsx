@@ -17,6 +17,7 @@ import Badge from "@/components/ui/badge/Badge";
 import { Modal } from '@/components/ui/modal';
 import SingleDatePicker from "@/components/common/SingleDatePicker";
 import { alertToast, endpointUrl, httpGet, httpPost } from "@/../helpers";
+import { useTableFilters } from "@/hooks/useTableFilters";
 
 interface IExpedition {
     id: number;
@@ -82,11 +83,6 @@ export default function ScrapGoldSendPage() {
     const [stats, setStats] = useState<ICountStats>({ new: 0, send: 0, receipt: 0, stock: 0 });
     const [purposeStats, setPurposeStats] = useState<ICountPurpose>({ "gudang": 0, "supplier": 0, "vendor": 0 });
     const [isLoading, setIsLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
-    const [purposeFilter, setPurposeFilter] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [perPage, setPerPage] = useState(20);
     const [lastPage, setLastPage] = useState(1);
     const [totalRecord, setTotalRecord] = useState(0);
     const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
@@ -96,19 +92,22 @@ export default function ScrapGoldSendPage() {
     const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
     const [isProcessing, setIsProcessing] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
-
+    const { filters, setFilter } = useTableFilters({
+        page: 1,
+        per_page: 20,
+        search: '',
+        status: '',
+        type_purpose: ''
+    });
     const getData = async () => {
         setIsLoading(true);
-        const search = searchTerm.trim();
-        const page = searchParams.get("page") || currentPage;
-        const perPageParam = searchParams.get("per_page") || perPage;
 
         const params: any = {
-            ...(search ? { search } : {}),
-            ...(statusFilter ? { status: statusFilter } : {}),
-            ...(purposeFilter ? { type_purpose: purposeFilter } : {}),
-            per_page: perPageParam,
-            page: page,
+            ...(filters.search ? { search: filters.search.trim() } : {}),
+            per_page: filters.per_page,
+            ...(filters.status ? { status: filters.status } : {}),
+            ...(filters.type_purpose ? { type_purpose: filters.type_purpose } : {}),
+            page: filters.page,
         };
 
         try {
@@ -130,35 +129,43 @@ export default function ScrapGoldSendPage() {
         }
     };
 
+
     useEffect(() => {
         getData();
-    }, [searchParams, currentPage, perPage, searchTerm, statusFilter, purposeFilter]);
+    }, [filters]);
 
+    const handlePageChange = (page: number) => {
+        setFilter("page", page);
+    };
 
-    const handlePageChange = (page: number) => setCurrentPage(page);
     const handlePerPageChange = (newPerPage: number) => {
-        setPerPage(newPerPage);
-        setCurrentPage(1);
+        setFilter("per_page", newPerPage);
+        setFilter("page", 1);
+    };
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFilter("search", e.target.value);
+        setFilter("page", 1);
     };
 
     const handleFilterStatus = (status: string) => {
-        if (statusFilter === status) {
-            setStatusFilter('');
-            setPurposeFilter('');
+        if (filters.status === status) {
+            setFilter("status", '');
+            setFilter("type_purpose", '');
         } else {
-            setStatusFilter(status);
-            setPurposeFilter('');
+            setFilter("status", status);
+            setFilter("type_purpose", '');
         }
-        setCurrentPage(1);
+        setFilter("page", 1);
     };
 
     const handleFilterPurpose = (type: string) => {
-        if (purposeFilter === type) {
-            setPurposeFilter('');
+        if (filters.type_purpose === type) {
+            setFilter("type_purpose", '');
         } else {
-            setPurposeFilter(type);
+            setFilter("type_purpose", type);
         }
-        setCurrentPage(1);
+        setFilter("page", 1);
     };
 
     const calculateTotal = (items: ISendDetail[] | undefined, field: 'bruto' | 'netto') => {
@@ -306,8 +313,8 @@ export default function ScrapGoldSendPage() {
                         {/* Detail */}
                         <button
                             onClick={() => {
-                                // router.push(`/purchasing/scrap-golds/sends/${row.id}`)
-                                window.open(`/purchasing/scrap-golds/sends/${row.id}`, "_blank");
+                                router.push(`/purchasing/scrap-golds/sends/${row.id}`)
+                                // window.open(`/purchasing/scrap-golds/sends/${row.id}`, "_blank");
                             }}
                             title="Lihat Detail"
                             className="flex items-center justify-center h-9 w-full rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
@@ -459,7 +466,7 @@ export default function ScrapGoldSendPage() {
                 <FilterCard
                     label=" New"
                     count={stats.new}
-                    isActive={statusFilter === '1'}
+                    isActive={filters.status === '1'}
                     onClick={() => handleFilterStatus('1')}
                     color="yellow"
                     icon={<FaBoxOpen className="w-5 h-5" />}
@@ -467,7 +474,7 @@ export default function ScrapGoldSendPage() {
                 <FilterCard
                     label=" Kirim"
                     count={stats.send}
-                    isActive={statusFilter === '2'}
+                    isActive={filters.status === '2'}
                     onClick={() => handleFilterStatus('2')}
                     color="blue"
                     icon={<FaTruck className="w-5 h-5" />}
@@ -475,7 +482,7 @@ export default function ScrapGoldSendPage() {
                 <FilterCard
                     label=" Terima"
                     count={stats.receipt}
-                    isActive={statusFilter === '3'}
+                    isActive={filters.status === '3'}
                     onClick={() => handleFilterStatus('3')}
                     color="emerald"
                     icon={<FaClipboardCheck className="w-5 h-5" />}
@@ -483,14 +490,14 @@ export default function ScrapGoldSendPage() {
                 <FilterCard
                     label=" Stock"
                     count={stats.stock}
-                    isActive={statusFilter === '4'}
+                    isActive={filters.status === '4'}
                     onClick={() => handleFilterStatus('4')}
                     color="gray"
                     icon={<FaDolly className="w-5 h-5" />}
                 />
             </div>
 
-            {statusFilter && (
+            {filters.status && (
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 animate-in fade-in slide-in-from-top-2 duration-300">
                     <h3 className="text-sm font-semibold text-gray-500 mb-3 flex items-center gap-2">
                         <Info className="w-4 h-4" /> Filter Berdasarkan Tujuan:
@@ -499,7 +506,7 @@ export default function ScrapGoldSendPage() {
                         <FilterCard
                             label="Gudang"
                             count={purposeStats["gudang"]}
-                            isActive={purposeFilter === '1'}
+                            isActive={filters.type_purpose === '1'}
                             onClick={() => handleFilterPurpose('1')}
                             color="indigo"
                             icon={<FaWarehouse className="w-4 h-4" />}
@@ -508,7 +515,7 @@ export default function ScrapGoldSendPage() {
                         <FilterCard
                             label="Supplier"
                             count={purposeStats["supplier"]}
-                            isActive={purposeFilter === '2'}
+                            isActive={filters.type_purpose === '2'}
                             onClick={() => handleFilterPurpose('2')}
                             color="purple"
                             icon={<FaStore className="w-4 h-4" />}
@@ -517,7 +524,7 @@ export default function ScrapGoldSendPage() {
                         <FilterCard
                             label="Vendor / Pabrik"
                             count={purposeStats["vendor"]}
-                            isActive={purposeFilter === '3'}
+                            isActive={filters.type_purpose === '3'}
                             onClick={() => handleFilterPurpose('3')}
                             color="orange"
                             icon={<FaIndustry className="w-4 h-4" />}
@@ -531,8 +538,8 @@ export default function ScrapGoldSendPage() {
                 <div className="flex gap-2">
                     <input
                         type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        value={filters.search}
+                        onChange={handleSearch}
                         placeholder="Search..."
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
@@ -557,6 +564,8 @@ export default function ScrapGoldSendPage() {
                     loading={isLoading}
                     onPageChange={handlePageChange}
                     onPerPageChange={handlePerPageChange}
+                    currentPage={filters.page}
+                    perPage={filters.per_page}
                 />
             </div>
 

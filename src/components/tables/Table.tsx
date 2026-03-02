@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -18,7 +18,6 @@ interface Column {
   sortable?: boolean;
   width?: string;
   accessorFn?: (row: any) => any;
-
 }
 
 interface CustomTableProps {
@@ -34,6 +33,8 @@ interface CustomTableProps {
   // Optional callbacks for parent notifications
   onPageChange?: (page: number) => void;
   onPerPageChange?: (perPage: number) => void;
+  currentPage?: number;
+  perPage?: number;
   onRowClick?: (rowData: any) => void;
 }
 
@@ -49,23 +50,42 @@ export default function CustomTable({
   setCheckedData,
   onPageChange,
   onPerPageChange,
+  currentPage,
+  perPage: propPerPage,
   onRowClick,
 }: CustomTableProps) {
   // Internal pagination state
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(20);
+  const [perPage, setPerPage] = useState(propPerPage || 20);
+  useEffect(() => {
+    if (currentPage !== undefined) {
+      setPage(currentPage);
+    }
+  }, [currentPage]);
 
+  useEffect(() => {
+    // Lakukan hal yang sama untuk 'perPage'
+    if (propPerPage !== undefined) {
+      setPerPage(propPerPage);
+    }
+  }, [propPerPage]);
   // Handle page change internally and notify parent if callback exists
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > lastPage) return;
-    setPage(newPage);
+    
+    if (currentPage == undefined) {
+      setPage(newPage);
+    }
     if (onPageChange) onPageChange(newPage);
   };
-
   // Handle perPage change internally, reset page to 1 and notify parent
   const handlePerPageChange = (newPerPage: number) => {
-    setPerPage(newPerPage);
-    setPage(1);
+    
+    if (propPerPage == undefined) {
+      setPerPage(newPerPage);
+      setPage(1);
+    }
+
     if (onPerPageChange) onPerPageChange(newPerPage);
   };
 
@@ -116,41 +136,32 @@ export default function CustomTable({
     if (!pagination) return null;
 
     return (
-      <div className="
-        flex flex-col sm:flex-row  /* + Stacks vertically on mobile, horizontal on sm+ */
-        items-center justify-between 
-        gap-4                      /* + Adds spacing when stacked */
-        px-6 py-4 
-        border-t border-gray-200 dark:border-white/[0.05]
-      ">
+      <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 dark:border-white/[0.05]">
         <div className="flex items-center gap-2">
-          <span className="text-sm hidden sm:inline text-gray-500 dark:text-gray-400">Show</span>
-
+          <span className="text-sm text-gray-500 dark:text-gray-400">Show</span>
           <select
             value={perPage}
             onChange={(e) => handlePerPageChange(Number(e.target.value))}
-            className="px-2 py-1 text-sm border border-gray-300 rounded dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+            className="ml-1 px-2 py-1 text-sm border border-gray-300 rounded dark:border-gray-600 dark:bg-gray-800 dark:text-white"
           >
             <option value={20}>20</option>
             <option value={40}>40</option>
             <option value={60}>60</option>
             <option value={80}>80</option>
           </select>
-
-          <span className="text-sm hidden sm:inline text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             from {total} rows
           </span>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4"> 
-          <span className="text-sm hidden sm:inline text-gray-500 dark:text-gray-400">
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
             Page {page} from {lastPage}
           </span>
-
           <button
             onClick={() => handlePageChange(page - 1)}
             disabled={page == 1}
-            className="px-4 sm:px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200"
+            className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200"
           >
             &lt;
           </button>
@@ -158,7 +169,7 @@ export default function CustomTable({
           <button
             onClick={() => handlePageChange(page + 1)}
             disabled={page == lastPage}
-            className="px-4 sm:px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200"
+            className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:text-gray-400 dark:hover:text-gray-200"
           >
             &gt;
           </button>
@@ -275,28 +286,28 @@ export default function CustomTable({
 
                   return (
                     <TableRow key={row.id || index} onClick={() => isClickable && onRowClick(row)} className={isClickable ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" : ""}>
-                      {selection && (
-                        <TableCell className="px-5 py-4">
-                          <input
-                            type="checkbox"
-                            checked={checkedData.some(
-                              (item) => item.id == row.id
-                            )}
-                            onChange={(e) =>
-                              handleRowSelect(row, e.target.checked)
-                            }
-                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                          />
-                        </TableCell>
-                      )}
-                      {columns.map((column) => (
-                        <TableCell key={column.id} className="px-5 py-4 text-start">
-                          <div className="text-gray-800 text-theme-sm dark:text-white/90">
-                            {renderCellContent(column, row)}
-                          </div>
-                        </TableCell>
-                      ))}
-                    </TableRow>
+                    {selection && (
+                      <TableCell className="px-5 py-4">
+                        <input
+                          type="checkbox"
+                          checked={checkedData.some(
+                            (item) => item.id == row.id
+                          )}
+                          onChange={(e) =>
+                            handleRowSelect(row, e.target.checked)
+                          }
+                          className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                        />
+                      </TableCell>
+                    )}
+                    {columns.map((column) => (
+                      <TableCell key={column.id} className="px-5 py-4 text-start">
+                        <div className="text-gray-800 text-theme-sm dark:text-white/90">
+                          {renderCellContent(column, row)}
+                        </div>
+                      </TableCell>
+                    ))}
+                  </TableRow>
                   );
                 })
               )}

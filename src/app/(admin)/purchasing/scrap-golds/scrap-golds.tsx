@@ -16,6 +16,7 @@ import Badge from "@/components/ui/badge/Badge";
 import { Modal } from '@/components/ui/modal';
 import SingleDatePicker from "@/components/common/SingleDatePicker";
 import { alertToast, endpointUrl, httpGet, httpPost } from "@/../helpers";
+import { useTableFilters } from "@/hooks/useTableFilters";
 
 interface IScrapSource {
     id: number;
@@ -59,10 +60,6 @@ export default function ScrapGoldsPage() {
     const [data, setData] = useState<IScrapGoldTransaction[]>([]);
     const [stats, setStats] = useState<ICountStats>({ new: 0, processed: 0 });
     const [isLoading, setIsLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const [perPage, setPerPage] = useState(20);
     const [lastPage, setLastPage] = useState(1);
     const [totalRecord, setTotalRecord] = useState(0);
     const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
@@ -71,18 +68,19 @@ export default function ScrapGoldsPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
-
+    const { filters, setFilter } = useTableFilters({
+        page: 1,
+        per_page: 20,
+        search: '',
+        status: ''
+    });
     const getData = async () => {
         setIsLoading(true);
-        const search = searchTerm.trim();
-        const page = searchParams.get("page") || currentPage;
-        const perPageParam = searchParams.get("per_page") || perPage;
-
         const params: any = {
-            ...(search ? { search } : {}),
-            ...(statusFilter ? { status: statusFilter } : {}),
-            per_page: perPageParam,
-            page: page,
+            ...(filters.search ? { search: filters.search.trim() } : {}),
+            per_page: filters.per_page,
+            ...(filters.status ? { status: filters.status } : {}),
+            page: filters.page,
         };
 
         try {
@@ -103,23 +101,24 @@ export default function ScrapGoldsPage() {
         }
     };
 
+   
+
     useEffect(() => {
         getData();
-    }, [searchParams, currentPage, perPage, searchTerm, statusFilter]);
+    }, [filters]);
 
-    const handlePageChange = (page: number) => setCurrentPage(page);
-    const handlePerPageChange = (newPerPage: number) => {
-        setPerPage(newPerPage);
-        setCurrentPage(1);
+    const handlePageChange = (page: number) => {
+        setFilter("page", page);
     };
-
-    const handleFilterStatus = (status: string) => {
-        if (statusFilter === status) {
-            setStatusFilter('');
-        } else {
-            setStatusFilter(status);
-        }
-        setCurrentPage(1);
+    
+    const handlePerPageChange = (newPerPage: number) => {
+        setFilter("per_page", newPerPage);
+        setFilter("page", 1);
+    };
+    
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFilter("search", e.target.value);
+        setFilter("page", 1);
     };
 
     const calculateTotal = (items: IScrapDetail[] | undefined, field: 'bruto' | 'netto') => {
@@ -134,6 +133,15 @@ export default function ScrapGoldsPage() {
         setProcessDate(moment().format('YYYY-MM-DD'));
         setViewingMonthDate(new Date());
         setIsProcessModalOpen(true);
+    };
+
+    const handleFilterStatus = (status: string) => {
+        if (filters.status === status) {
+            setFilter("status", '');
+        } else {
+            setFilter("status", status);
+        }
+        setFilter("page", 1);
     };
 
     const handleProcessSubmit = async () => {
@@ -208,8 +216,8 @@ export default function ScrapGoldsPage() {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={(e) => {
-                                // router.push(`/purchasing/scrap-golds/${row.id}`)
-                                window.open(`/purchasing/scrap-golds/${row.id}`, "_blank");
+                                router.push(`/purchasing/scrap-golds/${row.id}`)
+                                // window.open(`/purchasing/scrap-golds/${row.id}`, "_blank");
                             }}
                             title="Lihat Detail"
                             className="p-2 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
@@ -326,7 +334,7 @@ export default function ScrapGoldsPage() {
                 <div
                     onClick={() => handleFilterStatus('1')}
                     className={`bg-white p-4 rounded-xl shadow-sm border border-l-4 border-l-yellow-400 flex items-center justify-between cursor-pointer transition-all hover:shadow-md
-                    ${statusFilter === '1' ? 'ring-2 ring-yellow-400 bg-yellow-50' : 'border-gray-100'}`}
+                    ${filters.status === '1' ? 'ring-2 ring-yellow-400 bg-yellow-50' : 'border-gray-100'}`}
                 >
                     <div>
                         <p className="text-gray-500 text-sm font-medium">New</p>
@@ -340,7 +348,7 @@ export default function ScrapGoldsPage() {
                 <div
                     onClick={() => handleFilterStatus('2')}
                     className={`bg-white p-4 rounded-xl shadow-sm border border-l-4 border-l-emerald-400 flex items-center justify-between cursor-pointer transition-all hover:shadow-md
-                    ${statusFilter === '2' ? 'ring-2 ring-emerald-400 bg-emerald-50' : 'border-gray-100'}`}
+                    ${filters.status === '2' ? 'ring-2 ring-emerald-400 bg-emerald-50' : 'border-gray-100'}`}
                 >
                     <div>
                         <p className="text-gray-500 text-sm font-medium">Diproses</p>
@@ -355,9 +363,8 @@ export default function ScrapGoldsPage() {
             <div className="flex justify-end items-center">
                 <div className="flex gap-2">
                     <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        value={filters.search}
+                        onChange={handleSearch}
                         placeholder="Search..."
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
@@ -379,6 +386,8 @@ export default function ScrapGoldsPage() {
                 lastPage={lastPage}
                 total={totalRecord}
                 loading={isLoading}
+                currentPage={filters.page} 
+                perPage={filters.per_page}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
             />

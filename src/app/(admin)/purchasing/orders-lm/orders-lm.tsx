@@ -16,6 +16,7 @@ import Select from '@/components/form/Select-custom';
 import _ from "lodash";
 import { DollarSign, Download, Loader2 } from "lucide-react";
 import axios from "axios";
+import { useTableFilters } from "@/hooks/useTableFilters";
 
 interface IPurchaseOrder {
     id: number;
@@ -44,19 +45,20 @@ export default function PurchaseOrdersPage() {
 
     const [data, setData] = useState<IPurchaseOrder[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const [currentPage, setCurrentPage] = useState(1);
-    const [perPage, setPerPage] = useState(20);
     const [lastPage, setLastPage] = useState(1);
     const [count, setCount] = useState(0);
-    const [statusFilter, setStatusFilter] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<IPurchaseOrder | null>(null);
     const [modalAction, setModalAction] = useState<ModalAction>(null);
     const [paymentDate, setPaymentDate] = useState(moment().format('YYYY-MM-DD'));
     const [isDownloadLoading, setIsDownloadLoading] = useState(false);
+    const { filters, setFilter } = useTableFilters({
+        page: 1,
+        per_page: 20,
+        search: '',
+        status: ''
+    });
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
         return "Rp " + num.toLocaleString('id-ID');
@@ -77,18 +79,13 @@ export default function PurchaseOrdersPage() {
 
     const getData = async () => {
         setIsLoading(true);
-        const search = searchTerm.trim();
-        const page = searchParams.get("page") || currentPage;
-        const perPageParam = searchParams.get("per_page") || perPage;
-
         const params: any = {
-            ...(search ? { search } : {}),
-            per_page: perPageParam,
-            ...(statusFilter ? { status: statusFilter } : {}),
-            page: page,
+            ...(filters.search ? { search: filters.search.trim() } : {}),
+            per_page: filters.per_page,
+            ...(filters.status ? { status: filters.status } : {}),
+            page: filters.page,
             type: 2
         };
-
         try {
             const response = await httpGet(endpointUrl("purchase/order"), true, params);
             const responseData = response.data.data.data;
@@ -106,17 +103,20 @@ export default function PurchaseOrdersPage() {
 
     useEffect(() => {
         getData();
-    }, [searchParams, currentPage, perPage, searchTerm, statusFilter]);
+    }, [filters]);
 
     const handlePageChange = (page: number) => {
-        setCurrentPage(page);
+        setFilter("page", page);
     };
+    
     const handlePerPageChange = (newPerPage: number) => {
-        setPerPage(newPerPage);
-        setCurrentPage(1);
+        setFilter("per_page", newPerPage);
+        setFilter("page", 1);
     };
+    
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(e.target.value);
+        setFilter("search", e.target.value);
+        setFilter("page", 1);
     };
 
     const handleOpenModal = (order: IPurchaseOrder, action: ModalAction) => {
@@ -222,8 +222,8 @@ export default function PurchaseOrdersPage() {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    window.open(`/purchasing/orders-lm/${row.id}`, "_blank");
-                                    // router.push(`/purchasing/orders-lm/${row.id}`)
+                                    // window.open(`/purchasing/orders-lm/${row.id}`, "_blank");
+                                    router.push(`/purchasing/orders-lm/${row.id}`)
                                 }}
                                 title="Lihat Detail"
                                 className="p-3 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -366,16 +366,17 @@ export default function PurchaseOrdersPage() {
                 <div className="w-48 w-full sm:w-auto">
                     <Select
                         options={statusOptions}
-                        value={_.find(statusOptions, { value: statusFilter })}
-                        onValueChange={(opt) =>
-                            setStatusFilter(opt ? opt.value : "")
-                        }
+                        value={_.find(statusOptions, { value: filters.status })}
+                        onValueChange={(opt) => {
+                            setFilter("status", opt ? opt.value : "");
+                            setFilter("page", 1); 
+                        }}
                         placeholder="Filter Status..."
                     />
                 </div>
                 <input
                     type="text"
-                    value={searchTerm}
+                    value={filters.search}
                     onChange={handleSearch}
                     placeholder="Cari No. Order..."
                     className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -398,6 +399,8 @@ export default function PurchaseOrdersPage() {
                 loading={isLoading}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
+                currentPage={filters.page} 
+                perPage={filters.per_page}
                 // onRowClick={handleRowClick}
             />
 
