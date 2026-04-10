@@ -252,7 +252,7 @@ export default function WorkOrdersPage() {
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     // window.open(`/purchasing/work-orders-lm/${row.id}`, "_blank");
-                                    router.push(`/purchasing/work-orders/${row.id}`)
+                                    router.push(`/purchasing/work-orders-lm/${row.id}`)
                                 }}
                                 title="Lihat Detail"
                                 className="p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"

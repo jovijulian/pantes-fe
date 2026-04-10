@@ -147,6 +147,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
             }
         }
         setCalculatedBayarNett(finalBayar);
+        console.log("Recalculating: ", { "pcs": pcs, "bruto": bruto, "kadar":kadar, "disc":disc, "nominal":nominal, "netto":netto, "finalBayar":finalBayar });
 
     }, [form.weight, form.bruto, form.kadar, form.disc, baseNominal]);
 

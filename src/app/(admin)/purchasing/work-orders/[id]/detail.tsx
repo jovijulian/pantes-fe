@@ -584,9 +584,9 @@ export default function WorkOrderDetailPage() {
 
                                     <tfoot className="bg-gray-100 border-t-2 border-gray-300">
                                         <tr>
-                                            <td colSpan={3} className="px-4 py-3 text-left text-sm font-bold uppercase">Total</td>
+                                            <td colSpan={4} className="px-4 py-3 text-left text-sm font-bold uppercase">Total</td>
                                             <td className="px-4 py-3 text-right text-sm font-bold">{formatGram(totalWeightDiterima)}</td>
-                                            <td colSpan={4}></td>
+                                            <td colSpan={3}></td>
                                             <td className="px-4 py-3 text-right text-sm font-bold">{formatRupiah(totalBayar)}</td>
                                             <td colSpan={4}></td>
                                         </tr>

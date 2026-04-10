@@ -187,6 +187,8 @@ export const menuConfig: Record<string, NavItem[]> = {
       subItems: [
         { name: 'Kartu Stok Rongsok', path: '/purchasing/reports/scrap-gold/stock-cards', roles: [1, 3, 5] },
         { name: 'Stok Akhir Rongsok', path: '/purchasing/reports/scrap-gold/stock-finals', roles: [1, 3, 5] },
+        { name: 'Laporan Pesanan CT Belum Terima', path: '/purchasing/reports/not-received/ct', roles: [1, 3, 5] },
+        { name: 'Laporan Pesanan LM Belum Terima', path: '/purchasing/reports/not-received/lm', roles: [1, 3, 5] },
       ]
     },
     {
