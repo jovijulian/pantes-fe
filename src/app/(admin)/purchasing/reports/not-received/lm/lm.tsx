@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import moment from "moment";
 import { toast } from "react-toastify";
 import _ from "lodash";
@@ -17,6 +17,7 @@ import Table from "@/components/tables/Table";
 import SingleDatePicker from "@/components/common/SingleDatePicker";
 import { endpointUrl, httpGet } from "@/../helpers";
 import axios from "axios";
+import Select from "@/components/form/Select-custom";
 
 interface ILMNotReceived {
     id: number;
@@ -36,6 +37,7 @@ interface ILMNotReceived {
     };
     payment_date: string;
 }
+interface SelectOption { value: string; label: string; }
 
 export default function LMNotReceivedReportPage() {
     const [startDate, setStartDate] = useState(moment().startOf('month').format('YYYY-MM-DD'));
@@ -49,6 +51,35 @@ export default function LMNotReceivedReportPage() {
 
     const [isLoadingReport, setIsLoadingReport] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+
+
+    const [supplierOptions, setSupplierOptions] = useState<SelectOption[]>([]);
+    const [staffOptions, setStaffOptions] = useState<SelectOption[]>([]);
+    const [loadingOptions, setLoadingOptions] = useState(true);
+    const [selectedSupplier, setSelectedSupplier] = useState<string | null>(null);
+    const [selectedStaff, setSelectedStaff] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetchOptions();
+    }, []);
+
+    const fetchOptions = async () => {
+        setLoadingOptions(true);
+        try {
+            const [supplierRes, staffRes] = await Promise.all([
+                httpGet(endpointUrl("master/supplier/dropdown"), true),
+                httpGet(endpointUrl("master/staff/dropdown"), true)
+            ]);
+
+            setSupplierOptions(supplierRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
+            setStaffOptions(staffRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
+
+        } catch (error) {
+            toast.error("Gagal memuat data filter dropdown.");
+        } finally {
+            setLoadingOptions(false);
+        }
+    };
 
     const handleProcess = async () => {
         if (!startDate || !endDate) {
@@ -68,6 +99,13 @@ export default function LMNotReceivedReportPage() {
                 queryParams.append("search", searchQuery);
             }
 
+            if (selectedSupplier) {
+                queryParams.append("supplier_id", selectedSupplier);
+            }
+
+            if (selectedStaff) {
+                queryParams.append("staff_id", selectedStaff);
+            }
             const response = await httpGet(endpointUrl(`report/not-received?${queryParams.toString()}`), true);
 
             if (response.data && response.data.status === 200) {
@@ -257,18 +295,19 @@ export default function LMNotReceivedReportPage() {
 
             <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                 <div className="flex flex-col gap-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
                             <input
                                 type="text"
                                 className="w-full rounded-lg border-gray-300 border px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
-                                placeholder="Cari No Order / Nama..."
+                                placeholder="Ketik untuk mencari..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Awal</label>
                             <SingleDatePicker
@@ -290,6 +329,29 @@ export default function LMNotReceivedReportPage() {
                                 onClearFilter={() => setEndDate("")}
                                 viewingMonthDate={viewingMonthDateEnd}
                                 onMonthChange={setViewingMonthDateEnd}
+                            />
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                            <Select
+                                options={supplierOptions}
+                                value={_.find(supplierOptions, { value: selectedSupplier }) || null}
+                                onValueChange={(opt) => setSelectedSupplier(opt ? opt.value : null)}
+                                placeholder="Semua Supplier"
+                                isClearable disabled={loadingOptions}
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Pemesan</label>
+                            <Select
+                                options={staffOptions}
+                                value={_.find(staffOptions, { value: selectedStaff }) || null}
+                                onValueChange={(opt) => setSelectedStaff(opt ? opt.value : null)}
+                                placeholder="Semua Pemesan"
+                                isClearable disabled={loadingOptions}
                             />
                         </div>
                     </div>
