@@ -54,7 +54,9 @@ interface FormState {
     supplier_id: number | null;
     items: FormItemType[];
     payment_type: FormPaymentType[];
-    cokim: number | null; 
+    cokim: number | null;
+    pph: number;
+    cashback: number;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -88,6 +90,9 @@ interface PurchaseOrderUpdatePayload {
     nominal: number;
     payment_type: PaymentPayload[];
     items: ItemPayload[];
+    pph: number;
+    cashback: number;
+
 }
 
 const paymentMethodOptions: SelectOption[] = [
@@ -124,7 +129,9 @@ export default function EditPurchaseOrderPage() {
         supplier_id: null,
         items: [],
         payment_type: [],
-        cokim: null
+        cokim: null,
+        pph: 0,
+        cashback: 0,
     });
 
     useEffect(() => {
@@ -148,7 +155,6 @@ export default function EditPurchaseOrderPage() {
 
                 setLoadingOptions(false);
 
-                // 2. Fetch Detail Data for Pre-fill
                 if (id) {
                     const detailRes = await httpGet(endpointUrl(`purchase/order/${id}`), true);
                     const d = detailRes.data.data;
@@ -158,9 +164,11 @@ export default function EditPurchaseOrderPage() {
                         staff_id: d.staff_id,
                         supplier_id: d.supplier_id,
                         cokim: d.cokim,
+                        pph: Number(d.pph) || 0,
+                        cashback: Number(d.cashback) || 0,
                         items: d.order_items.map((i: any) => ({
                             id: `item-${i.id}`,
-                            order_item_id: i.id, // Set ID existing item
+                            order_item_id: i.id,
                             item_id: i.item_id,
                             weight: Number(i.weight),
                             pcs: Number(i.pcs),
@@ -168,7 +176,7 @@ export default function EditPurchaseOrderPage() {
                         })),
                         payment_type: d.payment_types.map((p: any) => ({
                             id: `payment-${p.id}`,
-                            order_payment_type_id: p.id, // Set ID existing payment
+                            order_payment_type_id: p.id, 
                             payment_type: p.payment_type,
                             supplier_bank_id: p.supplier_bank_id ? Number(p.supplier_bank_id) : null,
                             bank_id: p.bank_id ? Number(p.bank_id) : null,
@@ -435,7 +443,9 @@ export default function EditPurchaseOrderPage() {
             cokim: formData.cokim ? Number(formData.cokim) : null,
             nominal: totalNominal,
             payment_type: paymentPayload,
-            items: itemsPayload
+            items: itemsPayload,
+            pph: formData.pph,
+            cashback: formData.cashback,
         };
 
         try {
@@ -493,6 +503,30 @@ export default function EditPurchaseOrderPage() {
                                     value={_.find(supplierOptions, { value: formData.supplier_id?.toString() })}
                                     onValueChange={(opt) => handleFieldChange('supplier_id', opt ? parseInt(opt.value) : null)}
                                     placeholder="Pilih supplier..."
+                                />
+                            </div>
+                            <div className="md:col-span-6 space-y-4">
+                                <label className="block font-medium mb-1 dark:text-gray-200">PPH</label>
+                                <Input
+                                    type="text"
+                                    value={`Rp ${(formData.pph || 0).toLocaleString('id-ID')}`}
+                                    className="bg-gray-100"
+                                    onChange={(e) => {
+                                        const raw = e.target.value.replace(/\D/g, "");
+                                        handleFieldChange("pph", Number(raw));
+                                    }}
+                                />
+                            </div>
+                            <div className="md:col-span-6 space-y-4">
+                                <label className="block font-medium mb-1 dark:text-gray-200">Cashback</label>
+                                <Input
+                                    type="text"
+                                    value={`Rp ${(formData.cashback || 0).toLocaleString('id-ID')}`}
+                                    className="bg-gray-100"
+                                    onChange={(e) => {
+                                        const raw = e.target.value.replace(/\D/g, "");
+                                        handleFieldChange("cashback", Number(raw));
+                                    }}
                                 />
                             </div>
                         </div>
@@ -562,27 +596,27 @@ export default function EditPurchaseOrderPage() {
                                                     ) : (
                                                         <>
                                                             <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
-                                                                <Input 
-                                                                    type="text" 
-                                                                    value={payment.account_number} 
-                                                                    onChange={(e) => handlePaymentChange(index, 'account_number', e.target.value)} 
-                                                                    placeholder="Input No. Rekening" 
+                                                                <Input
+                                                                    type="text"
+                                                                    value={payment.account_number}
+                                                                    onChange={(e) => handlePaymentChange(index, 'account_number', e.target.value)}
+                                                                    placeholder="Input No. Rekening"
                                                                 />
                                                             </td>
                                                             <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
-                                                                <Input 
-                                                                    type="text" 
-                                                                    value={payment.account_name} 
-                                                                    onChange={(e) => handlePaymentChange(index, 'account_name', e.target.value)} 
-                                                                    placeholder="Input Atas Nama" 
+                                                                <Input
+                                                                    type="text"
+                                                                    value={payment.account_name}
+                                                                    onChange={(e) => handlePaymentChange(index, 'account_name', e.target.value)}
+                                                                    placeholder="Input Atas Nama"
                                                                 />
                                                             </td>
                                                             <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
-                                                                <Input 
-                                                                    type="text" 
-                                                                    value={payment.notes} 
-                                                                    onChange={(e) => handlePaymentChange(index, 'notes', e.target.value)} 
-                                                                    placeholder="Catatan..." 
+                                                                <Input
+                                                                    type="text"
+                                                                    value={payment.notes}
+                                                                    onChange={(e) => handlePaymentChange(index, 'notes', e.target.value)}
+                                                                    placeholder="Catatan..."
                                                                 />
                                                             </td>
                                                         </>

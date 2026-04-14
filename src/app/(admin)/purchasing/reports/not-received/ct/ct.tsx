@@ -242,7 +242,7 @@ export default function CTNotReceivedReportPage() {
             accessorKey: "cokim",
             cell: ({ row }: { row: ICTNotReceived }) => (
                 <div className="text-sm text-gray-600">
-                    {formatRupiah(row.cokim)}
+                    {formatNumber(row.cokim)}
                 </div>
             )
         },

@@ -244,7 +244,7 @@ export default function LMNotReceivedReportPage() {
             accessorKey: "cokim",
             cell: ({ row }: { row: ILMNotReceived }) => (
                 <div className="text-sm text-gray-600">
-                    {formatRupiah(row.cokim)}
+                    {formatNumber(row.cokim)}
                 </div>
             )
         },

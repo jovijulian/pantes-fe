@@ -63,6 +63,8 @@ interface FormState {
     nominal: number;
     no_order?: string;
     payment_type: FormPaymentType[];
+    pph: number;
+    cashback: number;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -103,6 +105,8 @@ export default function EditPurchaseOrderPage() {
         cokim: 0,
         nominal: 0,
         payment_type: [],
+        pph: 0,
+        cashback: 0,
     });
 
     useEffect(() => {
@@ -156,6 +160,8 @@ export default function EditPurchaseOrderPage() {
                     nominal: Number(data.nominal) || 0,
                     payment_type: mappedPayments,
                     no_order: data.no_order,
+                    pph: Number(data.pph) || 0,
+                    cashback: Number(data.cashback) || 0,
                 });
                 setOriginalPayments(_.cloneDeep(mappedPayments));
 
@@ -410,7 +416,9 @@ export default function EditPurchaseOrderPage() {
                 weight: parseFloat(formData.weight),
                 cokim: formData.cokim,
                 nominal: formData.nominal,
-                payment_type: payloadExisintgPayments
+                payment_type: payloadExisintgPayments,
+                pph: formData.pph,
+                cashback: formData.cashback,
             };
 
             await httpPost(endpointUrl(`/purchase/order/${id}/update`), mainPayload, true);
@@ -491,9 +499,41 @@ export default function EditPurchaseOrderPage() {
                                         <Input type="number" value={formData.cokim} onChange={(e) => handleFieldChange('cokim', e.target.value)} placeholder='0' />
                                     </div>
                                 </div>
+                                {/* <div>
+                                    <label className="block font-medium mb-1">Nominal</label>
+                                    <Input type="text" value={`Rp ${formData.nominal.toLocaleString('id-ID')}`} disabled readOnly className="bg-gray-100" />
+                                </div> */}
+                            </div>
+                            <div className="md:col-span-6 space-y-4">
                                 <div>
                                     <label className="block font-medium mb-1">Nominal</label>
                                     <Input type="text" value={`Rp ${formData.nominal.toLocaleString('id-ID')}`} disabled readOnly className="bg-gray-100" />
+                                </div>
+                                <div>
+                                    <label className="block font-medium mb-1">PPH</label>
+                                    <Input
+                                        type="text"
+                                        value={`Rp ${(formData.pph || 0).toLocaleString('id-ID')}`}
+                                        className="bg-gray-100"
+                                        onChange={(e) => {
+                                            const raw = e.target.value.replace(/\D/g, "");
+                                            handleFieldChange("pph", Number(raw));
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="md:col-span-6 space-y-4">
+                                <div>
+                                    <label className="block font-medium mb-1">Cashback</label>
+                                    <Input
+                                        type="text"
+                                        value={`Rp ${(formData.cashback || 0).toLocaleString('id-ID')}`}
+                                        className="bg-gray-100"
+                                        onChange={(e) => {
+                                            const raw = e.target.value.replace(/\D/g, "");
+                                            handleFieldChange("cashback", Number(raw));
+                                        }}
+                                    />
                                 </div>
                             </div>
                         </div>

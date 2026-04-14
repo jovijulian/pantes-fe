@@ -67,6 +67,8 @@ interface IPurchaseOrderData {
     order_items: IOrderItem[];
     work_order_id: string | number | null;
     work_order: { no_surat_jalan: string } | null;
+    pph: string;
+    cashback: string;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -573,6 +575,13 @@ export default function PurchaseOrderDetailPage() {
                     </div>
 
                     <div className="lg:col-span-2">
+                        <div className="mb-2">
+                            <Section title="Detail Transaksi" icon={<DollarSign />}>
+                                <InfoRow label="PPH" value={formatRupiah(data.pph)} />
+                                <InfoRow label="Cashback" value={formatRupiah(data.cashback)} />
+                            </Section>
+                        </div>
+
                         <div className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg p-5 sticky top-24">
                             <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center gap-2 border-b dark:border-gray-700 pb-2">
                                 <Info className="w-5 h-5" /> Histori & Status

@@ -161,7 +161,7 @@ export default function StockGlobalReportPage() {
     const handleExport = async () => {
         setIsExporting(true);
         const params = buildActiveFilters(appliedFilters);
-
+        params.type = 2;
         try {
             const response = await axios.get(endpointUrl("stock-global/export"), {
                 params,
@@ -211,77 +211,77 @@ export default function StockGlobalReportPage() {
 
     const columns = useMemo(() => [
         {
-          id: "numbering",
-          header: "No",
-          cell: ({ row }: any) => {
-            const index = data.indexOf(row);
-            return <span className="font-medium">{index + 1}</span>;
-          }
+            id: "numbering",
+            header: "No",
+            cell: ({ row }: any) => {
+                const index = data.indexOf(row);
+                return <span className="font-medium">{index + 1}</span>;
+            }
         },
         {
-          id: "code_item",
-          header: "Kode Barang",
-          accessorKey: "code_item",
-          cell: ({ row }: any) => <span className="font-medium">{row.code_item}</span>
+            id: "code_item",
+            header: "Kode Barang",
+            accessorKey: "code_item",
+            cell: ({ row }: any) => <span className="font-medium">{row.code_item}</span>
         },
         {
-          id: "order_date",
-          header: "Tanggal Pesan",
-          accessorKey: "order_date",
-          cell: ({ row }: any) => formatDate(row.order_date)
+            id: "order_date",
+            header: "Tanggal Pesan",
+            accessorKey: "order_date",
+            cell: ({ row }: any) => formatDate(row.order_date)
         },
         {
-          id: "wo_date",
-          header: "Tanggal Surat Jalan",
-          accessorKey: "wo_date",
-          cell: ({ row }: any) => formatDate(row.wo_date)
+            id: "wo_date",
+            header: "Tanggal Surat Jalan",
+            accessorKey: "wo_date",
+            cell: ({ row }: any) => formatDate(row.wo_date)
         },
         {
-          id: "receipt_date",
-          header: "Tanggal Datang",
-          accessorKey: "receipt_date",
-          cell: ({ row }: any) => formatDateTime(row.receipt_date)
+            id: "receipt_date",
+            header: "Tanggal Datang",
+            accessorKey: "receipt_date",
+            cell: ({ row }: any) => formatDateTime(row.receipt_date)
         },
         {
-          id: "deposit_date",
-          header: "Tanggal Setor",
-          accessorKey: "deposit_date",
-          cell: ({ row }: any) => formatDate(row.deposit_date)
+            id: "deposit_date",
+            header: "Tanggal Setor",
+            accessorKey: "deposit_date",
+            cell: ({ row }: any) => formatDate(row.deposit_date)
         },
         {
-          id: "item_type",
-          header: "Jenis Barang",
-          accessorKey: "item_type"
+            id: "item_type",
+            header: "Jenis Barang",
+            accessorKey: "item_type"
         },
         {
-          id: "supplier",
-          header: "Supplier",
-          accessorKey: "supplier"
+            id: "supplier",
+            header: "Supplier",
+            accessorKey: "supplier"
         },
         {
-          id: "orderer",
-          header: "Pemesan",
-          accessorKey: "orderer"
+            id: "orderer",
+            header: "Pemesan",
+            accessorKey: "orderer"
         },
         {
-          id: "weight",
-          header: "Berat",
-          accessorKey: "weight",
-          cell: ({ row }: any) => <span className="text-right block">{formatGram(row.weight)}</span>
+            id: "weight",
+            header: "Berat",
+            accessorKey: "weight",
+            cell: ({ row }: any) => <span className="text-right block">{formatGram(row.weight)}</span>
         },
         {
-          id: "pcs",
-          header: "PCS",
-          accessorKey: "pcs",
-          cell: ({ row }: any) => <span className="text-right block">{row.pcs ?? "-"}</span>
+            id: "pcs",
+            header: "PCS",
+            accessorKey: "pcs",
+            cell: ({ row }: any) => <span className="text-right block">{row.pcs ?? "-"}</span>
         },
         {
-          id: "total_nominal",
-          header: "Total Nominal",
-          accessorKey: "total_nominal",
-          cell: ({ row }: any) => <span className="text-right block">{formatNumber(row.total_nominal)}</span>
+            id: "total_nominal",
+            header: "Total Nominal",
+            accessorKey: "total_nominal",
+            cell: ({ row }: any) => <span className="text-right block">{formatNumber(row.total_nominal)}</span>
         }
-      ], [data]);
+    ], [data]);
 
     return (
         <div className="space-y-4">

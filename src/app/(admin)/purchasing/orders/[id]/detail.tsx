@@ -61,6 +61,8 @@ interface IPurchaseOrderData {
     payment_types: IPaymentType[];
     work_order_id: string | number | null;
     work_order: { no_surat_jalan: string } | null;
+    pph: string;
+    cashback: string;
 }
 
 type ModalAction = 'Validasi' | 'Disetujui' | 'Bayar' | null;
@@ -304,6 +306,8 @@ export default function PurchaseOrderDetailPage() {
                             <InfoRow label="Berat" value={formatGram(data.weight)} />
                             <InfoRow label="Cokim" value={formatCokim(data.cokim)} />
                             <InfoRow label="Total Nominal" value={formatRupiah(data.nominal)} isTotal />
+                            <InfoRow label="PPH" value={formatRupiah(data.pph)} />
+                            <InfoRow label="Cashback" value={formatRupiah(data.cashback)} />
                         </Section>
 
                         <Section title="Rincian Pembayaran" icon={<FileText />}>
@@ -429,8 +433,8 @@ const DetailItem = ({ icon, label, value }: { icon: React.ReactNode, label: stri
 
 const InfoRow = ({ label, value, isTotal = false }: { label: string, value: string | number | React.ReactNode | null, isTotal?: boolean }) => (
     <div className={`flex flex-col sm:flex-row justify-between border-b border-gray-100 py-2 last:border-b-0 ${isTotal ? 'bg-gray-50 -mx-3 px-3' : ''}`}>
-        <span className="text-gray-500 text-sm sm:text-base">{label}</span>
-        <span className={`font-semibold text-gray-800 text-left sm:text-right text-sm sm:text-base ${isTotal ? 'text-lg text-blue-600' : ''}`}>
+        <span className={`${isTotal ? 'font-bold' : ''} text-gray-500 text-sm sm:text-base`}>{label}</span>
+        <span className={`${isTotal ? 'font-bold' : 'font-medium'} text-gray-800 text-left sm:text-right text-sm sm:text-base ${isTotal ? 'text-lg text-blue-600' : ''}`}>
             {value || '-'}
         </span>
     </div>

@@ -52,6 +52,8 @@ interface FormState {
     supplier_id: number | null;
     items: FormItemType[];
     payment_type: FormPaymentType[];
+    pph: number;
+    cashback: number;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -84,6 +86,8 @@ interface PurchaseOrderPayload {
     nominal: number;
     payment_type: PaymentPayload[];
     items: ItemPayload[];
+    pph: number;
+    cashback: number;
 }
 
 const paymentMethodOptions: SelectOption[] = [
@@ -114,6 +118,8 @@ export default function CreatePurchaseOrderPage() {
         supplier_id: null,
         items: [],
         payment_type: [],
+        pph: 0,
+        cashback: 0,
     });
 
     useEffect(() => {
@@ -378,7 +384,9 @@ export default function CreatePurchaseOrderPage() {
             pcs: totalPcs,
             nominal: totalNominal,
             payment_type: paymentPayload,
-            items: itemsPayload
+            items: itemsPayload,
+            pph: formData.pph,
+            cashback: formData.cashback,
         };
 
         try {
@@ -430,6 +438,30 @@ export default function CreatePurchaseOrderPage() {
                                     placeholder="Pilih supplier..."
                                     disabled={loadingOptions}
                                 />
+                            </div>
+                            <div className="md:col-span-6 space-y-4">
+                                <label className="block font-medium mb-1 dark:text-gray-200">PPH</label>
+                                <Input
+                                        type="text"
+                                        value={`Rp ${(formData.pph || 0).toLocaleString('id-ID')}`}
+                                        className="bg-gray-100"
+                                        onChange={(e) => {
+                                            const raw = e.target.value.replace(/\D/g, "");
+                                            handleFieldChange("pph", Number(raw));
+                                        }}
+                                    />
+                            </div>
+                            <div className="md:col-span-6 space-y-4">
+                                <label className="block font-medium mb-1 dark:text-gray-200">Cashback</label>
+                                <Input
+                                        type="text"
+                                        value={`Rp ${(formData.cashback || 0).toLocaleString('id-ID')}`}
+                                        className="bg-gray-100"
+                                        onChange={(e) => {
+                                            const raw = e.target.value.replace(/\D/g, "");
+                                            handleFieldChange("cashback", Number(raw));
+                                        }}
+                                    />
                             </div>
                         </div>
                     </ComponentCard>

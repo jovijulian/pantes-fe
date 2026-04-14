@@ -47,6 +47,8 @@ interface FormState {
     cokim: number;
     nominal: number;
     payment_type: FormPaymentType[];
+    pph: number;
+    cashback: number;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -69,6 +71,8 @@ interface PurchaseOrderPayload {
     cokim: number;
     nominal: number;
     payment_type: PaymentPayload[];
+    pph: number;
+    cashback: number;
 }
 
 const paymentMethodOptions: SelectOption[] = [
@@ -100,6 +104,8 @@ export default function CreatePurchaseOrderPage() {
         cokim: 0,
         nominal: 0,
         payment_type: [],
+        pph: 0,
+        cashback: 0,
     });
 
     useEffect(() => {
@@ -314,6 +320,8 @@ export default function CreatePurchaseOrderPage() {
             cokim: formData.cokim,
             nominal: formData.nominal,
             payment_type: paymentPayload,
+            pph: formData.pph,
+            cashback: formData.cashback,
         };
 
         try {
@@ -383,10 +391,45 @@ export default function CreatePurchaseOrderPage() {
                                         <Input type="number" value={formData.cokim} onChange={(e) => handleFieldChange('cokim', e.target.value)} placeholder='0' />
                                     </div>
                                 </div>
-
+                            </div>
+                            <div className="md:col-span-6 space-y-4">
                                 <div>
                                     <label className="block font-medium mb-1">Nominal</label>
-                                    <Input type="text" value={`Rp ${formData.nominal.toLocaleString('id-ID')}`} disabled readOnly className="bg-gray-100" />
+                                    <Input
+                                        type="text"
+                                        value={`Rp ${formData.nominal.toLocaleString('id-ID')}`}
+                                        disabled
+                                        readOnly
+                                        className="bg-gray-100"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block font-medium mb-1">PPH</label>
+                                    <Input
+                                        type="text"
+                                        value={`Rp ${(formData.pph || 0).toLocaleString('id-ID')}`}
+                                        className="bg-gray-100"
+                                        onChange={(e) => {
+                                            const raw = e.target.value.replace(/\D/g, "");
+                                            handleFieldChange("pph", Number(raw));
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="md:col-span-6 space-y-4">
+                                <div>
+                                    <label className="block font-medium mb-1">Cashback</label>
+                                    <Input
+                                        type="text"
+                                        value={`Rp ${(formData.cashback || 0).toLocaleString('id-ID')}`}
+                                        className="bg-gray-100"
+                                        onChange={(e) => {
+                                            const raw = e.target.value.replace(/\D/g, "");
+                                            handleFieldChange("cashback", Number(raw));
+                                        }}
+                                    />
                                 </div>
                             </div>
                         </div>

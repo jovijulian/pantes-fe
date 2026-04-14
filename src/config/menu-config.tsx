@@ -37,6 +37,7 @@ import {
   BookText,
   Pointer,
   BookOpenCheck,
+  ChartNoAxesCombined,
 } from 'lucide-react';
 import { TbUserDollar } from 'react-icons/tb';
 import { FaTags, FaWpforms } from 'react-icons/fa';
@@ -189,6 +190,18 @@ export const menuConfig: Record<string, NavItem[]> = {
         { name: 'Stok Akhir Rongsok', path: '/purchasing/reports/scrap-gold/stock-finals', roles: [1, 3, 5] },
         { name: 'Laporan Pesanan CT Belum Terima', path: '/purchasing/reports/not-received/ct', roles: [1, 3, 5] },
         { name: 'Laporan Pesanan LM Belum Terima', path: '/purchasing/reports/not-received/lm', roles: [1, 3, 5] },
+      ]
+    },
+    {
+      name: 'Report Manajemen',
+      icon: <ChartNoAxesCombined />,
+      path: '/purchasing/report-directors',
+      roles: [1, 3, 5],
+      subItems: [
+        { name: 'CT', path: '/purchasing/report-directors/ct', roles: [1, 3, 5] },
+        { name: 'LM', path: '/purchasing/report-directors/lm', roles: [1, 3, 5] },
+        { name: 'Rongsok', path: '/purchasing/report-directors/scrap-golds', roles: [1, 3, 5] },
+        { name: 'Faktur', path: '/purchasing/report-directors/facturs', roles: [1, 3, 5] },
       ]
     },
     {
