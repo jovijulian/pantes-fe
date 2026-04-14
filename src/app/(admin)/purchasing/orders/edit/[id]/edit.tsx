@@ -552,9 +552,10 @@ export default function EditPurchaseOrderPage() {
                                             <>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Rekening</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Atas Nama</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+
                                             </>
                                         )}
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>

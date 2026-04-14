@@ -448,9 +448,10 @@ export default function CreatePurchaseOrderPage() {
                                             <>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Rekening</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Atas Nama</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+
                                             </>
                                         )}
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
@@ -526,6 +527,7 @@ export default function CreatePurchaseOrderPage() {
                                                         </>
                                                     )
                                                 )}
+
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
                                                     <Input
                                                         type="text"
@@ -534,6 +536,7 @@ export default function CreatePurchaseOrderPage() {
                                                         placeholder="Catatan..."
                                                     />
                                                 </td>
+
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
                                                     <CurrencyInput
                                                         value={payment.nominal}
