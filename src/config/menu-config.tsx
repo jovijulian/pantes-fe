@@ -38,6 +38,7 @@ import {
   Pointer,
   BookOpenCheck,
   ChartNoAxesCombined,
+  NotebookText,
 } from 'lucide-react';
 import { TbUserDollar } from 'react-icons/tb';
 import { FaTags, FaWpforms } from 'react-icons/fa';
@@ -179,6 +180,12 @@ export const menuConfig: Record<string, NavItem[]> = {
         { name: 'Rongsok', path: '/purchasing/scrap-golds', roles: [1, 3, 5] },
         { name: 'Kirim Rongsok', path: '/purchasing/scrap-golds/sends', roles: [1, 3, 5] },
       ]
+    },
+    {
+      name: 'Faktur',
+      icon: <NotebookText />,
+      roles: [1, 3, 5],
+      path: '/purchasing/invoices',
     },
     {
       name: 'Report View',

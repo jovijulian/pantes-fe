@@ -36,6 +36,7 @@ const rolePermissions: Record<string, string[]> = {
         '/purchasing/stock-global',
         '/purchasing/stock-global-lm',
         '/purchasing/report-directors',
+        '/purchasing/invoices',
      ],
      '4': [
         '/dashboard',
@@ -56,6 +57,7 @@ const rolePermissions: Record<string, string[]> = {
         '/purchasing/report-directors',
         '/purchasing/stock-global',
         '/purchasing/stock-global-lm',
+        '/purchasing/invoices',
     ],
     '6': [
         '/dashboard',

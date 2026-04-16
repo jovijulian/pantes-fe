@@ -44,7 +44,7 @@ const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({
         
         setIsLoading(true);
         try {
-            const res = await httpGet(endpointUrl(`/deposit/item-by-supplier/${supplierId}`), true, {
+            const res = await httpGet(endpointUrl(`/deposit/item-by-supplier`), true, {
                 search: searchTerm,
             });
             

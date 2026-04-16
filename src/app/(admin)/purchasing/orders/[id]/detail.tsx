@@ -50,6 +50,7 @@ interface IPurchaseOrderData {
     weight: string;
     cokim: string;
     nominal: string;
+    dpp_nominal: string;
     status: "1" | "2" | "3" | "4" | string;
     validated_date: string | null;
     approved_date: string | null;
@@ -305,8 +306,9 @@ export default function PurchaseOrderDetailPage() {
                         <Section title="Detail Transaksi" icon={<DollarSign />}>
                             <InfoRow label="Berat" value={formatGram(data.weight)} />
                             <InfoRow label="Cokim" value={formatCokim(data.cokim)} />
-                            <InfoRow label="Total Nominal" value={formatRupiah(data.nominal)} isTotal />
+                            <InfoRow label="Nominal" value={formatRupiah(data.dpp_nominal)} />
                             <InfoRow label="PPH" value={formatRupiah(data.pph)} />
+                            <InfoRow label="Total" value={formatRupiah(data.nominal)} isTotal />
                             <InfoRow label="Cashback" value={formatRupiah(data.cashback)} />
                         </Section>
 

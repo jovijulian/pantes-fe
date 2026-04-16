@@ -195,8 +195,8 @@ export default function CreatePurchaseOrderPage() {
             nominal += (item.nominal || 0) * (item.pcs || 0);
         });
 
-        return { totalWeight: weight, totalPcs: pcs, totalNominal: nominal };
-    }, [formData.items]);
+        return { totalWeight: weight, totalPcs: pcs, totalNominal: nominal + formData.pph };
+    }, [formData.items, formData.pph]);
 
     const { totalPayment, remainingBalance } = useMemo(() => {
         const totalPayment = formData.payment_type.reduce((acc, payment) => acc + (payment.nominal || 0), 0);

@@ -453,6 +453,18 @@ export default function ScrapGoldSendPage() {
                 return <Badge color="info">Unknown</Badge>;
             }
         },
+        {
+            id: "created_at",
+            header: "Dibuat pada",
+            accessorKey: "created_at",
+            cell: ({ row }: any) => <span>{moment(row.created_at).format("DD-MMM-YYYY, HH:mm")}</span>,
+        },
+        {
+            id: "updated_at",
+            header: "Diubah pada",
+            accessorKey: "updated_at",
+            cell: ({ row }: any) => <span>{moment(row.updated_at).format("DD-MMM-YYYY, HH:mm")}</span>,
+        },
     ], [isExporting]);
 
     return (

@@ -168,8 +168,10 @@ export default function CreatePurchaseOrderPage() {
     useEffect(() => {
         const weight = parseFloat(formData.weight) || 0;
         const cokim = formData.cokim || 0;
-        setFormData(prev => ({ ...prev, nominal: weight * cokim }));
-    }, [formData.weight, formData.cokim]);
+        const pph = formData.pph || 0;
+        const formula = (weight * cokim) + pph;
+        setFormData(prev => ({ ...prev, nominal: formula}));
+    }, [formData.weight, formData.cokim, formData.pph]);
 
     const { totalPayment, remainingBalance } = useMemo(() => {
         const totalPayment = formData.payment_type.reduce((acc, payment) => {

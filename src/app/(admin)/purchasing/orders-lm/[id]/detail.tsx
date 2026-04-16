@@ -69,6 +69,7 @@ interface IPurchaseOrderData {
     work_order: { no_surat_jalan: string } | null;
     pph: string;
     cashback: string;
+    dpp_nominal: string;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -360,7 +361,7 @@ export default function PurchaseOrderDetailPage() {
         </div>
     );
 
-    const totalItemNominal = data.order_items?.reduce((sum, item) => sum + Number(item.total_nominal), 0);
+    const totalItemNominal = Number(data.order_items?.reduce((sum, item) => sum + Number(item.total_nominal), 0)) + Number(data.pph);
     const totalPayment = data.payment_types.reduce((sum, p) => sum + Number(p.nominal), 0);
     const remainingBalance = totalItemNominal - totalPayment;
     const isUnbalanced = remainingBalance !== 0;
@@ -534,19 +535,24 @@ export default function PurchaseOrderDetailPage() {
                                 </div>
                             )}
 
-                            <div className="flex justify-end gap-6 p-4 mt-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                <div className="text-right">
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">Total Berat & Pcs</span>
-                                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        {formatGram(data.weight)} ({data.pcs} Pcs)
-                                    </p>
+                            <div className="p-4 mt-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-3">
+                                <div className="flex justify-between text-sm text-gray-500">
+                                    <span>Total Berat & Pcs</span>
+                                    <span>{formatGram(data.weight)} ({data.pcs} Pcs)</span>
                                 </div>
-                                <div className="text-right border-l pl-6 dark:border-gray-700">
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">Total Nominal Item</span>
-                                    <p className="text-lg font-semibold">
-                                        {formatRupiah(totalItemNominal)}
-                                    </p>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-300">Subtotal</span>
+                                    <span className="font-medium">{formatRupiah(data.dpp_nominal)}</span>
                                 </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-300">PPH</span>
+                                    <span className="font-medium">{formatRupiah(data.pph)}</span>
+                                </div>
+                                <div className="border-t pt-3 flex justify-between text-lg font-semibold">
+                                    <span>Total</span>
+                                    <span>{formatRupiah(totalItemNominal)}</span>
+                                </div>
+
                             </div>
                         </Section>
 
