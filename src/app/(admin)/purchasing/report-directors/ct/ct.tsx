@@ -61,7 +61,7 @@ export default function CTReportPage() {
             if (status === "1") {
                 url = "report/not-received";
             } else if (status === "2") {
-                url = "report/undeposited";
+                url = "report/deposited";
             } else if (status === "3") {
                 url = "report/stock-akhir";
             }
@@ -91,7 +91,7 @@ export default function CTReportPage() {
             if (activeTab === "1") {
                 url = "report/not-received/export";
             } else if (activeTab === "2") {
-                url = "report/undeposited/export";
+                url = "report/deposited/export";
             } else if (activeTab === "3") {
                 url = "report/stock-akhir/export";
             }
@@ -147,7 +147,7 @@ export default function CTReportPage() {
 
     const activeTabsList = [
         { id: "1", label: "Belum Terima", icon: Inbox },
-        { id: "2", label: "Belum Setor", icon: Send },
+        { id: "2", label: "Setor", icon: Send },
         { id: "3", label: "Stok Akhir", icon: Archive },
     ] as const;
 
@@ -371,7 +371,7 @@ export default function CTReportPage() {
                     </div>
                     <h3 className="text-xl font-bold text-gray-800 mb-2">Pilih Status Laporan</h3>
                     <p className="text-gray-500 max-w-md">
-                        Silakan klik salah satu tab di atas (<b>Belum Terima</b>, <b>Belum Setor</b>, atau <b>Stok Akhir</b>) untuk menampilkan data rekap laporan.
+                        Silakan klik salah satu tab di atas (<b>Belum Terima</b>, <b>Setor</b>, atau <b>Stok Akhir</b>) untuk menampilkan data rekap laporan.
                     </p>
                 </div>
             ) : (

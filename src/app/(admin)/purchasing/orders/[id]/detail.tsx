@@ -64,6 +64,9 @@ interface IPurchaseOrderData {
     work_order: { no_surat_jalan: string } | null;
     pph: string;
     cashback: string;
+    is_invoice: string | boolean | null;
+    additional_key: string | null;
+    additional_value: string | number | null;
 }
 
 type ModalAction = 'Validasi' | 'Disetujui' | 'Bayar' | null;
@@ -262,7 +265,14 @@ export default function PurchaseOrderDetailPage() {
                 <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6 pb-4 border-b">
                     <div>
                         <span className="text-sm text-gray-500">Purchase Order</span>
-                        <h1 className="text-2xl font-bold text-gray-800">{data.no_order}</h1>
+                        <div className="flex items-center gap-3 mt-1">
+                            <h1 className="text-2xl font-bold text-gray-800">{data.no_order}</h1>
+                            {(data.is_invoice === "1" || data.is_invoice === true) && (
+                                <span className="px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold rounded uppercase flex items-center gap-1 shadow-sm">
+                                    Faktur
+                                </span>
+                            )}
+                        </div>
                     </div>
                     <div className="flex justify-end items-center gap-3">
                         {getStatusBadge(data.status)}
@@ -299,6 +309,7 @@ export default function PurchaseOrderDetailPage() {
                     <DetailItem icon={<Building />} label="Supplier" value={data.supplier.name} />
                     <DetailItem icon={<Calendar />} label="Tanggal PO" value={moment(data.date).format('DD MMMM YYYY')} />
                     <DetailItem icon={<UserCheck />} label="Dibuat Oleh" value={data.created_by.name} />
+
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -310,6 +321,12 @@ export default function PurchaseOrderDetailPage() {
                             <InfoRow label="PPH" value={formatRupiah(data.pph)} />
                             <InfoRow label="Total" value={formatRupiah(data.nominal)} isTotal />
                             <InfoRow label="Cashback" value={formatRupiah(data.cashback)} />
+                            {data.additional_key && (
+                                <InfoRow
+                                    label={data.additional_key}
+                                    value={formatRupiah(data.additional_value)}
+                                />
+                            )}
                         </Section>
 
                         <Section title="Rincian Pembayaran" icon={<FileText />}>

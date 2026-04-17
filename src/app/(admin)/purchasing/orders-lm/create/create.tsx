@@ -54,6 +54,10 @@ interface FormState {
     payment_type: FormPaymentType[];
     pph: number;
     cashback: number;
+    is_invoice: boolean;
+    additional_key: string;
+    additional_value: number;
+    showAdditionalInput: boolean;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -88,6 +92,9 @@ interface PurchaseOrderPayload {
     items: ItemPayload[];
     pph: number;
     cashback: number;
+    is_invoice: boolean;
+    additional_key: string;
+    additional_value: number;
 }
 
 const paymentMethodOptions: SelectOption[] = [
@@ -120,6 +127,10 @@ export default function CreatePurchaseOrderPage() {
         payment_type: [],
         pph: 0,
         cashback: 0,
+        is_invoice: false,
+        additional_key: "",
+        additional_value: 0,
+        showAdditionalInput: false,
     });
 
     useEffect(() => {
@@ -387,6 +398,9 @@ export default function CreatePurchaseOrderPage() {
             items: itemsPayload,
             pph: formData.pph,
             cashback: formData.cashback,
+            is_invoice: formData.is_invoice,
+            additional_key: formData.additional_key,
+            additional_value: formData.additional_value,
         };
 
         try {
@@ -418,6 +432,17 @@ export default function CreatePurchaseOrderPage() {
                                         onMonthChange={setViewingMonthDate}
                                     />
                                 </div>
+                                <div className="w-full md:w-auto pb-2">
+                                    <label className="flex items-center gap-2 cursor-pointer bg-blue-50 border border-blue-100 p-2.5 rounded-lg hover:bg-blue-100 transition-colors">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.is_invoice}
+                                            onChange={(e) => handleFieldChange('is_invoice', e.target.checked)}
+                                            className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                                        />
+                                        <span className="text-sm font-bold text-blue-800">Termasuk Faktur</span>
+                                    </label>
+                                </div>
                             </div>
                             <div className="md:col-span-6 space-y-4">
                                 <label className="block font-medium mb-1 dark:text-gray-200">Pemesan<span className="text-red-400 ml-1">*</span></label>
@@ -429,6 +454,7 @@ export default function CreatePurchaseOrderPage() {
                                     disabled={loadingOptions}
                                 />
                             </div>
+
                             <div className="md:col-span-6 space-y-4">
                                 <label className="block font-medium mb-1 dark:text-gray-200">Supplier<span className="text-red-400 ml-1">*</span></label>
                                 <Select
@@ -442,26 +468,78 @@ export default function CreatePurchaseOrderPage() {
                             <div className="md:col-span-6 space-y-4">
                                 <label className="block font-medium mb-1 dark:text-gray-200">PPH</label>
                                 <Input
-                                        type="text"
-                                        value={`Rp ${(formData.pph || 0).toLocaleString('id-ID')}`}
-                                        className="bg-gray-100"
-                                        onChange={(e) => {
-                                            const raw = e.target.value.replace(/\D/g, "");
-                                            handleFieldChange("pph", Number(raw));
-                                        }}
-                                    />
+                                    type="text"
+                                    value={`Rp ${(formData.pph || 0).toLocaleString('id-ID')}`}
+                                    className="bg-gray-100"
+                                    onChange={(e) => {
+                                        const raw = e.target.value.replace(/\D/g, "");
+                                        handleFieldChange("pph", Number(raw));
+                                    }}
+                                />
                             </div>
                             <div className="md:col-span-6 space-y-4">
                                 <label className="block font-medium mb-1 dark:text-gray-200">Cashback</label>
                                 <Input
-                                        type="text"
-                                        value={`Rp ${(formData.cashback || 0).toLocaleString('id-ID')}`}
-                                        className="bg-gray-100"
-                                        onChange={(e) => {
-                                            const raw = e.target.value.replace(/\D/g, "");
-                                            handleFieldChange("cashback", Number(raw));
-                                        }}
-                                    />
+                                    type="text"
+                                    value={`Rp ${(formData.cashback || 0).toLocaleString('id-ID')}`}
+                                    className="bg-gray-100"
+                                    onChange={(e) => {
+                                        const raw = e.target.value.replace(/\D/g, "");
+                                        handleFieldChange("cashback", Number(raw));
+                                    }}
+                                />
+                            </div>
+                            <div className="md:col-span-6 space-y-4"></div>
+                            <div className="md:col-span-6 space-y-4">
+                                {!formData.showAdditionalInput ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleFieldChange('showAdditionalInput', true)}
+                                        className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1 font-medium w-max"
+                                    >
+                                        <Plus className="w-4 h-4" /> Tambah Keterangan & Nominal
+                                    </button>
+                                ) : (
+                                    <div className="mt-2 p-4 bg-gray-50 border border-gray-200 rounded-xl relative animate-in fade-in slide-in-from-top-2 max-w-full">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                handleFieldChange('showAdditionalInput', false);
+                                                handleFieldChange('additional_key', '');
+                                                handleFieldChange('additional_value', 0);
+                                            }}
+                                            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-50 p-1 rounded-md transition-colors"
+                                            title="Hapus keterangan"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                        <h5 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1 mb-3">
+                                            Info Tambahan
+                                        </h5>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 mb-1">Keterangan</label>
+                                                <Input
+                                                    type="text"
+                                                    value={formData.additional_key}
+                                                    onChange={(e) => handleFieldChange('additional_key', e.target.value)}
+                                                    placeholder="Contoh: Harga dasar LM..."
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 mb-1">Nominal</label>
+                                                <Input
+                                                    type="text"
+                                                    value={`Rp ${(formData.additional_value || 0).toLocaleString('id-ID')}`}
+                                                    onChange={(e) => {
+                                                        const raw = e.target.value.replace(/\D/g, "");
+                                                        handleFieldChange("additional_value", Number(raw));
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </ComponentCard>
@@ -480,10 +558,10 @@ export default function CreatePurchaseOrderPage() {
                                             <>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Rekening</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Atas Nama</th>
-                                               
+
                                             </>
                                         )}
-                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Notes</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Notes</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nominal</th>
                                         <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
                                     </tr>

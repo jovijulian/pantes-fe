@@ -62,7 +62,7 @@ export default function ScrapGoldReportPage() {
             if (status === "1") {
                 url = "report/not-received/scrap-gold";
             } else if (status === "2") {
-                url = "report/undeposited/scrap-gold";
+                url = "report/deposited/scrap-gold";
             } else if (status === "3") {
                 url = "report/scrap-gold-stock-final";
             }
@@ -95,7 +95,7 @@ export default function ScrapGoldReportPage() {
             if (activeTab === "1") {
                 url = "report/not-received/scrap-gold/export";
             } else if (activeTab === "2") {
-                url = "report/undeposited/scrap-gold/export";
+                url = "report/deposited/scrap-gold/export";
             } else if (activeTab === "3") {
                 url = "report/scrap-gold-stock-final/export";
             }
@@ -160,7 +160,7 @@ export default function ScrapGoldReportPage() {
 
     const activeTabsList = [
         { id: "1", label: "Belum Terima", icon: Inbox },
-        { id: "2", label: "Belum Setor", icon: Send },
+        { id: "2", label: "Setor", icon: Send },
         { id: "3", label: "Stok Akhir", icon: Archive },
     ] as const;
 
@@ -354,7 +354,7 @@ export default function ScrapGoldReportPage() {
                     </div>
                     <h3 className="text-xl font-bold text-gray-800 mb-2">Pilih Status Laporan</h3>
                     <p className="text-gray-500 max-w-md">
-                        Silakan klik salah satu tab di atas (<b>Belum Terima</b>, <b>Belum Setor</b>, atau <b>Stok Akhir</b>) untuk menampilkan data rekap laporan Rongsok.
+                        Silakan klik salah satu tab di atas (<b>Belum Terima</b>, <b>Setor</b>, atau <b>Stok Akhir</b>) untuk menampilkan data rekap laporan Rongsok.
                     </p>
                 </div>
             ) : (

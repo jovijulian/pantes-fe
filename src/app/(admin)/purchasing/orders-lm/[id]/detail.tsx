@@ -70,6 +70,9 @@ interface IPurchaseOrderData {
     pph: string;
     cashback: string;
     dpp_nominal: string;
+    is_invoice: string | boolean | null;
+    additional_key: string | null;
+    additional_value: string | number | null;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -372,10 +375,17 @@ export default function PurchaseOrderDetailPage() {
     return (
         <div className="dark:bg-gray-900 min-h-screen pb-10 transition-colors">
             <ComponentCard title="Detail Purchase Order">
-                <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6 pb-4 border-b dark:border-gray-700">
+                <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6 pb-4 border-b">
                     <div>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Purchase Order</span>
-                        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{data.no_order}</h1>
+                        <span className="text-sm text-gray-500">Purchase Order</span>
+                        <div className="flex items-center gap-3 mt-1">
+                            <h1 className="text-2xl font-bold text-gray-800">{data.no_order}</h1>
+                            {(data.is_invoice === "1" || data.is_invoice === true) && (
+                                <span className="px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold rounded uppercase flex items-center gap-1 shadow-sm">
+                                    Faktur
+                                </span>
+                            )}
+                        </div>
                     </div>
                     <div className="flex justify-end items-center gap-3">
                         {getStatusBadge(data.status)}
@@ -585,6 +595,12 @@ export default function PurchaseOrderDetailPage() {
                             <Section title="Detail Transaksi" icon={<DollarSign />}>
                                 <InfoRow label="PPH" value={formatRupiah(data.pph)} />
                                 <InfoRow label="Cashback" value={formatRupiah(data.cashback)} />
+                                {data.additional_key && (
+                                    <InfoRow
+                                        label={data.additional_key}
+                                        value={formatRupiah(data.additional_value)}
+                                    />
+                                )}
                             </Section>
                         </div>
 
