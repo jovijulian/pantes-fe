@@ -39,6 +39,8 @@ interface ICTReport {
     weight?: string;
     cokim?: string;
     supplier?: any;
+    pcs: string;
+    total_nominal?: string;
 }
 
 export default function LMReportPage() {
@@ -63,7 +65,7 @@ export default function LMReportPage() {
             } else if (status === "2") {
                 url = "report/deposited";
             } else if (status === "3") {
-                url = "report/stock-akhir";
+                url = "report/stock-final";
             }
 
             const params = { type: 2 };
@@ -93,7 +95,7 @@ export default function LMReportPage() {
             } else if (activeTab === "2") {
                 url = "report/deposited/export";
             } else if (activeTab === "3") {
-                url = "report/stock-akhir/export";
+                url = "report/stock-final/export";
             }
             const response = await axios.post(
                 endpointUrl(url),
@@ -109,11 +111,18 @@ export default function LMReportPage() {
             const pdfBlob = response.data;
             const blobUrl = URL.createObjectURL(pdfBlob);
             const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
 
-            const tabName = activeTabsList.find(t => t.id === activeTab)?.label.replace(" ", "_").toLowerCase();
-            const filename = `laporan_ct_${tabName}_${moment().format('DDMMYYYY')}.pdf`;
+            let filename = `purchase_order-${moment().format("YYYY-MM-DD")}.pdf`;
 
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
             link.href = blobUrl;
+
             link.download = filename;
             document.body.appendChild(link);
             link.click();
@@ -130,13 +139,14 @@ export default function LMReportPage() {
 
     const summary = useMemo(() => {
         if (!reportData || reportData.length === 0) {
-            return { totalData: 0, totalWeight: 0, totalNominal: 0 };
+            return { totalData: 0, totalWeight: 0, totalNominal: 0, totalPcs: 0 };
         }
         return {
             totalData: reportData.length,
             totalWeight: _.sumBy(reportData, (item) => Number(item.weight || 0)),
+            totalPcs: _.sumBy(reportData, (item) => Number(item.pcs || 0)),
             totalNominal: _.sumBy(reportData, (item) => {
-                if (item.nominal) return Number(item.nominal);
+                if (item.total_nominal) return Number(item.total_nominal);
                 return Number(item.weight || 0) * Number(item.cokim || 0);
             })
         };
@@ -155,23 +165,53 @@ export default function LMReportPage() {
         if (activeTab === "1") {
             return [
                 {
-                    id: "date",
-                    header: "TANGGAL PESAN",
-                    accessorKey: "date",
+                    id: "code_item",
+                    header: "KODE BARANG",
+                    accessorKey: "code_item",
                     cell: ({ row }: { row: ICTReport }) => (
-                        <div className="font-medium text-gray-800">
-                            {row.date ? moment(row.date).format("DD/MM/YYYY") : "-"}
-                        </div>
+                        <span className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">
+                            {row.code_item || "-"}
+                        </span>
                     )
                 },
                 {
-                    id: "no_order",
-                    header: "NO ORDER",
-                    accessorKey: "no_order",
+                    id: "dates",
+                    header: "Tanggal",
+                    cell: ({ row }: { row: any }) => {
+                        const format = (date: string) =>
+                            date ? moment(date).format("DD MMM YYYY") : "-";
+
+                        return (
+                            <div className="text-sm grid grid-cols-1 gap-x-6 gap-y-1 min-w-[200px]">
+                                <div className="flex gap-1">
+                                    <span className="font-semibold ">Pesan:</span>
+                                    <span>{format(row.order_date)}</span>
+                                </div>
+
+                                <div className="flex gap-1">
+                                    <span className="font-semibold ">Surat Jalan:</span>
+                                    <span>{format(row.wo_date)}</span>
+                                </div>
+
+                                <div className="flex gap-1">
+                                    <span className="font-semibold ">Datang:</span>
+                                    <span>{format(row.receipt_date)}</span>
+                                </div>
+
+                                <div className="flex gap-1">
+                                    <span className="font-semibold ">Setor:</span>
+                                    <span>{format(row.deposit_date)}</span>
+                                </div>
+                            </div>
+                        );
+                    }
+                },
+                {
+                    id: "item_type",
+                    header: "JENIS BARANG",
+                    accessorKey: "item_type",
                     cell: ({ row }: { row: ICTReport }) => (
-                        <span className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">
-                            {row.no_order || "-"}
-                        </span>
+                        <span className="text-sm text-gray-600 capitalize">{row.item_type || "-"}</span>
                     )
                 },
                 {
@@ -191,14 +231,6 @@ export default function LMReportPage() {
                     )
                 },
                 {
-                    id: "cokim",
-                    header: "COKIM",
-                    accessorKey: "cokim",
-                    cell: ({ row }: { row: ICTReport }) => (
-                        <div className="text-sm text-gray-600">{row.cokim ? formatNumber(row.cokim) : "-"}</div>
-                    )
-                },
-                {
                     id: "weight",
                     header: "BERAT (GR)",
                     accessorKey: "weight",
@@ -207,47 +239,33 @@ export default function LMReportPage() {
                     )
                 },
                 {
-                    id: "nominal",
-                    header: "NOMINAL",
-                    accessorKey: "nominal",
+                    id: "cokim",
+                    header: "COKIM",
+                    accessorKey: "cokim",
                     cell: ({ row }: { row: ICTReport }) => (
-                        <div className="text-sm font-bold text-emerald-600">{row.nominal ? formatRupiah(row.nominal) : "-"}</div>
+                        <div className="text-sm text-gray-600">{row.cokim ? formatNumber(row.cokim) : "-"}</div>
                     )
                 },
                 {
-                    id: "payment_date",
-                    header: "TGL BAYAR",
-                    accessorKey: "payment_date",
+                    id: "pcs",
+                    header: "PCS",
+                    accessorKey: "pcs",
                     cell: ({ row }: { row: ICTReport }) => (
-                        <div className="font-medium text-gray-800">
-                            {row.payment_date ? moment(row.payment_date).format("DD/MM/YYYY") : "-"}
-                        </div>
+                        <div className="text-sm font-bold text-gray-800">{row.pcs ? row.pcs : "0"}</div>
                     )
-                }
+                },
+                {
+                    id: "total_nominal",
+                    header: "NOMINAL",
+                    accessorKey: "total_nominal",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="text-sm font-bold text-emerald-600">{row.total_nominal ? formatRupiah(row.total_nominal) : "-"}</div>
+                    )
+                },
             ];
         }
 
         return [
-            {
-                id: "order_date",
-                header: "TGL PESAN",
-                accessorKey: "order_date",
-                cell: ({ row }: { row: ICTReport }) => (
-                    <div className="font-medium text-gray-800">
-                        {row.order_date ? moment(row.order_date).format("DD/MM/YYYY") : "-"}
-                    </div>
-                )
-            },
-            {
-                id: "receipt_date",
-                header: "TGL TERIMA",
-                accessorKey: "receipt_date",
-                cell: ({ row }: { row: ICTReport }) => (
-                    <div className="font-medium text-gray-800">
-                        {row.receipt_date ? moment(row.receipt_date).format("DD/MM/YYYY") : "-"}
-                    </div>
-                )
-            },
             {
                 id: "code_item",
                 header: "KODE BARANG",
@@ -258,6 +276,39 @@ export default function LMReportPage() {
                     </span>
                 )
             },
+            {
+                id: "dates",
+                header: "Tanggal",
+                cell: ({ row }: { row: any }) => {
+                    const format = (date: string) =>
+                        date ? moment(date).format("DD MMM YYYY") : "-";
+
+                    return (
+                        <div className="text-sm grid grid-cols-1 gap-x-6 gap-y-1 min-w-[200px]">
+                            <div className="flex gap-1">
+                                <span className="font-semibold ">Pesan:</span>
+                                <span>{format(row.order_date)}</span>
+                            </div>
+
+                            <div className="flex gap-1">
+                                <span className="font-semibold ">Surat Jalan:</span>
+                                <span>{format(row.wo_date)}</span>
+                            </div>
+
+                            <div className="flex gap-1">
+                                <span className="font-semibold ">Datang:</span>
+                                <span>{format(row.receipt_date)}</span>
+                            </div>
+
+                            <div className="flex gap-1">
+                                <span className="font-semibold ">Setor:</span>
+                                <span>{format(row.deposit_date)}</span>
+                            </div>
+                        </div>
+                    );
+                }
+            },
+
             {
                 id: "item_type",
                 header: "JENIS BARANG",
@@ -293,6 +344,14 @@ export default function LMReportPage() {
                 )
             },
             {
+                id: "pcs",
+                header: "PCS",
+                accessorKey: "pcs",
+                cell: ({ row }: { row: ICTReport }) => (
+                    <div className="text-sm font-bold text-gray-800">{row.pcs ? row.pcs : "0"}</div>
+                )
+            },
+            {
                 id: "cokim",
                 header: "COKIM",
                 accessorKey: "cokim",
@@ -301,14 +360,13 @@ export default function LMReportPage() {
                 )
             },
             {
-                id: "sg_scope_xray",
-                header: "SG / SCOPE / X-RAY",
+                id: "total_nominal",
+                header: "NOMINAL",
+                accessorKey: "total_nominal",
                 cell: ({ row }: { row: ICTReport }) => (
-                    <div className="text-xs text-gray-500 font-medium tracking-wide">
-                        <span className="text-gray-800">{row.sg || 0}</span> / <span className="text-gray-800">{row.scope || 0}</span> / <span className="text-gray-800">{row.xray || 0}</span>
-                    </div>
+                    <div className="text-sm font-bold text-emerald-600">{row.total_nominal ? formatRupiah(row.total_nominal) : "-"}</div>
                 )
-            }
+            },
         ];
     }, [activeTab]);
 
@@ -405,18 +463,30 @@ export default function LMReportPage() {
                                 {isLoadingReport ? "..." : formatNumber(summary.totalWeight)} <span className="text-sm font-normal text-orange-500">Gr</span>
                             </h3>
                         </div>
-                        {activeTab !== "2" && (
-                            <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-xl shadow-lg shadow-emerald-200 relative overflow-hidden text-white">
-                                <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-bl-full -mr-6 -mt-6 z-0"></div>
-                                <div className="flex items-center gap-2 mb-1 z-10 relative">
-                                    <Banknote className="w-4 h-4 text-emerald-100" />
-                                    <p className="text-xs font-medium text-emerald-100 uppercase">Total Nominal</p>
-                                </div>
-                                <h3 className="text-2xl font-bold z-10 relative mt-2">
-                                    {isLoadingReport ? "..." : formatRupiah(summary.totalNominal)}
-                                </h3>
+                        <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-xl shadow-lg shadow-blue-200 relative overflow-hidden text-white">
+                            <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-bl-full -mr-6 -mt-6 z-0"></div>
+
+                            <div className="flex items-center gap-2 mb-1 z-10 relative">
+                                <Package className="w-4 h-4 text-blue-100" />
+                                <p className="text-xs font-medium text-blue-100 uppercase">
+                                    Total PCS
+                                </p>
                             </div>
-                        )}
+
+                            <h3 className="text-2xl font-bold z-10 relative mt-2">
+                                {isLoadingReport ? "..." : formatNumber(summary.totalPcs)}
+                            </h3>
+                        </div>
+                        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-xl shadow-lg shadow-emerald-200 relative overflow-hidden text-white">
+                            <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-bl-full -mr-6 -mt-6 z-0"></div>
+                            <div className="flex items-center gap-2 mb-1 z-10 relative">
+                                <Banknote className="w-4 h-4 text-emerald-100" />
+                                <p className="text-xs font-medium text-emerald-100 uppercase">Total Nominal</p>
+                            </div>
+                            <h3 className="text-2xl font-bold z-10 relative mt-2">
+                                {isLoadingReport ? "..." : formatRupiah(summary.totalNominal)}
+                            </h3>
+                        </div>
                     </div>
 
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">

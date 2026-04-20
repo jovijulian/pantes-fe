@@ -208,7 +208,7 @@ export const menuConfig: Record<string, NavItem[]> = {
         { name: 'CT', path: '/purchasing/report-directors/ct', roles: [1, 3, 5] },
         { name: 'LM', path: '/purchasing/report-directors/lm', roles: [1, 3, 5] },
         { name: 'Rongsok', path: '/purchasing/report-directors/scrap-golds', roles: [1, 3, 5] },
-        { name: 'Faktur', path: '/purchasing/report-directors/facturs', roles: [1, 3, 5] },
+        // { name: 'Faktur', path: '/purchasing/report-directors/facturs', roles: [1, 3, 5] },
       ]
     },
     {

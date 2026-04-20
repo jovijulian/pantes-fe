@@ -63,7 +63,7 @@ export default function CTReportPage() {
             } else if (status === "2") {
                 url = "report/deposited";
             } else if (status === "3") {
-                url = "report/stock-akhir";
+                url = "report/stock-final";
             }
 
             const params = { type: 1 };
@@ -93,7 +93,7 @@ export default function CTReportPage() {
             } else if (activeTab === "2") {
                 url = "report/deposited/export";
             } else if (activeTab === "3") {
-                url = "report/stock-akhir/export";
+                url = "report/stock-final/export";
             }
             const response = await axios.post(
                 endpointUrl(url),
@@ -109,11 +109,18 @@ export default function CTReportPage() {
             const pdfBlob = response.data;
             const blobUrl = URL.createObjectURL(pdfBlob);
             const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
 
-            const tabName = activeTabsList.find(t => t.id === activeTab)?.label.replace(" ", "_").toLowerCase();
-            const filename = `laporan_ct_${tabName}_${moment().format('DDMMYYYY')}.pdf`;
+            let filename = `purchase_order-${moment().format("YYYY-MM-DD")}.pdf`;
 
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
             link.href = blobUrl;
+
             link.download = filename;
             document.body.appendChild(link);
             link.click();
@@ -226,90 +233,206 @@ export default function CTReportPage() {
                 }
             ];
         }
+        if (activeTab === "2") {
+            return [
+                {
+                    id: "order_date",
+                    header: "TGL PESAN",
+                    accessorKey: "order_date",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="font-medium text-gray-800">
+                            {row.order_date ? moment(row.order_date).format("DD/MM/YYYY") : "-"}
+                        </div>
+                    )
+                },
+                {
+                    id: "receipt_date",
+                    header: "TGL TERIMA",
+                    accessorKey: "receipt_date",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="font-medium text-gray-800">
+                            {row.receipt_date ? moment(row.receipt_date).format("DD/MM/YYYY") : "-"}
+                        </div>
+                    )
+                },
+                {
+                    id: "code_item",
+                    header: "KODE BARANG",
+                    accessorKey: "code_item",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <span className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">
+                            {row.code_item || "-"}
+                        </span>
+                    )
+                },
+                {
+                    id: "item_type",
+                    header: "JENIS BARANG",
+                    accessorKey: "item_type",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <span className="text-sm text-gray-600 capitalize">{row.item_type || "-"}</span>
+                    )
+                },
+                {
+                    id: "orderer",
+                    header: "PEMESAN",
+                    accessorKey: "orderer",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="text-sm text-gray-600 capitalize">{row.orderer || "-"}</div>
+                    )
+                },
+                {
+                    id: "supplier",
+                    header: "SUPPLIER",
+                    accessorKey: "supplier",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="text-sm text-gray-700 font-medium uppercase">
+                            {typeof row.supplier === 'object' ? row.supplier?.name : (row.supplier || "-")}
+                        </div>
+                    )
+                },
+                {
+                    id: "weight",
+                    header: "BERAT (GR)",
+                    accessorKey: "weight",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="text-sm font-bold text-gray-800">{row.weight ? formatNumber(row.weight) : "0"}</div>
+                    )
+                },
+                {
+                    id: "cokim",
+                    header: "COKIM",
+                    accessorKey: "cokim",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="text-sm text-gray-600">{row.cokim ? formatNumber(row.cokim) : "-"}</div>
+                    )
+                },
+                {
+                    id: "sg_scope_xray",
+                    header: "SG / SCOPE / X-RAY",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="text-xs text-gray-500 font-medium tracking-wide">
+                            <span className="text-gray-800">{row.sg || 0}</span> / <span className="text-gray-800">{row.scope || 0}</span> / <span className="text-gray-800">{row.xray || 0}</span>
+                        </div>
+                    )
+                }
+            ];
+        }
 
-        return [
-            {
-                id: "order_date",
-                header: "TGL PESAN",
-                accessorKey: "order_date",
-                cell: ({ row }: { row: ICTReport }) => (
-                    <div className="font-medium text-gray-800">
-                        {row.order_date ? moment(row.order_date).format("DD/MM/YYYY") : "-"}
-                    </div>
-                )
-            },
-            {
-                id: "receipt_date",
-                header: "TGL TERIMA",
-                accessorKey: "receipt_date",
-                cell: ({ row }: { row: ICTReport }) => (
-                    <div className="font-medium text-gray-800">
-                        {row.receipt_date ? moment(row.receipt_date).format("DD/MM/YYYY") : "-"}
-                    </div>
-                )
-            },
-            {
-                id: "code_item",
-                header: "KODE BARANG",
-                accessorKey: "code_item",
-                cell: ({ row }: { row: ICTReport }) => (
-                    <span className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">
-                        {row.code_item || "-"}
-                    </span>
-                )
-            },
-            {
-                id: "item_type",
-                header: "JENIS BARANG",
-                accessorKey: "item_type",
-                cell: ({ row }: { row: ICTReport }) => (
-                    <span className="text-sm text-gray-600 capitalize">{row.item_type || "-"}</span>
-                )
-            },
-            {
-                id: "orderer",
-                header: "PEMESAN",
-                accessorKey: "orderer",
-                cell: ({ row }: { row: ICTReport }) => (
-                    <div className="text-sm text-gray-600 capitalize">{row.orderer || "-"}</div>
-                )
-            },
-            {
-                id: "supplier",
-                header: "SUPPLIER",
-                accessorKey: "supplier",
-                cell: ({ row }: { row: ICTReport }) => (
-                    <div className="text-sm text-gray-700 font-medium uppercase">
-                        {typeof row.supplier === 'object' ? row.supplier?.name : (row.supplier || "-")}
-                    </div>
-                )
-            },
-            {
-                id: "weight",
-                header: "BERAT (GR)",
-                accessorKey: "weight",
-                cell: ({ row }: { row: ICTReport }) => (
-                    <div className="text-sm font-bold text-gray-800">{row.weight ? formatNumber(row.weight) : "0"}</div>
-                )
-            },
-            {
-                id: "cokim",
-                header: "COKIM",
-                accessorKey: "cokim",
-                cell: ({ row }: { row: ICTReport }) => (
-                    <div className="text-sm text-gray-600">{row.cokim ? formatNumber(row.cokim) : "-"}</div>
-                )
-            },
-            {
-                id: "sg_scope_xray",
-                header: "SG / SCOPE / X-RAY",
-                cell: ({ row }: { row: ICTReport }) => (
-                    <div className="text-xs text-gray-500 font-medium tracking-wide">
-                        <span className="text-gray-800">{row.sg || 0}</span> / <span className="text-gray-800">{row.scope || 0}</span> / <span className="text-gray-800">{row.xray || 0}</span>
-                    </div>
-                )
-            }
-        ];
+        if (activeTab === "3") {
+            return [
+                {
+                    id: "code_item",
+                    header: "Kode Barang",
+                    accessorKey: "code_item",
+                    cell: ({ row }: { row: any }) => (
+                        <span className="text-sm font-mono font-bold text-gray-800">
+                            {row.code_item || "-"}
+                        </span>
+                    )
+                },
+                {
+                    id: "dates",
+                    header: "Tanggal",
+                    cell: ({ row }: { row: any }) => {
+                      const format = (date: string) =>
+                        date ? moment(date).format("DD MMM YYYY") : "-";
+                  
+                      return (
+                        <div className="text-sm grid grid-cols-1 gap-x-6 gap-y-1 min-w-[200px]">
+                          <div className="flex gap-1">
+                            <span className="font-semibold ">Pesan:</span>
+                            <span>{format(row.order_date)}</span>
+                          </div>
+                  
+                          <div className="flex gap-1">
+                            <span className="font-semibold ">Surat Jalan:</span>
+                            <span>{format(row.wo_date)}</span>
+                          </div>
+                  
+                          <div className="flex gap-1">
+                            <span className="font-semibold ">Datang:</span>
+                            <span>{format(row.receipt_date)}</span>
+                          </div>
+                  
+                          <div className="flex gap-1">
+                            <span className="font-semibold ">Setor:</span>
+                            <span>{format(row.deposit_date)}</span>
+                          </div>
+                        </div>
+                      );
+                    }
+                  },
+                {
+                    id: "item_type",
+                    header: "Jenis Barang",
+                    accessorKey: "item_type",
+                    cell: ({ row }: { row: any }) => <div className="text-sm capitalize">{row.item_type || "-"}</div>
+                },
+                {
+                    id: "supplier",
+                    header: "Supplier",
+                    cell: ({ row }: { row: any }) => (
+                        <div className="text-sm uppercase">
+                            {typeof row.supplier === 'object' ? row.supplier?.name : (row.supplier || "-")}
+                        </div>
+                    )
+                },
+                {
+                    id: "orderer",
+                    header: "Pemesan",
+                    cell: ({ row }: { row: any }) => <div className="text-sm capitalize">{row.orderer || row.staff?.name || "-"}</div>
+                },
+                {
+                    id: "weight",
+                    header: "(Grm)",
+                    accessorKey: "weight",
+                    cell: ({ row }: { row: any }) => <div className="text-sm font-bold">{row.weight ? formatNumber(row.weight) : "0"}</div>
+                },
+                {
+                    id: "setor",
+                    header: "Setor",
+                    // Asumsi key: setor_weight atau weight_deposit
+                    accessorKey: "weight_deposit",
+                    cell: ({ row }: { row: any }) => <div className="text-sm">{row.weight_deposit ? formatNumber(row.weight_deposit) : "-"}</div>
+                },
+                {
+                    id: "cokim",
+                    header: "Cokim",
+                    accessorKey: "cokim",
+                    cell: ({ row }: { row: any }) => <div className="text-sm">{row.cokim ? formatNumber(row.cokim) : "-"}</div>
+                },
+                {
+                    id: "sg_scope_xray",
+                    header: "SG / SCOPE / X-RAY",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="text-xs text-gray-500 font-medium tracking-wide">
+                            <span className="text-gray-800">{row.sg || 0}</span> / <span className="text-gray-800">{row.scope || 0}</span> / <span className="text-gray-800">{row.xray || 0}</span>
+                        </div>
+                    )
+                },
+                // {
+                //     id: "sg",
+                //     header: "SG",
+                //     accessorKey: "sg",
+                //     cell: ({ row }: { row: any }) => <div className="text-sm">{row.sg || 0}</div>
+                // },
+                // {
+                //     id: "scope",
+                //     header: "Scope",
+                //     accessorKey: "scope",
+                //     cell: ({ row }: { row: any }) => <div className="text-sm">{row.scope || 0}</div>
+                // },
+                // {
+                //     id: "xray",
+                //     header: "XRay",
+                //     accessorKey: "xray",
+                //     cell: ({ row }: { row: any }) => <div className="text-sm">{row.xray || 0}</div>
+                // }
+            ];
+        }
+
+        return [];
     }, [activeTab]);
 
     return (
