@@ -194,59 +194,37 @@ export default function DepositsPage() {
                 },
             },
             {
-                id: "invoice_number",
-                header: "No. Faktur",
-                accessorKey: "invoice_number",
-                cell: ({ row }: any) => (
-                    <span className="font-medium">{row.invoice_number}</span>
-                ),
-            },
-            {
                 id: "no_order",
                 header: "No. Order",
                 accessorKey: "no_order",
-            },
-            {
-                id: "order_date",
-                header: "Tanggal Order",
                 cell: ({ row }: any) => (
-                    <span>
-                        {moment(row.order?.date).format("DD MMM YYYY")}
-                    </span>
-                ),
-            },
-
-            {
-                id: "invoice_date",
-                header: "Tanggal Faktur",
-                cell: ({ row }: any) => (
-                    <span>
-                        {moment(row.invoice_date).format("DD MMM YYYY")}
-                    </span>
+                    <span className="font-medium">{row.no_order}</span>
                 ),
             },
             {
-                id: "withholding_tax_slip_number",
-                header: "No. Bukti Potong",
-                accessorKey: "withholding_tax_slip_number",
+                id: "name_supplier",
+                header: "Nama Supplier",
+                accessorKey: "name_supplier",
+                cell: ({ row }: any) => (
+                    <span className="">{row.name_supplier}</span>
+                ),
             },
             {
-                id: "withholding_tax_slip_date",
-                header: "Tanggal Bukti Potong",
+                id: "date",
+                header: "Tanggal",
                 cell: ({ row }: any) => (
                     <span>
-                        {moment(row.withholding_tax_slip_date).format("DD MMM YYYY")}
+                        {moment(row.date).format("DD MMM YYYY")}
                     </span>
                 ),
             },
-
             // 💰 DPP
             {
                 id: "dpp",
                 header: "DPP",
                 cell: ({ row }: any) => (
                     <span>
-                        {formatRupiah(row.order?.dpp_nominal)}
+                        {formatRupiah(row.dpp_nominal)}
                     </span>
                 ),
             },
@@ -256,6 +234,15 @@ export default function DepositsPage() {
                 cell: ({ row }: any) => (
                     <span>
                         {formatRupiah(row.pph)}
+                    </span>
+                ),
+            },
+            {
+                id: "nominal",
+                header: "Nominal",
+                cell: ({ row }: any) => (
+                    <span>
+                        {formatRupiah(row.nominal)}
                     </span>
                 ),
             },

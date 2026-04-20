@@ -67,6 +67,7 @@ interface IPurchaseOrderData {
     is_invoice: string | boolean | null;
     additional_key: string | null;
     additional_value: string | number | null;
+    pcs: number;
 }
 
 type ModalAction = 'Validasi' | 'Disetujui' | 'Bayar' | null;
@@ -315,6 +316,7 @@ export default function PurchaseOrderDetailPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                     <div className="lg:col-span-3 space-y-6">
                         <Section title="Detail Transaksi" icon={<DollarSign />}>
+                            <InfoRow label="PCS" value={formatCokim(data.pcs)} />
                             <InfoRow label="Berat" value={formatGram(data.weight)} />
                             <InfoRow label="Cokim" value={formatCokim(data.cokim)} />
                             <InfoRow label="Nominal" value={formatRupiah(data.dpp_nominal)} />

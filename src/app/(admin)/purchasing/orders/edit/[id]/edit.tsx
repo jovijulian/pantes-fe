@@ -69,6 +69,7 @@ interface FormState {
     additional_key: string;
     additional_value: number;
     showAdditionalInput: boolean;
+    pcs: number;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -115,6 +116,7 @@ export default function EditPurchaseOrderPage() {
         additional_key: "",
         additional_value: 0,
         showAdditionalInput: false,
+        pcs: 1,
     });
 
     useEffect(() => {
@@ -174,6 +176,7 @@ export default function EditPurchaseOrderPage() {
                     additional_key: data.additional_key || "",
                     additional_value: Number(data.additional_value) || 0,
                     showAdditionalInput: !!data.additional_key,
+                    pcs: Number(data.pcs) || 1,
                 });
                 setOriginalPayments(_.cloneDeep(mappedPayments));
 
@@ -436,6 +439,7 @@ export default function EditPurchaseOrderPage() {
                 is_invoice: formData.is_invoice,
                 additional_key: formData.additional_key,
                 additional_value: formData.additional_value,
+                pcs: Number(formData.pcs),
             };
 
             await httpPost(endpointUrl(`/purchase/order/${id}/update`), mainPayload, true);
@@ -612,6 +616,10 @@ export default function EditPurchaseOrderPage() {
                                             handleFieldChange("cashback", Number(raw));
                                         }}
                                     />
+                                </div>
+                                <div>
+                                    <label className="block font-medium mb-1">PCS</label>
+                                    <Input type="number" value={formData.pcs} onChange={(e) => handleFieldChange('pcs', e.target.value)} placeholder='1' />
                                 </div>
                             </div>
                         </div>
