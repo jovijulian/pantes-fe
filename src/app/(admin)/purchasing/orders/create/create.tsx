@@ -513,10 +513,10 @@ export default function CreatePurchaseOrderPage() {
                                         }}
                                     />
                                 </div>
-                                <div>
+                                {/* <div>
                                     <label className="block font-medium mb-1">PCS</label>
                                     <Input type="number" value={formData.pcs} onChange={(e) => handleFieldChange('pcs', e.target.value)} placeholder='1' />
-                                </div>
+                                </div> */}
                             </div>
                         </div>
                     </ComponentCard>

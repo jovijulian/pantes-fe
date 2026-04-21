@@ -28,6 +28,7 @@ interface IOrder {
     validated_date?: string | null;
     approved_date?: string | null;
     status?: string;
+
 }
 
 interface IInvoiceDetail {
@@ -44,6 +45,9 @@ interface IPaymentTypeInvoice {
     payment_type_id: number;
     payment_type: string;
     invoices: IInvoiceDetail[];
+    notes: string;
+    name: string;
+    number: string;
 }
 
 interface IInvoiceData {
@@ -272,20 +276,44 @@ export default function InvoiceDetailPage() {
                         if (!payment.invoices || payment.invoices.length === 0) return null;
                         return payment.invoices.map((invoice, invIndex) => (
                             <div key={invoice.invoice_id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                                <div className="bg-blue-50/50 border-b border-gray-100 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    <div className="flex items-center gap-3">
+                                <div className="bg-blue-50/50 border-b border-gray-100 p-4">
+                                    <div className="grid md:grid-cols-2 gap-4 items-start">
                                         <div>
-                                            <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">
+                                            <p className="text-xs font-bold text-blue-700 uppercase tracking-wider mb-2">
                                                 Jenis Pembayaran: {payment.payment_type}
                                             </p>
-                                            <p className="text-sm font-medium text-gray-600 mt-0.5 flex items-center gap-1">
-                                                Faktur Tgl: {formatDate(invoice.invoice_date, true)}
-                                            </p>
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-4 text-sm text-gray-600">
+                                                <p>
+                                                    <span className="font-medium text-gray-500">Nama Akun:</span><br />
+                                                    {payment.name}
+                                                </p>
+                                                <p>
+                                                    <span className="font-medium text-gray-500">Nomor Akun:</span><br />
+                                                    {payment.number}
+                                                </p>
+                                                <p>
+                                                    <span className="font-medium text-gray-500">Catatan:</span><br />
+                                                    {payment.notes || '-'}
+                                                </p>
+                                                <p>
+                                                    <span className="font-medium text-gray-500">Faktur Tgl:</span><br />
+                                                    {formatDate(invoice.invoice_date, false)}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="text-left md:text-right">
-                                        <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nominal Faktur</p>
-                                        <p className="text-lg font-black text-blue-700">{formatRupiah(invoice.invoice_nominal)}</p>
+
+                                        <div className="flex md:justify-end">
+                                            <div className="px-4 py-3 text-left md:text-right ">
+                                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                                    Nominal Faktur
+                                                </p>
+                                                <p className="text-xl font-black text-blue-700 mt-1">
+                                                    {formatRupiah(invoice.invoice_nominal)}
+                                                </p>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
                                 <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-8">
