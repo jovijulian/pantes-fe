@@ -337,7 +337,7 @@ export default function DepositsPage() {
                         type="text"
                         value={filters.search}
                         onChange={handleSearch}
-                        placeholder="Cari Faktur..."
+                        placeholder="Cari No. Order..."
                         className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <button

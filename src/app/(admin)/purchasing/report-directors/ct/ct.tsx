@@ -15,11 +15,15 @@ import {
     Send,
     Archive,
     MousePointerClick,
-    Diamond
+    Diamond,
+    FileClock
 } from "lucide-react";
 import Table from "@/components/tables/Table";
 import { endpointUrl, httpGet } from "@/../helpers";
 import axios from "axios";
+import { useRouter } from "next/navigation";
+import { FaEye } from "react-icons/fa";
+import { useTableFilters } from "@/hooks/useTableFilters";
 
 interface ICTReport {
     id?: number;
@@ -43,16 +47,27 @@ interface ICTReport {
 }
 
 export default function CTReportPage() {
-    const [activeTab, setActiveTab] = useState<"1" | "2" | "3" | null>(null);
+    const [activeTab, setActiveTab] = useState<"1" | "2" | "3" | "4" | null>(null);
     const [reportData, setReportData] = useState<ICTReport[]>([]);
     const [isLoadingReport, setIsLoadingReport] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [notInvoice, setNotInvoice] = useState(0);
+    const [lastPage, setLastPage] = useState(1);
+    const [count, setCount] = useState(0);
+    const router = useRouter();
+    const DEFAULT_FILTERS = {
+        page: 1,
+        per_page: 20,
+        search: '',
+        status: ''
+    };
 
+    const { filters, setFilter } = useTableFilters(DEFAULT_FILTERS);
     useEffect(() => {
         if (activeTab) {
             fetchData(activeTab);
         }
-    }, [activeTab]);
+    }, [activeTab, filters]);
 
     const fetchData = async (status: string) => {
         setIsLoadingReport(true);
@@ -65,13 +80,35 @@ export default function CTReportPage() {
                 url = "report/deposited";
             } else if (status === "3") {
                 url = "report/stock-final";
+            } else if (status === "4") {
+                url = "invoice-order?is_invoice=0";
             }
 
-            const params = { type: 1 };
+            let params: any = {};
+            if (status === "4") {
+                params = {
+                    ...(filters.search ? { search: filters.search.trim() } : {}),
+                    per_page: filters.per_page,
+                    page: filters.page,
+                    type: 1,
+                }
+            } else {
+                params = {
+                    type: 1,
+                };
+            }
             const response = await httpGet(endpointUrl(url), true, params);
 
             if (response.data && response.data.status === 200) {
-                setReportData(response.data.data || []);
+                if (status === "4") {
+                    const data = response.data.data.data || [];
+                    setReportData(data);
+                    setNotInvoice(response.data.data.page_info.total_record);
+                    setCount(response.data.data.page_info.total_record);
+                    setLastPage(response.data.data.page_info.total_pages);
+                } else {
+                    setReportData(response.data.data || []);
+                }
             } else {
                 toast.error(response.data.message || "Gagal memuat laporan.");
             }
@@ -158,6 +195,7 @@ export default function CTReportPage() {
         { id: "1", label: "Belum Terima", icon: Inbox },
         { id: "2", label: "Setor", icon: Send },
         { id: "3", label: "Stok Akhir", icon: Archive },
+        { id: "4", label: "Belum Faktur", icon: FileClock },
     ] as const;
 
     const columns = useMemo(() => {
@@ -337,34 +375,34 @@ export default function CTReportPage() {
                     id: "dates",
                     header: "Tanggal",
                     cell: ({ row }: { row: any }) => {
-                      const format = (date: string) =>
-                        date ? moment(date).format("DD MMM YYYY") : "-";
-                  
-                      return (
-                        <div className="text-sm grid grid-cols-1 gap-x-6 gap-y-1 min-w-[200px]">
-                          <div className="flex gap-1">
-                            <span className="font-semibold ">Pesan:</span>
-                            <span>{format(row.order_date)}</span>
-                          </div>
-                  
-                          <div className="flex gap-1">
-                            <span className="font-semibold ">Surat Jalan:</span>
-                            <span>{format(row.wo_date)}</span>
-                          </div>
-                  
-                          <div className="flex gap-1">
-                            <span className="font-semibold ">Datang:</span>
-                            <span>{format(row.receipt_date)}</span>
-                          </div>
-                  
-                          <div className="flex gap-1">
-                            <span className="font-semibold ">Setor:</span>
-                            <span>{format(row.deposit_date)}</span>
-                          </div>
-                        </div>
-                      );
+                        const format = (date: string) =>
+                            date ? moment(date).format("DD MMM YYYY") : "-";
+
+                        return (
+                            <div className="text-sm grid grid-cols-1 gap-x-6 gap-y-1 min-w-[200px]">
+                                <div className="flex gap-1">
+                                    <span className="font-semibold ">Pesan:</span>
+                                    <span>{format(row.order_date)}</span>
+                                </div>
+
+                                <div className="flex gap-1">
+                                    <span className="font-semibold ">Surat Jalan:</span>
+                                    <span>{format(row.wo_date)}</span>
+                                </div>
+
+                                <div className="flex gap-1">
+                                    <span className="font-semibold ">Datang:</span>
+                                    <span>{format(row.receipt_date)}</span>
+                                </div>
+
+                                <div className="flex gap-1">
+                                    <span className="font-semibold ">Setor:</span>
+                                    <span>{format(row.deposit_date)}</span>
+                                </div>
+                            </div>
+                        );
                     }
-                  },
+                },
                 {
                     id: "item_type",
                     header: "Jenis Barang",
@@ -433,9 +471,107 @@ export default function CTReportPage() {
                 // }
             ];
         }
+        if (activeTab === "4") {
+            return [
+                {
+                    id: "action",
+                    header: "Aksi",
+                    cell: ({ row }: { row: any }) => {
+                        const data = row;
+
+                        const handleClick = (e: any) => {
+                            e.stopPropagation();
+                            router.push(`/purchasing/orders/${data.id}`);
+                        };
+                        return (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={handleClick}
+                                    className="p-2 rounded-md bg-gray-100 hover:bg-gray-200"
+                                >
+                                    <FaEye className="w-4 h-4" />
+                                </button>
+                            </div>
+                        );
+                    },
+                },
+                {
+                    id: "no_order",
+                    header: "No. Order",
+                    accessorKey: "no_order",
+                    cell: ({ row }: any) => (
+                        <span className="font-medium">{row.no_order}</span>
+                    ),
+                },
+                {
+                    id: "name_supplier",
+                    header: "Nama Supplier",
+                    accessorKey: "name_supplier",
+                    cell: ({ row }: any) => {
+                        const data = row;
+                        return (
+                            <span>
+                                {data?.supplier?.name}
+                            </span>
+                        );
+                    }
+                },
+                {
+                    id: "date",
+                    header: "Tanggal",
+                    cell: ({ row }: any) => (
+                        <span>
+                            {moment(row.date).format("DD MMM YYYY")}
+                        </span>
+                    ),
+                },
+                // 💰 DPP
+                {
+                    id: "dpp",
+                    header: "DPP",
+                    cell: ({ row }: any) => (
+                        <span>
+                            {formatRupiah(row.dpp_nominal)}
+                        </span>
+                    ),
+                },
+                {
+                    id: "pph",
+                    header: "PPH",
+                    cell: ({ row }: any) => (
+                        <span>
+                            {formatRupiah(row.pph)}
+                        </span>
+                    ),
+                },
+                {
+                    id: "nominal",
+                    header: "Nominal",
+                    cell: ({ row }: any) => (
+                        <span>
+                            {formatRupiah(row.nominal)}
+                        </span>
+                    ),
+                },
+            ];
+        }
 
         return [];
-    }, [activeTab]);
+    }, [activeTab, router]);
+
+    const handlePageChange = (page: number) => {
+        setFilter("page", page);
+    };
+
+    const handlePerPageChange = (newPerPage: number) => {
+        setFilter("per_page", newPerPage);
+        setFilter("page", 1);
+    };
+    const clearFilters = () => {
+        setFilter("search", '');
+        setFilter("page", 1);
+        setFilter("per_page", 20);
+    }
 
     return (
         <div className="space-y-6">
@@ -447,25 +583,29 @@ export default function CTReportPage() {
                     </h1>
                     <p className="text-gray-500 text-sm mt-1">Pilih status di bawah untuk melihat laporan instan.</p>
                 </div>
-
-                <button
-                    onClick={handleExport}
-                    disabled={isExporting || reportData.length === 0 || isLoadingReport || !activeTab}
-                    className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm transition-all disabled:opacity-50"
-                >
-                    {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 text-red-500" />}
-                    Export PDF
-                </button>
+                {activeTab !== "4" && (
+                    <button
+                        onClick={handleExport}
+                        disabled={isExporting || reportData.length === 0 || isLoadingReport || !activeTab}
+                        className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm transition-all disabled:opacity-50"
+                    >
+                        {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 text-red-500" />}
+                        Export PDF
+                    </button>
+                )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
                 {activeTabsList.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
                     return (
                         <button
                             key={tab.id}
-                            onClick={() => setActiveTab(tab.id as "1" | "2" | "3")}
+                            onClick={() => {
+                                setActiveTab(tab.id as "1" | "2" | "3" | "4");
+                                clearFilters();
+                            }}
                             disabled={isLoadingReport}
                             className={`
                                 relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl transition-all duration-200 outline-none
@@ -496,53 +636,74 @@ export default function CTReportPage() {
                     </div>
                     <h3 className="text-xl font-bold text-gray-800 mb-2">Pilih Status Laporan</h3>
                     <p className="text-gray-500 max-w-md">
-                        Silakan klik salah satu tab di atas (<b>Belum Terima</b>, <b>Setor</b>, atau <b>Stok Akhir</b>) untuk menampilkan data rekap laporan.
+                        Silakan klik salah satu tab di atas (<b>Belum Terima</b>, <b>Setor</b>, <b>Stok Akhir</b> atau <b>Belum Faktur</b>) untuk menampilkan data rekap laporan.
                     </p>
                 </div>
             ) : (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div
-                        className={`grid grid-cols-1 gap-4 ${activeTab === "2" ? "md:grid-cols-2" : "md:grid-cols-3"
-                            }`}
-                    >
-                        <div className="bg-white p-4 rounded-xl border border-blue-100 shadow-sm relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
-                            <div className="flex items-center gap-2 mb-1 z-10 relative">
-                                <div className="p-1 bg-blue-100 text-blue-600 rounded-full">
-                                    <Hash className="w-4 h-4" />
-                                </div>
-                                <p className="text-xs font-medium text-blue-600 uppercase">Total Data</p>
-                            </div>
-                            <h3 className="text-2xl font-bold text-blue-700 z-10 relative mt-2">
-                                {isLoadingReport ? "..." : summary.totalData} <span className="text-sm font-normal text-blue-500">Data</span>
-                            </h3>
-                        </div>
-
-                        <div className="bg-white p-4 rounded-xl border border-orange-100 shadow-sm relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-orange-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
-                            <div className="flex items-center gap-2 mb-1 z-10 relative">
-                                <div className="p-1 bg-orange-100 text-orange-600 rounded-full">
-                                    <Package className="w-4 h-4" />
-                                </div>
-                                <p className="text-xs font-medium text-orange-600 uppercase">Total Berat</p>
-                            </div>
-                            <h3 className="text-2xl font-bold text-orange-700 z-10 relative mt-2">
-                                {isLoadingReport ? "..." : formatNumber(summary.totalWeight)} <span className="text-sm font-normal text-orange-500">Gr</span>
-                            </h3>
-                        </div>
-                        {activeTab !== "2" && (
-                            <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-xl shadow-lg shadow-emerald-200 relative overflow-hidden text-white">
-                                <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-bl-full -mr-6 -mt-6 z-0"></div>
+                    {activeTab !== "4" && (
+                        <div
+                            className={`grid grid-cols-1 gap-4 ${activeTab === "2" ? "md:grid-cols-2" : "md:grid-cols-3"
+                                }`}
+                        >
+                            <div className="bg-white p-4 rounded-xl border border-blue-100 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
                                 <div className="flex items-center gap-2 mb-1 z-10 relative">
-                                    <Diamond className="w-4 h-4 text-emerald-100" />
-                                    <p className="text-xs font-medium text-emerald-100 uppercase">Total Cokim</p>
+                                    <div className="p-1 bg-blue-100 text-blue-600 rounded-full">
+                                        <Hash className="w-4 h-4" />
+                                    </div>
+                                    <p className="text-xs font-medium text-blue-600 uppercase">Total Data</p>
                                 </div>
-                                <h3 className="text-2xl font-bold z-10 relative mt-2">
-                                    {isLoadingReport ? "..." : formatNumber(summary.totalCokim)}
+                                <h3 className="text-2xl font-bold text-blue-700 z-10 relative mt-2">
+                                    {isLoadingReport ? "..." : summary.totalData} <span className="text-sm font-normal text-blue-500">Data</span>
                                 </h3>
                             </div>
-                        )}
-                    </div>
+
+                            <div className="bg-white p-4 rounded-xl border border-orange-100 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-orange-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
+                                <div className="flex items-center gap-2 mb-1 z-10 relative">
+                                    <div className="p-1 bg-orange-100 text-orange-600 rounded-full">
+                                        <Package className="w-4 h-4" />
+                                    </div>
+                                    <p className="text-xs font-medium text-orange-600 uppercase">Total Berat</p>
+                                </div>
+                                <h3 className="text-2xl font-bold text-orange-700 z-10 relative mt-2">
+                                    {isLoadingReport ? "..." : formatNumber(summary.totalWeight)} <span className="text-sm font-normal text-orange-500">Gr</span>
+                                </h3>
+                            </div>
+                            {activeTab !== "2" && (
+                                <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-xl shadow-lg shadow-emerald-200 relative overflow-hidden text-white">
+                                    <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-bl-full -mr-6 -mt-6 z-0"></div>
+                                    <div className="flex items-center gap-2 mb-1 z-10 relative">
+                                        <Diamond className="w-4 h-4 text-emerald-100" />
+                                        <p className="text-xs font-medium text-emerald-100 uppercase">Total Cokim</p>
+                                    </div>
+                                    <h3 className="text-2xl font-bold z-10 relative mt-2">
+                                        {isLoadingReport ? "..." : formatNumber(summary.totalCokim)}
+                                    </h3>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === "4" && (
+                        <div
+                            className={`grid grid-cols-1 gap-4`}
+                        >
+                            <div className="bg-white p-4 rounded-xl border border-blue-100 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
+                                <div className="flex items-center gap-2 mb-1 z-10 relative">
+                                    <div className="p-1 bg-blue-100 text-blue-600 rounded-full">
+                                        <Hash className="w-4 h-4" />
+                                    </div>
+                                    <p className="text-xs font-medium text-blue-600 uppercase">Total Belum Faktur</p>
+                                </div>
+                                <h3 className="text-2xl font-bold text-blue-700 z-10 relative mt-2">
+                                    {isLoadingReport ? "..." : notInvoice} <span className="text-sm font-normal text-blue-500">Data</span>
+                                </h3>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                         {isLoadingReport && (
@@ -555,6 +716,14 @@ export default function CTReportPage() {
                         <Table
                             data={reportData}
                             columns={columns}
+                            pagination={activeTab === "4" ? true : false}
+                            lastPage={activeTab === "4" ? lastPage : undefined}
+                            total={activeTab === "4" ? count : undefined}
+                            onPageChange={handlePageChange}
+                            onPerPageChange={handlePerPageChange}
+                            // onRowClick={handleRowClick}
+                            currentPage={filters.page}
+                            perPage={filters.per_page}
                         />
                     </div>
                 </div>
