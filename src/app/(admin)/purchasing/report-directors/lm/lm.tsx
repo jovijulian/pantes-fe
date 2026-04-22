@@ -435,8 +435,7 @@ export default function LMReportPage() {
             ) : (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div
-                        className={`grid grid-cols-1 gap-4 ${activeTab === "2" ? "md:grid-cols-2" : "md:grid-cols-3"
-                            }`}
+                        className={`grid grid-cols-1 gap-4 md:grid-cols-2`}
                     >
                         <div className="bg-white p-4 rounded-xl border border-blue-100 shadow-sm relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>

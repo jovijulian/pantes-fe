@@ -13,7 +13,7 @@ import {
 import Select from '@/components/form/Select-custom';
 import _ from "lodash";
 import ChangeStatusDepositModal from "@/components/modal/ChangeStatusDepositModal";
-import { Loader2 } from "lucide-react";
+import { CheckCircle2, FileClock, Loader2, Plus } from "lucide-react";
 import { useTableFilters } from "@/hooks/useTableFilters";
 interface IDeposit {
     id: number;
@@ -45,6 +45,10 @@ export default function DepositsPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [lastPage, setLastPage] = useState(1);
     const [count, setCount] = useState(0);
+    const [metaCount, setMetaCount] = useState({
+        total_invoice: 0,
+        total_uninvoice: 0
+    });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedDeposit, setSelectedDeposit] = useState<IDeposit | null>(null);
@@ -54,8 +58,9 @@ export default function DepositsPage() {
         page: 1,
         per_page: 20,
         search: '',
-        status: ''
+        is_invoice: '1'
     });
+
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
         return "Rp " + num.toLocaleString('id-ID');
@@ -86,15 +91,20 @@ export default function DepositsPage() {
         const params: any = {
             ...(filters.search ? { search: filters.search.trim() } : {}),
             per_page: filters.per_page,
-            ...(filters.status ? { status: filters.status } : {}),
             page: filters.page,
+            is_invoice: filters.is_invoice,
         };
         try {
             const response = await httpGet(endpointUrl("invoice-order"), true, params);
             const responseData = response.data.data.data;
             setData(responseData);
+
             setCount(response.data.data.page_info.total_record);
             setLastPage(response.data.data.page_info.total_pages);
+
+            if (response.data.data.meta) {
+                setMetaCount(response.data.data.meta);
+            }
         } catch (error) {
             console.log(error);
             toast.error("Failed to fetch data");
@@ -123,7 +133,7 @@ export default function DepositsPage() {
     };
 
     const handleRowClick = (rowData: IDeposit) => {
-        const detailUrl = `/purchasing/deposits/${rowData.id}`;
+        const detailUrl = `/purchasing/invoices/${rowData.id}`;
         router.push(detailUrl);
     };
     const handleOpenModal = (deposit: IDeposit, action: ModalAction) => {
@@ -178,13 +188,26 @@ export default function DepositsPage() {
                 id: "action",
                 header: "Aksi",
                 cell: ({ row }: { row: any }) => {
+                    const data = row;
+
+                    const handleClick = (e: any) => {
+                        e.stopPropagation();
+                        console.log(filters.is_invoice, data);
+                        if (filters.is_invoice === "1") {
+                            router.push(`/purchasing/invoices/${data.id}`);
+                        } else {
+                            if (data.type === "1") {
+                                router.push(`/purchasing/orders/${data.id}`);
+                            } else if (data.type === "2") {
+                                router.push(`/purchasing/orders-lm/${data.id}`);
+                            }
+                        }
+                    };
+
                     return (
                         <div className="flex gap-2">
                             <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(`/purchasing/invoices/${row.id}`)
-                                }}
+                                onClick={handleClick}
                                 className="p-2 rounded-md bg-gray-100 hover:bg-gray-200"
                             >
                                 <FaEye className="w-4 h-4" />
@@ -205,9 +228,15 @@ export default function DepositsPage() {
                 id: "name_supplier",
                 header: "Nama Supplier",
                 accessorKey: "name_supplier",
-                cell: ({ row }: any) => (
-                    <span className="">{row.name_supplier}</span>
-                ),
+                cell: ({ row }: any) => {
+                    const data = row;
+                    const isInvoice = filters.is_invoice === "1";
+                    return (
+                        <span>
+                            {isInvoice ? data?.name_supplier : data?.supplier?.name}
+                        </span>
+                    );
+                }
             },
             {
                 id: "date",
@@ -246,36 +275,81 @@ export default function DepositsPage() {
                     </span>
                 ),
             },
-            {
-                id: "created_at",
-                header: "Dibuat",
-                cell: ({ row }: any) => (
-                    <span>
-                        {moment(row.created_at).format("DD-MMM-YYYY, HH:mm")}
-                    </span>
-                ),
-            },
+            // {
+            //     id: "created_at",
+            //     header: "Dibuat",
+            //     cell: ({ row }: any) => (
+            //         <span>
+            //             {moment(row.created_at).format("DD-MMM-YYYY, HH:mm")}
+            //         </span>
+            //     ),
+            // },
         ];
-    }, [router]);
-
+    }, [router, filters.is_invoice]);
+    const tabsList = [
+        { id: "1", label: "Sudah Faktur", icon: CheckCircle2, count: metaCount.total_invoice },
+        { id: "0", label: "Belum Faktur", icon: FileClock, count: metaCount.total_uninvoice },
+    ];
     return (
         <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
-                <input
-                    type="text"
-                    value={filters.search}
-                    onChange={handleSearch}
-                    placeholder="Cari Faktur..."
-                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                    onClick={() => router.push("/purchasing/invoices/create")}
-                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                >
-                    <span>+</span>
-                    Tambah Faktur
-                </button>
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+
+                {/* PILIHAN TABS */}
+                <div className="bg-white p-1.5 rounded-xl border border-gray-200 inline-flex w-full md:w-auto shadow-sm overflow-x-auto">
+                    {tabsList.map((tab) => {
+                        const Icon = tab.icon;
+                        const isActive = filters.is_invoice === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => {
+                                    setFilter("is_invoice", tab.id);
+                                    setFilter("page", 1);
+                                }}
+                                disabled={isLoading}
+                                className={`
+                                    relative flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap
+                                    ${isActive
+                                        ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-100'
+                                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                    }
+                                    ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}
+                                `}
+                            >
+                                <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                                {tab.label}
+
+                                {/* Badge Count */}
+                                <span className={`
+                                    ml-1.5 px-2 py-0.5 rounded-full text-xs font-bold
+                                    ${isActive ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}
+                                `}>
+                                    {isLoading && isActive ? '...' : tab.count}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* SEARCH & ADD BUTTON */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                    <input
+                        type="text"
+                        value={filters.search}
+                        onChange={handleSearch}
+                        placeholder="Cari Faktur..."
+                        className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                        onClick={() => router.push("/purchasing/invoices/create")}
+                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                    >
+                        <span>+</span>
+                        Tambah Faktur
+                    </button>
+                </div>
             </div>
+
 
             <Table
                 data={data}
@@ -286,7 +360,7 @@ export default function DepositsPage() {
                 loading={isLoading}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
-                onRowClick={handleRowClick}
+                // onRowClick={handleRowClick}
                 currentPage={filters.page}
                 perPage={filters.per_page}
             />

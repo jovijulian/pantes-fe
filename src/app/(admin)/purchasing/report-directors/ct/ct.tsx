@@ -14,7 +14,8 @@ import {
     Inbox,
     Send,
     Archive,
-    MousePointerClick
+    MousePointerClick,
+    Diamond
 } from "lucide-react";
 import Table from "@/components/tables/Table";
 import { endpointUrl, httpGet } from "@/../helpers";
@@ -137,11 +138,12 @@ export default function CTReportPage() {
 
     const summary = useMemo(() => {
         if (!reportData || reportData.length === 0) {
-            return { totalData: 0, totalWeight: 0, totalNominal: 0 };
+            return { totalData: 0, totalWeight: 0, totalNominal: 0, totalCokim: 0 };
         }
         return {
             totalData: reportData.length,
             totalWeight: _.sumBy(reportData, (item) => Number(item.weight || 0)),
+            totalCokim: _.sumBy(reportData, (item) => Number(item.cokim || 0)),
             totalNominal: _.sumBy(reportData, (item) => {
                 if (item.nominal) return Number(item.nominal);
                 return Number(item.weight || 0) * Number(item.cokim || 0);
@@ -532,11 +534,11 @@ export default function CTReportPage() {
                             <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-xl shadow-lg shadow-emerald-200 relative overflow-hidden text-white">
                                 <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-bl-full -mr-6 -mt-6 z-0"></div>
                                 <div className="flex items-center gap-2 mb-1 z-10 relative">
-                                    <Banknote className="w-4 h-4 text-emerald-100" />
-                                    <p className="text-xs font-medium text-emerald-100 uppercase">Total Nominal</p>
+                                    <Diamond className="w-4 h-4 text-emerald-100" />
+                                    <p className="text-xs font-medium text-emerald-100 uppercase">Total Cokim</p>
                                 </div>
                                 <h3 className="text-2xl font-bold z-10 relative mt-2">
-                                    {isLoadingReport ? "..." : formatRupiah(summary.totalNominal)}
+                                    {isLoadingReport ? "..." : formatNumber(summary.totalCokim)}
                                 </h3>
                             </div>
                         )}
