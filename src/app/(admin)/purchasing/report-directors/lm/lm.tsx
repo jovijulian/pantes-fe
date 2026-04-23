@@ -133,10 +133,23 @@ export default function LMReportPage() {
                 url = "report/deposited/export";
             } else if (activeTab === "3") {
                 url = "report/stock-final/export";
+            } else if (activeTab === "4") {
+                url = "invoice-order/export";
+            }
+            let params: any = {};
+            if (activeTab === "4") {
+                params = {
+                    is_invoice: 0,
+                    type: 2,
+                }
+            } else {
+                params = {
+                    type: 2,
+                };
             }
             const response = await axios.post(
                 endpointUrl(url),
-                { type: 2 },
+                params,
                 {
                     responseType: 'blob',
                     headers: {
@@ -517,7 +530,6 @@ export default function LMReportPage() {
                     </h1>
                     <p className="text-gray-500 text-sm mt-1">Pilih status di bawah untuk melihat laporan instan.</p>
                 </div>
-                {activeTab !== "4" && (
                     <button
                         onClick={handleExport}
                         disabled={isExporting || reportData.length === 0 || isLoadingReport || !activeTab}
@@ -526,7 +538,6 @@ export default function LMReportPage() {
                         {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 text-red-500" />}
                         Export PDF
                     </button>
-                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">

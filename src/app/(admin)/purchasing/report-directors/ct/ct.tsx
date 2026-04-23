@@ -132,10 +132,23 @@ export default function CTReportPage() {
                 url = "report/deposited/export";
             } else if (activeTab === "3") {
                 url = "report/stock-final/export";
+            } else if (activeTab === "4") {
+                url = "invoice-order/export";
+            }
+            let params: any = {};
+            if (activeTab === "4") {
+                params = {
+                    is_invoice: 0,
+                    type: 1,
+                }
+            } else {
+                params = {
+                    type: 1,
+                };
             }
             const response = await axios.post(
                 endpointUrl(url),
-                { type: 1 },
+                params,
                 {
                     responseType: 'blob',
                     headers: {
@@ -583,16 +596,14 @@ export default function CTReportPage() {
                     </h1>
                     <p className="text-gray-500 text-sm mt-1">Pilih status di bawah untuk melihat laporan instan.</p>
                 </div>
-                {activeTab !== "4" && (
-                    <button
-                        onClick={handleExport}
-                        disabled={isExporting || reportData.length === 0 || isLoadingReport || !activeTab}
-                        className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm transition-all disabled:opacity-50"
-                    >
-                        {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 text-red-500" />}
-                        Export PDF
-                    </button>
-                )}
+                <button
+                    onClick={handleExport}
+                    disabled={isExporting || reportData.length === 0 || isLoadingReport || !activeTab}
+                    className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm transition-all disabled:opacity-50"
+                >
+                    {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 text-red-500" />}
+                    Export PDF
+                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">

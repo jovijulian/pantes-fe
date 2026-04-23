@@ -13,8 +13,9 @@ import {
 import Select from '@/components/form/Select-custom';
 import _ from "lodash";
 import ChangeStatusDepositModal from "@/components/modal/ChangeStatusDepositModal";
-import { CheckCircle2, FileClock, Loader2, Plus } from "lucide-react";
+import { CheckCircle2, Download, FileClock, Loader2, Plus } from "lucide-react";
 import { useTableFilters } from "@/hooks/useTableFilters";
+import axios from "axios";
 interface IDeposit {
     id: number;
     no_payment: string;
@@ -54,6 +55,7 @@ export default function DepositsPage() {
     const [selectedDeposit, setSelectedDeposit] = useState<IDeposit | null>(null);
     const [modalAction, setModalAction] = useState<ModalAction>(null);
     const [paymentDate, setPaymentDate] = useState(moment().format('YYYY-MM-DD'));
+    const [isExporting, setIsExporting] = useState(false);
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
@@ -141,6 +143,56 @@ export default function DepositsPage() {
         setModalAction(action);
         setPaymentDate(moment().format('YYYY-MM-DD'));
         setIsModalOpen(true);
+    };
+
+    const handleExport = async () => {
+        if (!data || data.length === 0) return;
+        setIsExporting(true);
+
+        try {
+            const url = "invoice-order/export";
+            const params: any = {
+                is_invoice: filters.is_invoice,
+            };
+
+            const response = await axios.post(
+                endpointUrl(url),
+                params,
+                {
+                    responseType: 'blob',
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                }
+            );
+
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `purchase_order-${moment().format("YYYY-MM-DD")}.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            link.href = blobUrl;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } catch (error) {
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Gagal mengunduh laporan. Silakan coba lagi.");
+        } finally {
+            setIsExporting(false);
+        }
     };
 
     const handleConfirmStatusChange = async (date?: string) => {
@@ -333,6 +385,14 @@ export default function DepositsPage() {
 
                 {/* SEARCH & ADD BUTTON */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                    <button
+                        onClick={handleExport}
+                        disabled={isExporting || data.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm transition-all disabled:opacity-50"
+                    >
+                        {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4 text-red-500" />}
+                        Export PDF
+                    </button>
                     <input
                         type="text"
                         value={filters.search}
