@@ -68,6 +68,7 @@ interface IPurchaseOrderData {
     additional_key: string | null;
     additional_value: string | number | null;
     pcs: number;
+    disc: number;
 }
 
 type ModalAction = 'Validasi' | 'Disetujui' | 'Bayar' | null;
@@ -129,6 +130,8 @@ export default function PurchaseOrderDetailPage() {
             //     ...payment,
             //     name: "Lotus"
             // }));
+            response.data.data.dpp_nominal = Number(response.data.data.dpp_nominal) + Number(response.data.data.pph)
+            response.data.data.nominal = Number(response.data.data.nominal) - Number(response.data.data.disc)
             setData(response.data.data);
         } catch (error: any) {
             if (error.response?.status === 404 || error.response?.status === 403) {
@@ -321,6 +324,7 @@ export default function PurchaseOrderDetailPage() {
                             <InfoRow label="Cokim" value={formatCokim(data.cokim)} />
                             <InfoRow label="Nominal" value={formatRupiah(data.dpp_nominal)} />
                             <InfoRow label="PPH" value={formatRupiah(data.pph)} />
+                            <InfoRow label="Diskon" value={formatRupiah(data.disc)} />
                             <InfoRow label="Total" value={formatRupiah(data.nominal)} isTotal />
                             <InfoRow label="Cashback" value={formatRupiah(data.cashback)} />
                             {data.additional_key && (

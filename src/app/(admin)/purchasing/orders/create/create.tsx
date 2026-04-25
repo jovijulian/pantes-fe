@@ -54,6 +54,7 @@ interface FormState {
     additional_value: number;
     showAdditionalInput: boolean;
     pcs: number;
+    disc: number;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -82,6 +83,7 @@ interface PurchaseOrderPayload {
     additional_key: string;
     additional_value: number;
     pcs?: number;
+    disc: number;
 }
 
 const paymentMethodOptions: SelectOption[] = [
@@ -120,6 +122,7 @@ export default function CreatePurchaseOrderPage() {
         additional_value: 0,
         showAdditionalInput: false,
         pcs: 1,
+        disc: 0,
     });
 
     useEffect(() => {
@@ -183,17 +186,18 @@ export default function CreatePurchaseOrderPage() {
         const weight = parseFloat(formData.weight) || 0;
         const cokim = formData.cokim || 0;
         const pph = formData.pph || 0;
+        const disc = formData.disc || 0;
         const formula = (weight * cokim) + pph;
         setFormData(prev => ({ ...prev, nominal: formula }));
-    }, [formData.weight, formData.cokim, formData.pph]);
+    }, [formData.weight, formData.cokim, formData.pph, formData.disc]);
 
     const { totalPayment, remainingBalance } = useMemo(() => {
         const totalPayment = formData.payment_type.reduce((acc, payment) => {
             return acc + (payment.nominal || 0);
         }, 0);
-        const remainingBalance = formData.nominal - totalPayment;
+        const remainingBalance = (formData.nominal || 0) - totalPayment - (formData.disc || 0);
         return { totalPayment, remainingBalance };
-    }, [formData.nominal, formData.payment_type]);
+    }, [formData.nominal, formData.payment_type, formData.disc]);
 
     // Mengecek apakah ada setidaknya satu baris pembayaran yang membutuhkan input manual
     const hasManualPayment = useMemo(() => {
@@ -209,20 +213,20 @@ export default function CreatePurchaseOrderPage() {
 
     const handlePaymentChange = (index: number, field: keyof FormPaymentType, value: any) => {
         const newPayments = [...formData.payment_type];
+
         const payment = newPayments[index];
 
         (payment[field] as any) = value;
+       
 
-        // --- BAGIAN INI YANG DIUBAH: Reset semua field bank saat Jenis Pembayaran berganti ---
         if (field === 'payment_type') {
             payment.supplier_bank_id = null;
             payment.bank_id = null;
             payment.account_number = '';
             payment.account_name = '';
-            payment.notes = ''; // Reset notes juga agar bersih
+            payment.notes = ''; 
         }
 
-        // Auto-fill account details jika pilih dari dropdown Supplier Bank (Bank Transfer / Setor Tunai)
         if (field === 'supplier_bank_id') {
             const selectedBank = bankOptions.find(b => b.value === value?.toString());
             if (selectedBank) {
@@ -342,6 +346,7 @@ export default function CreatePurchaseOrderPage() {
             additional_key: formData.additional_key,
             additional_value: formData.additional_value,
             pcs: Number(formData.pcs),
+            disc: formData.disc,
         };
 
         try {
@@ -513,10 +518,13 @@ export default function CreatePurchaseOrderPage() {
                                         }}
                                     />
                                 </div>
-                                {/* <div>
-                                    <label className="block font-medium mb-1">PCS</label>
-                                    <Input type="number" value={formData.pcs} onChange={(e) => handleFieldChange('pcs', e.target.value)} placeholder='1' />
-                                </div> */}
+                                <div>
+                                    <label className="block font-medium mb-1">Diskon</label>
+                                    <Input type="text" value={`Rp ${(formData.disc || 0).toLocaleString('id-ID')}`} onChange={(e) => {
+                                        const raw = e.target.value.replace(/\D/g, "");
+                                        handleFieldChange("disc", Number(raw));
+                                    }} />
+                                </div>
                             </div>
                         </div>
                     </ComponentCard>
@@ -658,7 +666,7 @@ export default function CreatePurchaseOrderPage() {
                             </button>
                         </div>
                         <div className="flex justify-end gap-6 p-2 mb-4">
-                            <CurrencyDisplay title="Total Nominal" value={formData.nominal} />
+                            <CurrencyDisplay title="Total Nominal" value={Number(formData.nominal) - Number(formData.disc)} />
                             <CurrencyDisplay
                                 title="Sisa Bayar"
                                 value={remainingBalance}

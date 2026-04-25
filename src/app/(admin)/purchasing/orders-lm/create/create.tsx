@@ -44,6 +44,7 @@ interface FormPaymentType {
     account_name: string;
     notes: string;
     nominal: number;
+
 }
 
 interface FormState {
@@ -58,6 +59,7 @@ interface FormState {
     additional_key: string;
     additional_value: number;
     showAdditionalInput: boolean;
+    disc: number;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -95,6 +97,7 @@ interface PurchaseOrderPayload {
     is_invoice: boolean;
     additional_key: string;
     additional_value: number;
+    disc: number;
 }
 
 const paymentMethodOptions: SelectOption[] = [
@@ -131,6 +134,7 @@ export default function CreatePurchaseOrderPage() {
         additional_key: "",
         additional_value: 0,
         showAdditionalInput: false,
+        disc: 0,
     });
 
     useEffect(() => {
@@ -206,14 +210,14 @@ export default function CreatePurchaseOrderPage() {
             nominal += (item.nominal || 0) * (item.pcs || 0);
         });
 
-        return { totalWeight: weight, totalPcs: pcs, totalNominal: nominal + formData.pph };
-    }, [formData.items, formData.pph]);
+        return { totalWeight: weight, totalPcs: pcs, totalNominal: nominal + formData.pph - formData.disc };
+    }, [formData.items, formData.pph, formData.disc]);
 
     const { totalPayment, remainingBalance } = useMemo(() => {
         const totalPayment = formData.payment_type.reduce((acc, payment) => acc + (payment.nominal || 0), 0);
         const remainingBalance = totalNominal - totalPayment;
         return { totalPayment, remainingBalance };
-    }, [totalNominal, formData.payment_type]);
+    }, [totalNominal, formData.payment_type, formData.disc]);
 
     const hasManualPayment = useMemo(() => {
         return formData.payment_type.some(
@@ -401,7 +405,9 @@ export default function CreatePurchaseOrderPage() {
             is_invoice: formData.is_invoice,
             additional_key: formData.additional_key,
             additional_value: formData.additional_value,
+            disc: formData.disc,
         };
+
 
         try {
             await httpPost(endpointUrl('/purchase/order'), payload, true);
@@ -540,6 +546,13 @@ export default function CreatePurchaseOrderPage() {
                                         </div>
                                     </div>
                                 )}
+                            </div>
+                            <div className="md:col-span-6 space-y-4">
+                                <label className="block font-medium mb-1">Diskon</label>
+                                <Input type="text" value={`Rp ${(formData.disc || 0).toLocaleString('id-ID')}`} onChange={(e) => {
+                                    const raw = e.target.value.replace(/\D/g, "");
+                                    handleFieldChange("disc", Number(raw));
+                                }} />
                             </div>
                         </div>
                     </ComponentCard>

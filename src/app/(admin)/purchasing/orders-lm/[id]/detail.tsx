@@ -73,6 +73,7 @@ interface IPurchaseOrderData {
     is_invoice: string | boolean | null;
     additional_key: string | null;
     additional_value: string | number | null;
+    disc: number;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -595,6 +596,7 @@ export default function PurchaseOrderDetailPage() {
                             <Section title="Detail Transaksi" icon={<DollarSign />}>
                                 <InfoRow label="PPH" value={formatRupiah(data.pph)} />
                                 <InfoRow label="Cashback" value={formatRupiah(data.cashback)} />
+                                <InfoRow label="Diskon" value={formatRupiah(data.disc)} />
                                 {data.additional_key && (
                                     <InfoRow
                                         label={data.additional_key}

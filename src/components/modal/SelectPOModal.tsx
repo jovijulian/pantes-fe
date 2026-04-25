@@ -56,7 +56,7 @@ const SelectPOModal: React.FC<SelectPOModalProps> = ({
                 pemesan: po.staff?.name || 'N/A', 
                 berat: Number(po.weight) || 0,
                 cokim: Number(po.cokim) || 0,
-                nominal: Number(po.nominal) || 0,
+                nominal: Number(po.nominal) - Number(po.disc) || 0,
                 supplier: po.supplier.name,
             }));
 

@@ -70,6 +70,7 @@ interface FormState {
     additional_value: number;
     showAdditionalInput: boolean;
     pcs: number;
+    disc: number;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -117,6 +118,7 @@ export default function EditPurchaseOrderPage() {
         additional_value: 0,
         showAdditionalInput: false,
         pcs: 1,
+        disc: 0,
     });
 
     useEffect(() => {
@@ -177,6 +179,7 @@ export default function EditPurchaseOrderPage() {
                     additional_value: Number(data.additional_value) || 0,
                     showAdditionalInput: !!data.additional_key,
                     pcs: Number(data.pcs) || 1,
+                    disc: Number(data.disc) || 0,
                 });
                 setOriginalPayments(_.cloneDeep(mappedPayments));
 
@@ -226,18 +229,18 @@ export default function EditPurchaseOrderPage() {
         const weight = parseFloat(formData.weight) || 0;
         const cokim = formData.cokim || 0;
         const pph = formData.pph || 0;
+        const disc = formData.disc || 0;
         const formula = (weight * cokim) + pph;
         setFormData(prev => ({ ...prev, nominal: formula }));
-    }, [formData.weight, formData.cokim, formData.pph]);
+    }, [formData.weight, formData.cokim, formData.pph, formData.disc]);
 
     const { totalPayment, remainingBalance } = useMemo(() => {
         const totalPayment = formData.payment_type.reduce((acc, payment) => {
             return acc + (payment.nominal || 0);
         }, 0);
-        const remainingBalance = formData.nominal - totalPayment;
+        const remainingBalance = (formData.nominal || 0) - totalPayment - (formData.disc || 0);
         return { totalPayment, remainingBalance };
-    }, [formData.nominal, formData.payment_type]);
-
+    }, [formData.nominal, formData.payment_type, formData.disc]);
     const hasManualPayment = useMemo(() => {
         return formData.payment_type.some(
             p => p.payment_type !== "BANK TRANSFER" && p.payment_type !== "SETOR TUNAI"
@@ -440,6 +443,7 @@ export default function EditPurchaseOrderPage() {
                 additional_key: formData.additional_key,
                 additional_value: formData.additional_value,
                 pcs: Number(formData.pcs),
+                disc: formData.disc,
             };
 
             await httpPost(endpointUrl(`/purchase/order/${id}/update`), mainPayload, true);
@@ -617,10 +621,13 @@ export default function EditPurchaseOrderPage() {
                                         }}
                                     />
                                 </div>
-                                {/* <div>
-                                    <label className="block font-medium mb-1">PCS</label>
-                                    <Input type="number" value={formData.pcs} onChange={(e) => handleFieldChange('pcs', e.target.value)} placeholder='1' />
-                                </div> */}
+                                <div>
+                                    <label className="block font-medium mb-1">Diskon</label>
+                                    <Input type="text" value={`Rp ${(formData.disc || 0).toLocaleString('id-ID')}`} onChange={(e) => {
+                                        const raw = e.target.value.replace(/\D/g, "");
+                                        handleFieldChange("disc", Number(raw));
+                                    }} />
+                                </div>
                             </div>
                         </div>
                     </ComponentCard>
@@ -754,7 +761,7 @@ export default function EditPurchaseOrderPage() {
                             <p className="text-xs text-red-500 mt-1">Pilih Supplier terlebih dahulu untuk menambah pembayaran.</p>
                         )}
                         <div className="flex justify-end gap-6 p-2 mb-4">
-                            <CurrencyDisplay title="Total Nominal" value={formData.nominal} />
+                        <CurrencyDisplay title="Total Nominal" value={Number(formData.nominal) - Number(formData.disc)} />
                             <CurrencyDisplay
                                 title="Sisa Bayar"
                                 value={remainingBalance}

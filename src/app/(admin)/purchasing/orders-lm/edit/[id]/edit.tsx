@@ -61,6 +61,7 @@ interface FormState {
     additional_key: string;
     additional_value: number;
     showAdditionalInput: boolean;
+    disc: number;
 }
 
 interface SelectOption { value: string; label: string; }
@@ -99,6 +100,7 @@ interface PurchaseOrderUpdatePayload {
     is_invoice: boolean;
     additional_key: string;
     additional_value: number;
+    disc: number;
 
 }
 
@@ -143,6 +145,7 @@ export default function EditPurchaseOrderPage() {
         additional_key: "",
         additional_value: 0,
         showAdditionalInput: false,
+        disc: 0,
     });
 
     useEffect(() => {
@@ -181,6 +184,7 @@ export default function EditPurchaseOrderPage() {
                         additional_key: d.additional_key || "",
                         additional_value: Number(d.additional_value) || 0,
                         showAdditionalInput: !!d.additional_key,
+                        disc: Number(d.disc) || 0,
                         items: d.order_items.map((i: any) => ({
                             id: `item-${i.id}`,
                             order_item_id: i.id,
@@ -267,14 +271,14 @@ export default function EditPurchaseOrderPage() {
             nominal += (item.nominal || 0) * (item.pcs || 0);
         });
 
-        return { totalWeight: weight, totalPcs: pcs, totalNominal: nominal + formData.pph };
-    }, [formData.items, formData.pph]);
+        return { totalWeight: weight, totalPcs: pcs, totalNominal: nominal + formData.pph - formData.disc };
+    }, [formData.items, formData.pph, formData.disc]);
 
     const { totalPayment, remainingBalance } = useMemo(() => {
-        const totalPayment = formData.payment_type.reduce((acc, payment) => acc + (payment.nominal || 0), 0);
-        const remainingBalance = totalNominal - totalPayment;
+        const totalPayment = formData.payment_type.reduce((acc, payment) => acc + (payment.nominal || 0), 0) ;
+        const remainingBalance = totalNominal - totalPayment
         return { totalPayment, remainingBalance };
-    }, [totalNominal, formData.payment_type]);
+    }, [totalNominal, formData.payment_type, formData.disc, formData.pph]);
 
     const hasManualPayment = useMemo(() => {
         return formData.payment_type.some(
@@ -464,6 +468,7 @@ export default function EditPurchaseOrderPage() {
             is_invoice: formData.is_invoice,
             additional_key: formData.additional_key,
             additional_value: formData.additional_value,
+            disc: formData.disc,
         };
 
         try {
@@ -560,57 +565,64 @@ export default function EditPurchaseOrderPage() {
                             </div>
                             <div className="md:col-span-6 space-y-4"></div>
                             <div className="md:col-span-6 space-y-4">
-                                   
-                                    {!formData.showAdditionalInput ? (
+
+                                {!formData.showAdditionalInput ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleFieldChange('showAdditionalInput', true)}
+                                        className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1 font-medium w-max"
+                                    >
+                                        <Plus className="w-4 h-4" /> Tambah Keterangan & Nominal
+                                    </button>
+                                ) : (
+                                    <div className="mt-2 p-4 bg-gray-50 border border-gray-200 rounded-xl relative animate-in fade-in slide-in-from-top-2">
                                         <button
                                             type="button"
-                                            onClick={() => handleFieldChange('showAdditionalInput', true)}
-                                            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-1 font-medium w-max"
+                                            onClick={() => {
+                                                handleFieldChange('showAdditionalInput', false);
+                                                handleFieldChange('additional_key', '');
+                                                handleFieldChange('additional_value', 0);
+                                            }}
+                                            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-50 p-1 rounded-md transition-colors"
+                                            title="Hapus keterangan"
                                         >
-                                            <Plus className="w-4 h-4" /> Tambah Keterangan & Nominal
+                                            <X className="w-4 h-4" />
                                         </button>
-                                    ) : (
-                                        <div className="mt-2 p-4 bg-gray-50 border border-gray-200 rounded-xl relative animate-in fade-in slide-in-from-top-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    handleFieldChange('showAdditionalInput', false);
-                                                    handleFieldChange('additional_key', '');
-                                                    handleFieldChange('additional_value', 0);
-                                                }}
-                                                className="absolute top-2 right-2 text-gray-400 hover:text-red-500 hover:bg-red-50 p-1 rounded-md transition-colors"
-                                                title="Hapus keterangan"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                            <h5 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1 mb-3">
-                                                Info Tambahan
-                                            </h5>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                <div>
-                                                    <label className="block text-xs font-medium text-gray-600 mb-1">Keterangan</label>
-                                                    <Input
-                                                        type="text"
-                                                        value={formData.additional_key}
-                                                        onChange={(e) => handleFieldChange('additional_key', e.target.value)}
-                                                        placeholder="Contoh: Harga dasar CT..."
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-xs font-medium text-gray-600 mb-1">Nominal</label>
-                                                    <Input
-                                                        type="text"
-                                                        value={`Rp ${(formData.additional_value || 0).toLocaleString('id-ID')}`}
-                                                        onChange={(e) => {
-                                                            const raw = e.target.value.replace(/\D/g, "");
-                                                            handleFieldChange("additional_value", Number(raw));
-                                                        }}
-                                                    />
-                                                </div>
+                                        <h5 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-1 mb-3">
+                                            Info Tambahan
+                                        </h5>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 mb-1">Keterangan</label>
+                                                <Input
+                                                    type="text"
+                                                    value={formData.additional_key}
+                                                    onChange={(e) => handleFieldChange('additional_key', e.target.value)}
+                                                    placeholder="Contoh: Harga dasar CT..."
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-600 mb-1">Nominal</label>
+                                                <Input
+                                                    type="text"
+                                                    value={`Rp ${(formData.additional_value || 0).toLocaleString('id-ID')}`}
+                                                    onChange={(e) => {
+                                                        const raw = e.target.value.replace(/\D/g, "");
+                                                        handleFieldChange("additional_value", Number(raw));
+                                                    }}
+                                                />
                                             </div>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="md:col-span-6 space-y-4">
+                                <label className="block font-medium mb-1">Diskon</label>
+                                <Input type="text" value={`Rp ${(formData.disc || 0).toLocaleString('id-ID')}`} onChange={(e) => {
+                                    const raw = e.target.value.replace(/\D/g, "");
+                                    handleFieldChange("disc", Number(raw));
+                                }} />
+                            </div>
                         </div>
                     </ComponentCard>
 
