@@ -397,7 +397,7 @@ export default function CreatePurchaseOrderPage() {
             supplier_id: Number(formData.supplier_id),
             weight: totalWeight,
             pcs: totalPcs,
-            nominal: totalNominal,
+            nominal: totalNominal + formData.disc,
             payment_type: paymentPayload,
             items: itemsPayload,
             pph: formData.pph,
@@ -558,6 +558,105 @@ export default function CreatePurchaseOrderPage() {
                     </ComponentCard>
 
 
+
+                    <ComponentCard title="Data LM">
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead className="bg-gray-50 dark:bg-gray-800">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jenis Barang</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Berat</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">PCS</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Harga</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nominal</th>
+                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
+                                    {formData.items.map((item, index) => {
+                                        const subtotal = (item.nominal || 0) * (item.pcs || 0);
+                                        return (
+                                            <tr key={item.id}>
+                                                <td className="px-4 py-2 whitespace-nowrap min-w-[250px]">
+                                                    <Select
+                                                        options={itemOptions}
+                                                        value={_.find(itemOptions, { value: item.item_id?.toString() })}
+                                                        onValueChange={(opt) => handleItemChange(index, 'item_id', opt ? parseInt(opt.value) : null)}
+                                                        placeholder="Pilih item..."
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap min-w-[150px]">
+
+                                                    <Input type="number" value={item.weight || ''} onChange={(e) => handleItemChange(index, 'weight', e.target.value || 0)} placeholder='0' />
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap min-w-[120px]">
+
+                                                    <Input type="number" value={item.pcs || ''} onChange={(e) => handleItemChange(index, 'pcs', parseInt(e.target.value) || 0)} placeholder='0' />
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap min-w-[180px]">
+                                                    <CurrencyInput
+                                                        value={item.nominal}
+                                                        onValueChange={(value) => handleItemChange(index, 'nominal', value)}
+                                                        placeholder="Rp 0"
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap">
+                                                    <div className="font-semibold text-gray-700 dark:text-gray-200">
+                                                        Rp {subtotal.toLocaleString('id-ID')}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2 whitespace-nowrap text-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeItem(index)}
+                                                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-md"
+                                                    >
+                                                        <Trash2 className="w-5 h-5" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="flex gap-2 mt-4">
+                            <button
+                                type="button"
+                                onClick={addItem}
+                                disabled={formData.supplier_id === null}
+                                className="px-4 py-2 bg-emerald-400 text-white rounded-md flex items-center gap-2 text-sm font-medium hover:bg-emerald-600"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Tambah Item
+                            </button>
+                        </div>
+                        <div className="p-4 mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg mt-4">
+                            <div className="flex flex-col items-end gap-2 mb-3">
+                                <CurrencyDisplay
+                                    title="PPH"
+                                    value={formData.pph}
+                                    color="text-green-600"
+                                />
+                                <CurrencyDisplay
+                                    title="Diskon"
+                                    value={formData.disc}
+                                    color="text-red-500"
+                                />
+                            </div>
+                            <div className="flex justify-end gap-6">
+                                <GramDisplay title="Total Berat (gr)" value={totalWeight} />
+
+                                <CurrencyDisplay
+                                    title="Total Nominal Item"
+                                    value={totalNominal}
+                                />
+                            </div>
+                        </div>
+
+                    </ComponentCard>
+
                     <ComponentCard title="Pembayaran">
                         <div className="overflow-x-auto">
                             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -688,88 +787,6 @@ export default function CreatePurchaseOrderPage() {
                             <CurrencyDisplay title="Total Nominal Pembayaran" value={totalPayment} />
                         </div>
 
-
-                    </ComponentCard>
-                    <ComponentCard title="Data LM">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead className="bg-gray-50 dark:bg-gray-800">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jenis Barang</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Berat</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">PCS</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Harga</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nominal</th>
-                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                                    {formData.items.map((item, index) => {
-                                        const subtotal = (item.nominal || 0) * (item.pcs || 0);
-                                        return (
-                                            <tr key={item.id}>
-                                                <td className="px-4 py-2 whitespace-nowrap min-w-[250px]">
-                                                    <Select
-                                                        options={itemOptions}
-                                                        value={_.find(itemOptions, { value: item.item_id?.toString() })}
-                                                        onValueChange={(opt) => handleItemChange(index, 'item_id', opt ? parseInt(opt.value) : null)}
-                                                        placeholder="Pilih item..."
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-2 whitespace-nowrap min-w-[150px]">
-
-                                                    <Input type="number" value={item.weight || ''} onChange={(e) => handleItemChange(index, 'weight', e.target.value || 0)} placeholder='0' />
-                                                </td>
-                                                <td className="px-4 py-2 whitespace-nowrap min-w-[120px]">
-
-                                                    <Input type="number" value={item.pcs || ''} onChange={(e) => handleItemChange(index, 'pcs', parseInt(e.target.value) || 0)} placeholder='0' />
-                                                </td>
-                                                <td className="px-4 py-2 whitespace-nowrap min-w-[180px]">
-                                                    <CurrencyInput
-                                                        value={item.nominal}
-                                                        onValueChange={(value) => handleItemChange(index, 'nominal', value)}
-                                                        placeholder="Rp 0"
-                                                    />
-                                                </td>
-                                                <td className="px-4 py-2 whitespace-nowrap">
-                                                    <div className="font-semibold text-gray-700 dark:text-gray-200">
-                                                        Rp {subtotal.toLocaleString('id-ID')}
-                                                    </div>
-                                                </td>
-                                                <td className="px-4 py-2 whitespace-nowrap text-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeItem(index)}
-                                                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-md"
-                                                    >
-                                                        <Trash2 className="w-5 h-5" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div className="flex gap-2 mt-4">
-                            <button
-                                type="button"
-                                onClick={addItem}
-                                disabled={formData.supplier_id === null}
-                                className="px-4 py-2 bg-emerald-400 text-white rounded-md flex items-center gap-2 text-sm font-medium hover:bg-emerald-600"
-                            >
-                                <Plus className="w-4 h-4" />
-                                Tambah Item
-                            </button>
-                        </div>
-                        <div className="flex justify-end gap-6 p-4 mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg mt-4">
-                            <GramDisplay title="Total Berat (gr)" value={totalWeight} />
-                            <CurrencyDisplay
-                                title="Total Nominal Item"
-                                value={totalNominal}
-                            />
-                        </div>
                         <div className="flex flex-col items-center gap-2 p-4 mb-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
 
                             <div className={`text-right mt-2 font-medium ${remainingBalance === 0 ? 'text-emerald-500' : 'text-orange-500'
@@ -897,7 +914,7 @@ const CurrencyInput: React.FC<{
         />
     );
 };
-const CurrencyDisplay: React.FC<{ title: string; value: number; color?: string }> = ({ title, value, color = 'text-gray-900 dark:text-white' }) => (
+const CurrencyDisplay: React.FC<{ title: string; value: any; color?: string }> = ({ title, value, color = 'text-gray-900 dark:text-white' }) => (
     <div className="text-right">
         <span className="text-sm text-gray-500 dark:text-gray-400">{title}</span>
         <p className={`text-xl font-semibold ${color}`}>

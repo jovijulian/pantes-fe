@@ -365,7 +365,7 @@ export default function PurchaseOrderDetailPage() {
         </div>
     );
 
-    const totalItemNominal = Number(data.order_items?.reduce((sum, item) => sum + Number(item.total_nominal), 0)) + Number(data.pph);
+    const totalItemNominal = Number(data.order_items?.reduce((sum, item) => sum + Number(item.total_nominal), 0)) + Number(data.pph) - Number(data.disc);
     const totalPayment = data.payment_types.reduce((sum, p) => sum + Number(p.nominal), 0);
     const remainingBalance = totalItemNominal - totalPayment;
     const isUnbalanced = remainingBalance !== 0;
@@ -558,6 +558,10 @@ export default function PurchaseOrderDetailPage() {
                                 <div className="flex justify-between">
                                     <span className="text-gray-600 dark:text-gray-300">PPH</span>
                                     <span className="font-medium">{formatRupiah(data.pph)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-300">Diskon</span>
+                                    <span className="font-medium">{formatRupiah(data.disc)}</span>
                                 </div>
                                 <div className="border-t pt-3 flex justify-between text-lg font-semibold">
                                     <span>Total</span>
