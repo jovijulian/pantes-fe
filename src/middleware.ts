@@ -93,6 +93,19 @@ const homeRoutes: Record<string, string> = {
     '8': '/menus',
 };
 
+const roleExceptions: Record<string, string[]> = {
+    '3': [
+        '/purchasing/orders/create',
+        '/purchasing/orders-lm/create',
+        '/purchasing/work-orders/create',
+        '/purchasing/work-orders-lm/create',
+        '/purchasing/deposits/create',
+        '/purchasing/scrap-golds/create',
+        '/purchasing/scrap-golds/sends/create',
+        '/purchasing/invoices/create',
+    ]
+};
+
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -123,6 +136,13 @@ export async function middleware(request: NextRequest) {
     }
 
     if (!publicRoutes.includes(pathname)) {
+        const blockedRoutes = roleExceptions[userRole] || [];
+        const isBlocked = blockedRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`));
+
+        if (isBlocked) {
+            return NextResponse.redirect(new URL(userHomeRoute, request.url));
+        }
+
         const allowedRoutes = rolePermissions[userRole] || [];
         const isAuthorized = allowedRoutes.some(route => pathname.startsWith(route));
         

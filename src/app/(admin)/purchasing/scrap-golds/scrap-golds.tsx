@@ -68,6 +68,7 @@ export default function ScrapGoldsPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
+    const [role, setRole] = useState<string | null>("null");
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
@@ -101,21 +102,25 @@ export default function ScrapGoldsPage() {
         }
     };
 
-   
+
 
     useEffect(() => {
         getData();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [filters]);
 
     const handlePageChange = (page: number) => {
         setFilter("page", page);
     };
-    
+
     const handlePerPageChange = (newPerPage: number) => {
         setFilter("per_page", newPerPage);
         setFilter("page", 1);
     };
-    
+
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilter("search", e.target.value);
         setFilter("page", 1);
@@ -380,14 +385,16 @@ export default function ScrapGoldsPage() {
                         placeholder="Search..."
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
+                    {role !== "3" && (
+                        <button
+                            onClick={() => router.push("/purchasing/scrap-golds/create")}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Tambah Rongsok
+                        </button>
+                    )}
 
-                    <button
-                        onClick={() => router.push("/purchasing/scrap-golds/create")}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Tambah Rongsok
-                    </button>
                 </div>
             </div>
 
@@ -398,7 +405,7 @@ export default function ScrapGoldsPage() {
                 lastPage={lastPage}
                 total={totalRecord}
                 loading={isLoading}
-                currentPage={filters.page} 
+                currentPage={filters.page}
                 perPage={filters.per_page}
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}

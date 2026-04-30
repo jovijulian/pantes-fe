@@ -56,6 +56,7 @@ export default function DepositsPage() {
     const [modalAction, setModalAction] = useState<ModalAction>(null);
     const [paymentDate, setPaymentDate] = useState(moment().format('YYYY-MM-DD'));
     const [isExporting, setIsExporting] = useState(false);
+    const [role, setRole] = useState<string | null>("null");
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
@@ -118,6 +119,10 @@ export default function DepositsPage() {
 
     useEffect(() => {
         getData();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [filters]);
 
     const handlePageChange = (page: number) => {
@@ -400,13 +405,15 @@ export default function DepositsPage() {
                         placeholder="Cari No. Order..."
                         className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <button
-                        onClick={() => router.push("/purchasing/invoices/create")}
-                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                    >
-                        <span>+</span>
-                        Tambah Faktur
-                    </button>
+                    {role !== "3" && (
+                        <button
+                            onClick={() => router.push("/purchasing/invoices/create")}
+                            className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                        >
+                            <span>+</span>
+                            Tambah Faktur
+                        </button>
+                    )}
                 </div>
             </div>
 

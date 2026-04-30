@@ -92,6 +92,7 @@ export default function ScrapGoldSendPage() {
     const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
     const [isProcessing, setIsProcessing] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
+    const [role, setRole] = useState<string | null>("null");
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
@@ -132,6 +133,10 @@ export default function ScrapGoldSendPage() {
 
     useEffect(() => {
         getData();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [filters]);
 
     const handlePageChange = (page: number) => {
@@ -311,7 +316,7 @@ export default function ScrapGoldSendPage() {
                 return (
                     <div className="flex flex-col gap-2">
                         {/* Detail */}
-                        <button
+                        {/* <button
                             onClick={() => {
                                 router.push(`/purchasing/scrap-golds/sends/${row.id}`)
                                 // window.open(`/purchasing/scrap-golds/sends/${row.id}`, "_blank");
@@ -320,7 +325,18 @@ export default function ScrapGoldSendPage() {
                             className="flex items-center justify-center h-9 w-full rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                         >
                             <FaEye className="w-4 h-4 mr-1" />
-                        </button>
+                        </button> */}
+                        <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    // window.open(`/purchasing/orders/${row.id}`, "_blank");
+                                    router.push(`/purchasing/scrap-golds/sends/${row.id}`)
+                                }}
+                                title="Lihat Detail"
+                                className="p-3 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            >
+                                <FaEye className="w-4 h-4" />
+                            </button>
 
                         {/* Status 1 -> Kirim */}
                         {/* {currentStatus === "1" && (
@@ -555,14 +571,15 @@ export default function ScrapGoldSendPage() {
                         placeholder="Search..."
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
-
-                    <button
-                        onClick={() => router.push("/purchasing/scrap-golds/sends/create")}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Kirim Rongsok
-                    </button>
+                    {role !== "3" && (
+                        <button
+                            onClick={() => router.push("/purchasing/scrap-golds/sends/create")}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Kirim Rongsok
+                        </button>
+                    )}
                 </div>
             </div>
 

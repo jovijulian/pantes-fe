@@ -52,6 +52,7 @@ export default function WorkOrdersPage() {
     const [lastPage, setLastPage] = useState(1);
     const [count, setCount] = useState(0);
     const [isDownloadLoading, setIsDownloadLoading] = useState(false);
+    const [role, setRole] = useState<string | null>("null");
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
@@ -106,17 +107,21 @@ export default function WorkOrdersPage() {
 
     useEffect(() => {
         getData();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [filters]);
 
     const handlePageChange = (page: number) => {
         setFilter("page", page);
     };
-    
+
     const handlePerPageChange = (newPerPage: number) => {
         setFilter("per_page", newPerPage);
         setFilter("page", 1);
     };
-    
+
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilter("search", e.target.value);
         setFilter("page", 1);
@@ -407,7 +412,7 @@ export default function WorkOrdersPage() {
                         value={_.find(statusOptions, { value: filters.status })}
                         onValueChange={(opt) => {
                             setFilter("status", opt ? opt.value : "");
-                            setFilter("page", 1); 
+                            setFilter("page", 1);
                         }}
                         placeholder="Filter Status..."
                     />
@@ -419,13 +424,15 @@ export default function WorkOrdersPage() {
                     placeholder="Cari No. Surat Jalan..."
                     className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <button
-                    onClick={() => router.push("/purchasing/work-orders/create")}
-                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                >
-                    <span>+</span>
-                    Tambah Surat Jalan
-                </button>
+                {role !== "3" && (
+                    <button
+                        onClick={() => router.push("/purchasing/work-orders/create")}
+                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                    >
+                        <span>+</span>
+                        Tambah Surat Jalan
+                    </button>
+                )}
             </div>
 
             <Table
@@ -438,7 +445,7 @@ export default function WorkOrdersPage() {
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
                 // onRowClick={handleRowClick}
-                currentPage={filters.page} 
+                currentPage={filters.page}
                 perPage={filters.per_page}
             />
 

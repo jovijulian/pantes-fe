@@ -50,6 +50,7 @@ export default function DepositsPage() {
     const [selectedDeposit, setSelectedDeposit] = useState<IDeposit | null>(null);
     const [modalAction, setModalAction] = useState<ModalAction>(null);
     const [paymentDate, setPaymentDate] = useState(moment().format('YYYY-MM-DD'));
+    const [role, setRole] = useState<string | null>("null");
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
@@ -97,17 +98,21 @@ export default function DepositsPage() {
 
     useEffect(() => {
         getData();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [filters]);
 
     const handlePageChange = (page: number) => {
         setFilter("page", page);
     };
-    
+
     const handlePerPageChange = (newPerPage: number) => {
         setFilter("per_page", newPerPage);
         setFilter("page", 1);
     };
-    
+
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilter("search", e.target.value);
         setFilter("page", 1);
@@ -272,7 +277,7 @@ export default function DepositsPage() {
                         value={_.find(statusOptions, { value: filters.status })}
                         onValueChange={(opt) => {
                             setFilter("status", opt ? opt.value : "");
-                            setFilter("page", 1); 
+                            setFilter("page", 1);
                         }}
                         placeholder="Filter Status..."
                     />
@@ -284,13 +289,15 @@ export default function DepositsPage() {
                     placeholder="Cari No. Pembayaran..."
                     className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <button
-                    onClick={() => router.push("/purchasing/deposits/create")}
-                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                >
-                    <span>+</span>
-                    Tambah Setor
-                </button>
+                {role !== "3" && (
+                    <button
+                        onClick={() => router.push("/purchasing/deposits/create")}
+                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                    >
+                        <span>+</span>
+                        Tambah Setor
+                    </button>
+                )}
             </div>
 
             <Table
@@ -303,7 +310,7 @@ export default function DepositsPage() {
                 onPageChange={handlePageChange}
                 onPerPageChange={handlePerPageChange}
                 onRowClick={handleRowClick}
-                currentPage={filters.page} 
+                currentPage={filters.page}
                 perPage={filters.per_page}
             />
 
