@@ -213,11 +213,11 @@ export const menuConfig: Record<string, NavItem[]> = {
     },
     {
       name: 'Setor Barang',
-      icon: <Archive />, 
+      icon: <Archive />,
       path: '/purchasing/deposits',
       roles: [1, 3, 5],
     },
-   
+
     // {
     //   name: 'Laporan Stok Global',
     //   icon: <PackageSearch />,
@@ -250,6 +250,12 @@ export const menuConfig: Record<string, NavItem[]> = {
       name: 'Admin Sales & Purchasing',
       icon: <ShieldUser />,
       path: '/admin-panel',
+      roles: [1, 8],
+    },
+    {
+      name: 'SPV Purchasing',
+      icon: <ShieldUser />,
+      path: '/admin-panel/spv-purchasing',
       roles: [1, 8],
     },
     {
