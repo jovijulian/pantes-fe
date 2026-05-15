@@ -28,6 +28,7 @@ interface IFilters {
     supplier_id: number | null;
     staff_id: number | null;
     belum_setor: boolean;
+    type: number | null;
 }
 interface IStockData {
     code_item: string;
@@ -59,6 +60,7 @@ const initialFilterState: IFilters = {
     supplier_id: null,
     staff_id: null,
     belum_setor: false,
+    type: null,
 };
 
 export default function StockGlobalReportPage() {
@@ -140,7 +142,7 @@ export default function StockGlobalReportPage() {
         setIsLoading(true);
 
         const params = buildActiveFilters(appliedFilters);
-        params.type = 1;
+        // params.type = 1;
         try {
             const response = await httpGet(endpointUrl("stock-global"), true, params);
             setData(response.data.data || []);
@@ -196,6 +198,7 @@ export default function StockGlobalReportPage() {
     };
 
     const handleFilterChange = (field: keyof IFilters, value: any) => {
+        console.log("Updating filter:", field, value);
         setAppliedFilters(prev => ({ ...prev, [field]: value }));
     };
 
@@ -276,6 +279,10 @@ export default function StockGlobalReportPage() {
         { id: "xray", header: "X-Ray", accessorKey: "xray" },
     ], [data]);
 
+    const itemFromOptions = [
+        { label: "CT", value: "1" },
+        { label: "Rongsok", value: "3" }
+    ]
     return (
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
@@ -433,18 +440,30 @@ export default function StockGlobalReportPage() {
                                         viewingMonthDate={viewingMonthDate} onMonthChange={setViewingMonthDate}
                                     />
                                 </div>
-                                <div className="flex items-center pt-6">
-                                    <input
-                                        type="checkbox"
-                                        id="belum_setor"
-                                        checked={appliedFilters.belum_setor}
-                                        onChange={(e) => handleFilterChange('belum_setor', e.target.checked)}
-                                        className="h-4 w-4 rounded"
+
+                                <div>
+                                    <label className="block font-medium mb-1 text-sm">Asal Barang</label>
+                                    <Select
+                                        options={itemFromOptions}
+                                        value={appliedFilters.type ? _.find(itemFromOptions, { value: appliedFilters.type.toString() }) : null}
+                                        onValueChange={(opt) => handleFilterChange('type', opt ? Number(opt.value) : null)}
+                                        placeholder="Semua"
+                                        isClearable disabled={loadingOptions}
                                     />
-                                    <label htmlFor="belum_setor" className="ml-2 block text-sm font-medium">
-                                        Hanya yg belum setor
-                                    </label>
                                 </div>
+
+                            </div>
+                            <div className="flex items-center justify-end">
+                                <input
+                                    type="checkbox"
+                                    id="belum_setor"
+                                    checked={appliedFilters.belum_setor}
+                                    onChange={(e) => handleFilterChange('belum_setor', e.target.checked)}
+                                    className="h-4 w-4 rounded"
+                                />
+                                <label htmlFor="belum_setor" className="ml-2 block text-sm font-medium">
+                                    Hanya yg belum setor
+                                </label>
                             </div>
                         </ComponentCard>
                     </motion.div>

@@ -15,6 +15,8 @@ import EditModal from "@/components/modal/edit/EditSupplierModal";
 import { FaEdit, FaPlus, FaTrash, FaUniversity } from "react-icons/fa";
 import DateRangePicker from "@/components/common/DateRangePicker";
 import ManageSupplierBanksModal from "@/components/modal/ManageSupplierBanksModal";
+import Select from "@/components/form/Select-custom";
+import _ from "lodash";
 
 interface TableDataItem {
     id: number;
@@ -35,6 +37,7 @@ export default function SupplierPage() {
     const [editData, setEditData] = useState<TableDataItem | null>(null);
     const [deleteData, setDeleteData] = useState<TableDataItem | null>(null);
     const router = useRouter()
+    const [codeSort, setCodeSort] = useState<string>('');
     const page = searchParams.get("page") || "1";
     const [data, setData] = useState<TableDataItem[]>([]);
     const [lastPage, setLastPage] = useState(1);
@@ -45,7 +48,7 @@ export default function SupplierPage() {
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
     useEffect(() => {
         getData();
-    }, [searchParams, currentPage, perPage, page, searchTerm]);
+    }, [searchParams, currentPage, perPage, page, searchTerm, codeSort]);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -155,6 +158,7 @@ export default function SupplierPage() {
 
         const params: any = {
             ...(search ? { search } : {}),
+            ...(codeSort ? { code_sort: codeSort } : {}),
             per_page: perPageParam ? Number(perPageParam) : perPage,
             page: page ? Number(page) : currentPage,
         };
@@ -180,29 +184,42 @@ export default function SupplierPage() {
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
     };
+
+    const sortOptions = [
+        { label: "Kode Terkecil ke Terbesar (ASC)", value: "ASC" },
+        { label: "Kode Terbesar ke Terkecil (DESC)", value: "DESC" },
+    ];
     return (
         <div className="space-y-4">
 
-            {/* Action Buttons */}
-            <div className="flex justify-end items-center">
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={handleSearch}
-                        placeholder="Search..."
-                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
+                <div className="w-full sm:w-auto">
+                    <Select
+                        onValueChange={(selectedOption) => {
+                            setCodeSort(selectedOption?.value)
+                        }}
+                        placeholder={"Urutkan Kode Supplier"}
+                        value={_.find(sortOptions, { value: codeSort })}
+                        options={sortOptions}
+                        isClearable
                     />
-
-                    <button
-                        onClick={() => router.push("/purchasing/master/suppliers/create")}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                    >
-                        <span>+</span>
-                        Tambah
-                    </button>
-
                 </div>
+                <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    placeholder="Search..."
+                    className="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                />
+
+                <button
+                    onClick={() => router.push("/purchasing/master/suppliers/create")}
+                    className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                >
+                    <span>+</span>
+                    Tambah
+                </button>
+
             </div>
 
             <Table

@@ -18,6 +18,7 @@ import { Modal } from '@/components/ui/modal';
 import SingleDatePicker from "@/components/common/SingleDatePicker";
 import { alertToast, endpointUrl, httpGet, httpPost } from "@/../helpers";
 import { useTableFilters } from "@/hooks/useTableFilters";
+import Select from "@/components/form/Select-custom";
 
 interface IExpedition {
     id: number;
@@ -76,6 +77,12 @@ interface ICountPurpose {
     "vendor": number;
 }
 
+const workOrderOptions = [
+    { value: "", label: "Semua Data" },
+    { value: "1", label: "Punya Surat Jalan" },
+    { value: "0", label: "Tanpa Surat Jalan" },
+];
+
 export default function ScrapGoldSendPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -98,7 +105,8 @@ export default function ScrapGoldSendPage() {
         per_page: 20,
         search: '',
         status: '',
-        type_purpose: ''
+        type_purpose: '',
+        is_scrap_gold_send: '',
     });
     const getData = async () => {
         setIsLoading(true);
@@ -108,6 +116,7 @@ export default function ScrapGoldSendPage() {
             per_page: filters.per_page,
             ...(filters.status ? { status: filters.status } : {}),
             ...(filters.type_purpose ? { type_purpose: filters.type_purpose } : {}),
+            ...(filters.is_scrap_gold_send !== '' ? { is_scrap_gold_send: filters.is_scrap_gold_send } : {}),
             page: filters.page,
         };
 
@@ -327,16 +336,16 @@ export default function ScrapGoldSendPage() {
                             <FaEye className="w-4 h-4 mr-1" />
                         </button> */}
                         <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    // window.open(`/purchasing/orders/${row.id}`, "_blank");
-                                    router.push(`/purchasing/scrap-golds/sends/${row.id}`)
-                                }}
-                                title="Lihat Detail"
-                                className="p-3 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            >
-                                <FaEye className="w-4 h-4" />
-                            </button>
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                // window.open(`/purchasing/orders/${row.id}`, "_blank");
+                                router.push(`/purchasing/scrap-golds/sends/${row.id}`)
+                            }}
+                            title="Lihat Detail"
+                            className="p-3 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        >
+                            <FaEye className="w-4 h-4" />
+                        </button>
 
                         {/* Status 1 -> Kirim */}
                         {/* {currentStatus === "1" && (
@@ -562,25 +571,35 @@ export default function ScrapGoldSendPage() {
                 </div>
             )}
 
-            <div className="flex justify-end items-center">
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        value={filters.search}
-                        onChange={handleSearch}
-                        placeholder="Search..."
-                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
+                <div className="w-full sm:w-48">
+                    <Select
+                        options={workOrderOptions}
+                        value={_.find(workOrderOptions, { value: filters.is_scrap_gold_send })}
+                        onValueChange={(opt) => {
+                            setFilter("is_scrap_gold_send", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter Surat Jalan..."
                     />
-                    {role !== "3" && (
-                        <button
-                            onClick={() => router.push("/purchasing/scrap-golds/sends/create")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Kirim Rongsok
-                        </button>
-                    )}
                 </div>
+                <input
+                    type="text"
+                    value={filters.search}
+                    onChange={handleSearch}
+                    placeholder="Search..."
+                    className="w-full sm:w-48 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                />
+                {role !== "3" && (
+                    <button
+                        onClick={() => router.push("/purchasing/scrap-golds/sends/create")}
+                        // className="w-full sm:w-48 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Kirim Rongsok
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">

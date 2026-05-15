@@ -39,6 +39,12 @@ const statusOptions = [
     { value: "4", label: "Bayar" },
 ];
 
+const workOrderOptions = [
+    { value: "", label: "Semua Order" },
+    { value: "1", label: "Punya Surat Jalan" },
+    { value: "0", label: "Tanpa Surat Jalan" },
+];
+
 export default function PurchaseOrdersPage() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -57,7 +63,8 @@ export default function PurchaseOrdersPage() {
         page: 1,
         per_page: 20,
         search: '',
-        status: ''
+        status: '',
+        is_work_order: ''
     });
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
@@ -84,6 +91,7 @@ export default function PurchaseOrdersPage() {
             per_page: filters.per_page,
             ...(filters.status ? { status: filters.status } : {}),
             page: filters.page,
+            ...(filters.is_work_order !== '' ? { is_work_order: filters.is_work_order } : {}),
         };
         try {
             const response = await httpGet(endpointUrl("purchase/order"), true, params);
@@ -367,6 +375,17 @@ export default function PurchaseOrdersPage() {
     return (
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
+                <div className="w-full sm:w-48">
+                    <Select
+                        options={workOrderOptions}
+                        value={_.find(workOrderOptions, { value: filters.is_work_order })}
+                        onValueChange={(opt) => {
+                            setFilter("is_work_order", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter Surat Jalan..."
+                    />
+                </div>
                 <div className="w-48 w-full sm:w-auto">
                     <Select
                         options={statusOptions}
