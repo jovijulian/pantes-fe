@@ -115,7 +115,7 @@ export default function ScrapGoldSendDetailPage() {
 
     const formatGram = (value: string | number | null): string => {
         const num = Number(value || 0);
-        return num.toLocaleString('id-ID', { maximumFractionDigits: 2 }) + " Gr";
+        return num.toLocaleString('id-ID', { maximumFractionDigits: 3 }) + " Gr";
     };
 
     const formatDate = (dateStr: string | null): string => {
