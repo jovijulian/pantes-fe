@@ -60,7 +60,7 @@ export default function CreateWorkOrderPage() {
         const fetchInitialData = async () => {
             try {
                 const [supplierRes, expeditionRes] = await Promise.all([
-                    httpGet(endpointUrl("master/supplier/dropdown"), true),
+                    httpGet(endpointUrl("master/supplier-work-order/dropdown"), true),
                     httpGet(endpointUrl("master/expedition/dropdown"), true),
                 ]);
 

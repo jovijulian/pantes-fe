@@ -16,7 +16,9 @@ import {
     Archive,
     MousePointerClick,
     Diamond,
-    FileClock
+    FileClock,
+    Check,
+    X
 } from "lucide-react";
 import Table from "@/components/tables/Table";
 import { endpointUrl, httpGet } from "@/../helpers";
@@ -44,7 +46,11 @@ interface ICTReport {
     weight?: string;
     cokim?: string;
     supplier?: any;
+    work_order_id?: number | null;
+    deposit_date?: string;
+    purpose?: string;
 }
+
 
 export default function CTReportPage() {
     const [activeTab, setActiveTab] = useState<"1" | "2" | "3" | "4" | null>(null);
@@ -283,21 +289,35 @@ export default function CTReportPage() {
                             {row.payment_date ? moment(row.payment_date).format("DD/MM/YYYY") : "-"}
                         </div>
                     )
+                },
+                {
+                    id: "work_order_id",
+                    header: "Punya Surat Jalan",
+                    accessorKey: "work_order_id",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="font-medium text-gray-800 text-center">
+                            {row.work_order_id ? (
+                                <Check className="text-green-600 w-5 h-5" />
+                            ) : (
+                                <X className="text-red-600 w-5 h-5" />
+                            )}
+                        </div>
+                    ),
                 }
             ];
         }
         if (activeTab === "2") {
             return [
-                {
-                    id: "order_date",
-                    header: "TGL PESAN",
-                    accessorKey: "order_date",
-                    cell: ({ row }: { row: ICTReport }) => (
-                        <div className="font-medium text-gray-800">
-                            {row.order_date ? moment(row.order_date).format("DD/MM/YYYY") : "-"}
-                        </div>
-                    )
-                },
+                // {
+                //     id: "order_date",
+                //     header: "TGL PESAN",
+                //     accessorKey: "order_date",
+                //     cell: ({ row }: { row: ICTReport }) => (
+                //         <div className="font-medium text-gray-800">
+                //             {row.order_date ? moment(row.order_date).format("DD/MM/YYYY") : "-"}
+                //         </div>
+                //     )
+                // },
                 {
                     id: "receipt_date",
                     header: "TGL TERIMA",
@@ -305,6 +325,16 @@ export default function CTReportPage() {
                     cell: ({ row }: { row: ICTReport }) => (
                         <div className="font-medium text-gray-800">
                             {row.receipt_date ? moment(row.receipt_date).format("DD/MM/YYYY") : "-"}
+                        </div>
+                    )
+                },
+                {
+                    id: "deposit_date",
+                    header: "TGL SETOR",
+                    accessorKey: "deposit_date",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="font-medium text-gray-800">
+                            {row.deposit_date ? moment(row.deposit_date).format("DD/MM/YYYY") : "-"}
                         </div>
                     )
                 },
@@ -342,6 +372,14 @@ export default function CTReportPage() {
                         <div className="text-sm text-gray-700 font-medium uppercase">
                             {typeof row.supplier === 'object' ? row.supplier?.name : (row.supplier || "-")}
                         </div>
+                    )
+                },
+                {
+                    id: "purpose",
+                    header: "Tujuan",
+                    accessorKey: "purpose",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="text-sm text-gray-600 capitalize">{row.purpose || "-"}</div>
                     )
                 },
                 {

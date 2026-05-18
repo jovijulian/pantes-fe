@@ -11,7 +11,9 @@ import {
     Loader2,
     Package,
     Banknote,
-    Hash
+    Hash,
+    Check,
+    X
 } from "lucide-react";
 import Table from "@/components/tables/Table";
 import SingleDatePicker from "@/components/common/SingleDatePicker";
@@ -36,6 +38,7 @@ interface ICTNotReceived {
         name: string;
     };
     payment_date: string;
+    work_order_id: string | null;
 }
 interface SelectOption { value: string; label: string; }
 
@@ -277,6 +280,20 @@ export default function CTNotReceivedReportPage() {
                 </div>
             )
         },
+        {
+            id: "work_order_id",
+            header: "Punya Surat Jalan",
+            accessorKey: "work_order_id",
+            cell: ({ row }: { row: ICTNotReceived }) => (
+                <div className="font-medium text-gray-800 text-center">
+                    {row.work_order_id ? (
+                        <Check className="text-green-600 w-5 h-5" />
+                    ) : (
+                        <X className="text-red-600 w-5 h-5" />
+                    )}
+                </div>
+            ),
+        }
     ], []);
 
     return (

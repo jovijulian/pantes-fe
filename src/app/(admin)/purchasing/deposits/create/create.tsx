@@ -85,7 +85,7 @@ export default function CreateDepositPage() {
                 [field]: value
             }));
             if (value) {
-                toast.info("Daftar item yang dipilih telah di-reset karena supplier diganti.");
+                toast.info("Daftar item yang dipilih telah di-reset karena penerima diganti.");
             }
         } else {
             setFormData(prev => ({ ...prev, [field]: value }));
@@ -115,7 +115,7 @@ export default function CreateDepositPage() {
 
     const validateForm = (): boolean => {
         if (!formData.date || !formData.supplier_id || !formData.employee_id) {
-            toast.error("Harap isi Tanggal, Yang Menyerahkan, dan Supplier.");
+            toast.error("Harap isi Tanggal, Yang Menyerahkan, dan Penerima.");
             return false;
         }
         if (formData.items.length === 0) {
@@ -202,12 +202,12 @@ export default function CreateDepositPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block font-medium mb-1">Supplier<span className="text-red-400 ml-1">*</span></label>
+                                    <label className="block font-medium mb-1">Penerima<span className="text-red-400 ml-1">*</span></label>
                                     <Select
                                         options={supplierOptions}
                                         value={_.find(supplierOptions, { value: formData.supplier_id?.toString() })}
                                         onValueChange={(opt) => handleFieldChange('supplier_id', opt ? parseInt(opt.value) : null)}
-                                        placeholder="Pilih supplier..."
+                                        placeholder="Pilih penerima..."
                                         disabled={loadingOptions}
                                     />
                                 </div>
@@ -227,7 +227,7 @@ export default function CreateDepositPage() {
                                 Tambah Barang
                             </button>
                             {!formData.supplier_id && (
-                                <p className="text-xs text-red-500 mt-1">Pilih Supplier terlebih dahulu untuk menambah barang.</p>
+                                <p className="text-xs text-red-500 mt-1">Pilih Penerima terlebih dahulu untuk menambah barang.</p>
                             )}
                         </div>
 

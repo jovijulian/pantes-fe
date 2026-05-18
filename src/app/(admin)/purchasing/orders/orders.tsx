@@ -32,7 +32,6 @@ interface IPurchaseOrder {
 type ModalAction = 'Validasi' | 'Disetujui' | 'Bayar' | null;
 
 const statusOptions = [
-    { value: "", label: "Semua Status" },
     { value: "1", label: "Baru" },
     { value: "2", label: "Valid" },
     { value: "3", label: "Disetujui" },
@@ -40,10 +39,11 @@ const statusOptions = [
 ];
 
 const workOrderOptions = [
-    { value: "", label: "Semua Order" },
     { value: "1", label: "Punya Surat Jalan" },
     { value: "0", label: "Tanpa Surat Jalan" },
 ];
+
+interface SelectOption { value: string; label: string; }
 
 export default function PurchaseOrdersPage() {
     const searchParams = useSearchParams();
@@ -52,6 +52,7 @@ export default function PurchaseOrdersPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [lastPage, setLastPage] = useState(1);
     const [count, setCount] = useState(0);
+    const [loadingOptions, setLoadingOptions] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<IPurchaseOrder | null>(null);
@@ -59,16 +60,25 @@ export default function PurchaseOrdersPage() {
     const [paymentDate, setPaymentDate] = useState(moment().format('YYYY-MM-DD'));
     const [isDownloadLoading, setIsDownloadLoading] = useState(false);
     const [role, setRole] = useState<string | null>("null");
+    const [staffOptions, setStaffOptions] = useState<SelectOption[]>([]);
+    const [supplierOptions, setSupplierOptions] = useState<SelectOption[]>([]);
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
         search: '',
         status: '',
-        is_work_order: ''
+        is_work_order: '',
+        supplier_id: '',
+        staff_id: '',
     });
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
         return "Rp " + num.toLocaleString('id-ID');
+    };
+
+    const formatGram = (value: string | number | null): string => {
+        const num = Number(value || 0);
+        return num.toLocaleString('id-ID') + " gram";
     };
 
     const getStatusBadge = (status: string) => {
@@ -84,6 +94,23 @@ export default function PurchaseOrdersPage() {
         return <Badge color={color}>{label}</Badge>;
     };
 
+    const fetchInitialData = async () => {
+        try {
+            const [staffRes, supplierRes] = await Promise.all([
+                httpGet(endpointUrl("master/staff/dropdown"), true),
+                httpGet(endpointUrl("master/supplier/dropdown"), true),
+            ]);
+
+            setStaffOptions(staffRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
+            setSupplierOptions(supplierRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
+
+        } catch (error) {
+            toast.error("Gagal memuat data master untuk form.");
+        } finally {
+            setLoadingOptions(false);
+        }
+    };
+
     const getData = async () => {
         setIsLoading(true);
         const params: any = {
@@ -92,6 +119,8 @@ export default function PurchaseOrdersPage() {
             ...(filters.status ? { status: filters.status } : {}),
             page: filters.page,
             ...(filters.is_work_order !== '' ? { is_work_order: filters.is_work_order } : {}),
+            ...(filters.supplier_id ? { supplier_id: filters.supplier_id } : {}),
+            ...(filters.staff_id ? { staff_id: filters.staff_id } : {}),
         };
         try {
             const response = await httpGet(endpointUrl("purchase/order"), true, params);
@@ -107,6 +136,10 @@ export default function PurchaseOrdersPage() {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchInitialData();
+    }, []);
 
     useEffect(() => {
         getData();
@@ -335,6 +368,12 @@ export default function PurchaseOrdersPage() {
                 cell: ({ row }: any) => <span>{moment(row.date).format("DD MMM YYYY")}</span>,
             },
             {
+                id: "weight",
+                header: "Berat (gram)",
+                accessorKey: "weig",
+                cell: ({ row }: any) => <span>{formatGram(row.weight)}</span>,
+            },
+            {
                 id: "nominal",
                 header: "Nominal",
                 accessorKey: "nominal",
@@ -363,40 +402,13 @@ export default function PurchaseOrdersPage() {
                 accessorKey: "created_at",
                 cell: ({ row }: any) => <span>{moment(row.created_at).format("DD-MMM-YYYY, HH:mm")}</span>,
             },
-            {
-                id: "updated_at",
-                header: "Diubah pada",
-                accessorKey: "updated_at",
-                cell: ({ row }: any) => <span>{moment(row.updated_at).format("DD-MMM-YYYY, HH:mm")}</span>,
-            },
         ];
     }, [router]);
 
     return (
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
-                <div className="w-full sm:w-48">
-                    <Select
-                        options={workOrderOptions}
-                        value={_.find(workOrderOptions, { value: filters.is_work_order })}
-                        onValueChange={(opt) => {
-                            setFilter("is_work_order", opt ? opt.value : "");
-                            setFilter("page", 1);
-                        }}
-                        placeholder="Filter Surat Jalan..."
-                    />
-                </div>
-                <div className="w-48 w-full sm:w-auto">
-                    <Select
-                        options={statusOptions}
-                        value={_.find(statusOptions, { value: filters.status })}
-                        onValueChange={(opt) => {
-                            setFilter("status", opt ? opt.value : "");
-                            setFilter("page", 1);
-                        }}
-                        placeholder="Filter Status..."
-                    />
-                </div>
+
                 <input
                     type="text"
                     value={filters.search}
@@ -414,6 +426,62 @@ export default function PurchaseOrdersPage() {
                         Tambah Order
                     </button>
                 )}
+
+            </div>
+            <div className="flex flex-col sm:flex-row justify-start items-center gap-2">
+                <div className="w-full sm:flex-1">
+                    <Select
+                        options={staffOptions}
+                        value={_.find(staffOptions, { value: filters.staff_id })}
+                        onValueChange={(opt) => {
+                            setFilter("staff_id", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter Pemesan..."
+                        isClearable
+                        isLoading={loadingOptions}
+                    />
+                </div>
+                <div className="w-full sm:flex-1">
+                    <Select
+                        options={supplierOptions}
+                        value={_.find(supplierOptions, { value: filters.supplier_id })}
+                        onValueChange={(opt) => {
+                            setFilter("supplier_id", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter Supplier..."
+                        isClearable
+                        isLoading={loadingOptions}
+                    />
+                </div>
+                <div className="w-full sm:flex-1">
+                    <Select
+                        options={workOrderOptions}
+                        value={_.find(workOrderOptions, { value: filters.is_work_order })}
+                        onValueChange={(opt) => {
+                            setFilter("is_work_order", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter Surat Jalan..."
+                        isClearable
+                        isLoading={loadingOptions}
+                    />
+                </div>
+                <div className="w-48 w-full sm:flex-1">
+                    <Select
+                        options={statusOptions}
+                        value={_.find(statusOptions, { value: filters.status })}
+                        onValueChange={(opt) => {
+                            setFilter("status", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter Status..."
+                        isClearable
+                        isLoading={loadingOptions}
+                    />
+                </div>
+
 
             </div>
 

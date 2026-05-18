@@ -16,6 +16,8 @@ import {
     Archive,
     MousePointerClick,
     FileClock,
+    Check,
+    X,
 } from "lucide-react";
 import Table from "@/components/tables/Table";
 import { endpointUrl, httpGet } from "@/../helpers";
@@ -45,6 +47,8 @@ interface ICTReport {
     supplier?: any;
     pcs: string;
     total_nominal?: string;
+    work_order_id?: number | null;
+    purpose?: string;
 }
 
 export default function LMReportPage() {
@@ -197,6 +201,7 @@ export default function LMReportPage() {
             totalPcs: _.sumBy(reportData, (item) => Number(item.pcs || 0)),
             totalNominal: _.sumBy(reportData, (item) => {
                 if (item.total_nominal) return Number(item.total_nominal);
+                if (item.nominal) return Number(item.nominal);
                 return Number(item.weight || 0) * Number(item.cokim || 0);
             })
         };
@@ -215,16 +220,16 @@ export default function LMReportPage() {
     const columns = useMemo(() => {
         if (activeTab === "1") {
             return [
-                {
-                    id: "code_item",
-                    header: "KODE BARANG",
-                    accessorKey: "code_item",
-                    cell: ({ row }: { row: ICTReport }) => (
-                        <span className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">
-                            {row.code_item || "-"}
-                        </span>
-                    )
-                },
+                // {
+                //     id: "code_item",
+                //     header: "KODE BARANG",
+                //     accessorKey: "code_item",
+                //     cell: ({ row }: { row: ICTReport }) => (
+                //         <span className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">
+                //             {row.code_item || "-"}
+                //         </span>
+                //     )
+                // },
                 {
                     id: "dates",
                     header: "Tanggal",
@@ -258,13 +263,23 @@ export default function LMReportPage() {
                     }
                 },
                 {
-                    id: "item_type",
-                    header: "JENIS BARANG",
-                    accessorKey: "item_type",
+                    id: "no_order",
+                    header: "NO ORDER",
+                    accessorKey: "no_order",
                     cell: ({ row }: { row: ICTReport }) => (
-                        <span className="text-sm text-gray-600 capitalize">{row.item_type || "-"}</span>
+                        <span className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100">
+                            {row.no_order || "-"}
+                        </span>
                     )
                 },
+                // {
+                //     id: "item_type",
+                //     header: "JENIS BARANG",
+                //     accessorKey: "item_type",
+                //     cell: ({ row }: { row: ICTReport }) => (
+                //         <span className="text-sm text-gray-600 capitalize">{row.item_type || "-"}</span>
+                //     )
+                // },
                 {
                     id: "staff",
                     header: "PEMESAN",
@@ -289,14 +304,14 @@ export default function LMReportPage() {
                         <div className="text-sm font-bold text-gray-800">{row.weight ? formatNumber(row.weight) : "0"}</div>
                     )
                 },
-                {
-                    id: "cokim",
-                    header: "COKIM",
-                    accessorKey: "cokim",
-                    cell: ({ row }: { row: ICTReport }) => (
-                        <div className="text-sm text-gray-600">{row.cokim ? formatNumber(row.cokim) : "-"}</div>
-                    )
-                },
+                // {
+                //     id: "cokim",
+                //     header: "COKIM",
+                //     accessorKey: "cokim",
+                //     cell: ({ row }: { row: ICTReport }) => (
+                //         <div className="text-sm text-gray-600">{row.cokim ? formatNumber(row.cokim) : "-"}</div>
+                //     )
+                // },
                 {
                     id: "pcs",
                     header: "PCS",
@@ -306,13 +321,27 @@ export default function LMReportPage() {
                     )
                 },
                 {
-                    id: "total_nominal",
+                    id: "nominal",
                     header: "NOMINAL",
-                    accessorKey: "total_nominal",
+                    accessorKey: "nominal",
                     cell: ({ row }: { row: ICTReport }) => (
-                        <div className="text-sm font-bold text-emerald-600">{row.total_nominal ? formatRupiah(row.total_nominal) : "-"}</div>
+                        <div className="text-sm font-bold text-emerald-600">{row.nominal ? formatRupiah(row.nominal) : "-"}</div>
                     )
                 },
+                {
+                    id: "work_order_id",
+                    header: "Punya Surat Jalan",
+                    accessorKey: "work_order_id",
+                    cell: ({ row }: { row: ICTReport }) => (
+                        <div className="font-medium text-gray-800 text-center">
+                            {row.work_order_id ? (
+                                <Check className="text-green-600 w-5 h-5" />
+                            ) : (
+                                <X className="text-red-600 w-5 h-5" />
+                            )}
+                        </div>
+                    ),
+                }
             ];
         }
 
@@ -469,6 +498,14 @@ export default function LMReportPage() {
                     <div className="text-sm text-gray-700 font-medium uppercase">
                         {typeof row.supplier === 'object' ? row.supplier?.name : (row.supplier || "-")}
                     </div>
+                )
+            },
+            {
+                id: "purpose",
+                header: "Tujuan",
+                accessorKey: "purpose",
+                cell: ({ row }: { row: ICTReport }) => (
+                    <div className="text-sm text-gray-600 capitalize">{row.purpose || "-"}</div>
                 )
             },
             {

@@ -30,12 +30,13 @@ interface IDeposit {
 }
 type ModalAction = 'Validasi' | 'Setor' | 'Lunas' | null;
 const statusOptions = [
-    { value: "", label: "Semua Status" },
     { value: "1", label: "Baru" },
     { value: "2", label: "Valid" },
     { value: "3", label: "Setor" },
     { value: "4", label: "Lunas" },
 ];
+
+interface SelectOption { value: string; label: string; }
 
 export default function DepositsPage() {
     const searchParams = useSearchParams();
@@ -51,11 +52,16 @@ export default function DepositsPage() {
     const [modalAction, setModalAction] = useState<ModalAction>(null);
     const [paymentDate, setPaymentDate] = useState(moment().format('YYYY-MM-DD'));
     const [role, setRole] = useState<string | null>("null");
+    const [employeeOptions, setEmployeeOptions] = useState<SelectOption[]>([]);
+    const [supplierOptions, setSupplierOptions] = useState<SelectOption[]>([]);
+    const [loadingOptions, setLoadingOptions] = useState(true);
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
         search: '',
-        status: ''
+        status: '',
+        supplier_id: '',
+        employee_id: '',
     });
     const getStatusBadge = (status: string | null) => {
         if (status === null) {
@@ -73,6 +79,24 @@ export default function DepositsPage() {
         }
         return <Badge color={color}>{label}</Badge>;
     };
+
+    const fetchInitialData = async () => {
+        try {
+            const [employeeRes, supplierRes] = await Promise.all([
+                httpGet(endpointUrl("master/employee/dropdown"), true),
+                httpGet(endpointUrl("master/supplier/dropdown"), true),
+            ]);
+
+            setEmployeeOptions(employeeRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
+            setSupplierOptions(supplierRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
+
+        } catch (error) {
+            toast.error("Gagal memuat data master untuk form.");
+        } finally {
+            setLoadingOptions(false);
+        }
+    };
+
     const getData = async () => {
         setIsLoading(true);
         const params: any = {
@@ -80,6 +104,9 @@ export default function DepositsPage() {
             per_page: filters.per_page,
             ...(filters.status ? { status: filters.status } : {}),
             page: filters.page,
+            ...(filters.supplier_id ? { supplier_id: filters.supplier_id } : {}),
+            ...(filters.employee_id ? { employee_id: filters.employee_id } : {}),
+            
         };
         try {
             const response = await httpGet(endpointUrl("deposit"), true, params);
@@ -95,6 +122,10 @@ export default function DepositsPage() {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchInitialData();
+    }, []);
 
     useEffect(() => {
         getData();
@@ -271,17 +302,7 @@ export default function DepositsPage() {
     return (
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
-                <div className="w-48 w-full sm:w-auto">
-                    <Select
-                        options={statusOptions}
-                        value={_.find(statusOptions, { value: filters.status })}
-                        onValueChange={(opt) => {
-                            setFilter("status", opt ? opt.value : "");
-                            setFilter("page", 1);
-                        }}
-                        placeholder="Filter Status..."
-                    />
-                </div>
+
                 <input
                     type="text"
                     value={filters.search}
@@ -298,6 +319,50 @@ export default function DepositsPage() {
                         Tambah Setor
                     </button>
                 )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-start items-center gap-2">
+                <div className="w-full sm:flex-1">
+                    <Select
+                        options={employeeOptions}
+                        value={_.find(employeeOptions, { value: filters.employee_id })}
+                        onValueChange={(opt) => {
+                            setFilter("employee_id", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter yang menyerahkan..."
+                        isClearable
+                        isLoading={loadingOptions}
+                    />
+                </div>
+                <div className="w-full sm:flex-1">
+                    <Select
+                        options={supplierOptions}
+                        value={_.find(supplierOptions, { value: filters.supplier_id })}
+                        onValueChange={(opt) => {
+                            setFilter("supplier_id", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter Supplier..."
+                        isClearable
+                        isLoading={loadingOptions}
+                    />
+                </div>
+                <div className="w-48 w-full sm:flex-1">
+                    <Select
+                        options={statusOptions}
+                        value={_.find(statusOptions, { value: filters.status })}
+                        onValueChange={(opt) => {
+                            setFilter("status", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter Status..."
+                        isClearable
+                        isLoading={loadingOptions}
+                    />
+                </div>
+
+
             </div>
 
             <Table

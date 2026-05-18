@@ -35,10 +35,11 @@ interface IWorkOrder {
 }
 
 const statusOptions = [
-    { value: "", label: "Semua Status" },
     { value: "1", label: "WO Aktif" },
     { value: "2", label: "Diterima" },
 ];
+
+interface SelectOption { value: string; label: string; }
 
 export default function WorkOrdersPage() {
     const searchParams = useSearchParams();
@@ -53,11 +54,16 @@ export default function WorkOrdersPage() {
     const [count, setCount] = useState(0);
     const [isDownloadLoading, setIsDownloadLoading] = useState(false);
     const [role, setRole] = useState<string | null>("null");
+    const [staffOptions, setStaffOptions] = useState<SelectOption[]>([]);
+    const [supplierOptions, setSupplierOptions] = useState<SelectOption[]>([]);
+    const [loadingOptions, setLoadingOptions] = useState(true);
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
         search: '',
-        status: ''
+        status: '',
+        supplier_id: '',
+        staff_id: '',
     });
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
@@ -80,6 +86,23 @@ export default function WorkOrdersPage() {
         return <Badge color={color}>{label}</Badge>;
     };
 
+    const fetchInitialData = async () => {
+        try {
+            const [staffRes, supplierRes] = await Promise.all([
+                httpGet(endpointUrl("master/staff/dropdown"), true),
+                httpGet(endpointUrl("master/supplier/dropdown"), true),
+            ]);
+
+            setStaffOptions(staffRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
+            setSupplierOptions(supplierRes.data.data.map((s: any) => ({ value: s.id.toString(), label: s.name })));
+
+        } catch (error) {
+            toast.error("Gagal memuat data master untuk form.");
+        } finally {
+            setLoadingOptions(false);
+        }
+    };
+
     const getData = async () => {
         setIsLoading(true);
 
@@ -88,6 +111,8 @@ export default function WorkOrdersPage() {
             per_page: filters.per_page,
             ...(filters.status ? { status: filters.status } : {}),
             page: filters.page,
+            ...(filters.supplier_id ? { supplier_id: filters.supplier_id } : {}),
+            ...(filters.staff_id ? { staff_id: filters.staff_id } : {}),
         };
 
         try {
@@ -104,6 +129,10 @@ export default function WorkOrdersPage() {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchInitialData();
+    }, []);
 
     useEffect(() => {
         getData();
@@ -406,17 +435,7 @@ export default function WorkOrdersPage() {
     return (
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
-                <div className="w-48 w-full sm:w-auto">
-                    <Select
-                        options={statusOptions}
-                        value={_.find(statusOptions, { value: filters.status })}
-                        onValueChange={(opt) => {
-                            setFilter("status", opt ? opt.value : "");
-                            setFilter("page", 1);
-                        }}
-                        placeholder="Filter Status..."
-                    />
-                </div>
+
                 <input
                     type="text"
                     value={filters.search}
@@ -433,6 +452,49 @@ export default function WorkOrdersPage() {
                         Tambah Surat Jalan
                     </button>
                 )}
+            </div>
+            <div className="flex flex-col sm:flex-row justify-start items-center gap-2">
+                <div className="w-full sm:flex-1">
+                    <Select
+                        options={staffOptions}
+                        value={_.find(staffOptions, { value: filters.staff_id })}
+                        onValueChange={(opt) => {
+                            setFilter("staff_id", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter Pemesan..."
+                        isClearable
+                        isLoading={loadingOptions}
+                    />
+                </div>
+                <div className="w-full sm:flex-1">
+                    <Select
+                        options={supplierOptions}
+                        value={_.find(supplierOptions, { value: filters.supplier_id })}
+                        onValueChange={(opt) => {
+                            setFilter("supplier_id", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter Supplier..."
+                        isClearable
+                        isLoading={loadingOptions}
+                    />
+                </div>
+                <div className="w-48 w-full sm:flex-1">
+                    <Select
+                        options={statusOptions}
+                        value={_.find(statusOptions, { value: filters.status })}
+                        onValueChange={(opt) => {
+                            setFilter("status", opt ? opt.value : "");
+                            setFilter("page", 1);
+                        }}
+                        placeholder="Filter Status..."
+                        isClearable
+                        isLoading={loadingOptions}
+                    />
+                </div>
+
+
             </div>
 
             <Table

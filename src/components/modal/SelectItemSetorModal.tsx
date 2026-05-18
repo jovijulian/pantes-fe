@@ -145,7 +145,7 @@ const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({
                                                 <tr><td colSpan={5} className="text-center p-4"><Loader2 className="w-6 h-6 animate-spin inline-block" /></td></tr>
                                             )}
                                             {!isLoading && availableItems.length === 0 && (
-                                                <tr><td colSpan={5} className="text-center p-4 text-gray-500 italic">Tidak ada item yang tersedia untuk supplier ini.</td></tr>
+                                                <tr><td colSpan={5} className="text-center p-4 text-gray-500 italic">Tidak ada item yang tersedia untuk penerima ini.</td></tr>
                                             )}
                                             {availableItems.map(item => {
                                                 const isChecked = selectedItems.some(p => p.work_order_item_id === item.work_order_item_id);

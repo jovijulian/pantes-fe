@@ -205,24 +205,24 @@ export default function ScrapGoldReportPage() {
                         <div className="text-sm text-gray-600 capitalize">{row.expedition || "-"}</div>
                     )
                 },
-                {
-                    id: "item_info",
-                    header: "BARANG",
-                    cell: ({ row }: { row: IScrapGoldReport }) => (
-                        <div>
-                            <span className="text-xs text-gray-500 font-mono block leading-tight">{row.code_item || "-"}</span>
-                            <span className="text-sm text-gray-700 font-medium">{row.item_type || "-"}</span>
-                        </div>
-                    )
-                },
-                {
-                    id: "kadar",
-                    header: "KADAR (%)",
-                    accessorKey: "kadar",
-                    cell: ({ row }: { row: IScrapGoldReport }) => (
-                        <div className="text-sm text-gray-600">{row.kadar ? `${row.kadar}%` : "-"}</div>
-                    )
-                },
+                // {
+                //     id: "item_info",
+                //     header: "BARANG",
+                //     cell: ({ row }: { row: IScrapGoldReport }) => (
+                //         <div>
+                //             <span className="text-xs text-gray-500 font-mono block leading-tight">{row.code_item || "-"}</span>
+                //             <span className="text-sm text-gray-700 font-medium">{row.item_type || "-"}</span>
+                //         </div>
+                //     )
+                // },
+                // {
+                //     id: "kadar",
+                //     header: "KADAR (%)",
+                //     accessorKey: "kadar",
+                //     cell: ({ row }: { row: IScrapGoldReport }) => (
+                //         <div className="text-sm text-gray-600">{row.kadar ? `${row.kadar}%` : "-"}</div>
+                //     )
+                // },
                 {
                     id: "bruto",
                     header: "BRUTO (GR)",
@@ -231,14 +231,14 @@ export default function ScrapGoldReportPage() {
                         <div className="text-sm font-bold text-gray-800">{row.bruto ? formatNumber(row.bruto) : "0"}</div>
                     )
                 },
-                {
-                    id: "netto",
-                    header: "NETTO (GR)",
-                    accessorKey: "netto",
-                    cell: ({ row }: { row: IScrapGoldReport }) => (
-                        <div className="text-sm font-bold text-emerald-600">{row.netto ? formatNumber(row.netto) : "0"}</div>
-                    )
-                }
+                // {
+                //     id: "netto",
+                //     header: "NETTO (GR)",
+                //     accessorKey: "netto",
+                //     cell: ({ row }: { row: IScrapGoldReport }) => (
+                //         <div className="text-sm font-bold text-emerald-600">{row.netto ? formatNumber(row.netto) : "0"}</div>
+                //     )
+                // }
             ];
         }
 
@@ -359,7 +359,7 @@ export default function ScrapGoldReportPage() {
                 </div>
             ) : (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-white p-4 rounded-xl border border-blue-100 shadow-sm relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-16 h-16 bg-blue-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
                             <div className="flex items-center gap-2 mb-1 z-10 relative">
@@ -386,7 +386,7 @@ export default function ScrapGoldReportPage() {
                             </h3>
                         </div>
 
-                        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-xl shadow-lg shadow-emerald-200 relative overflow-hidden text-white">
+                        {/* <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-xl shadow-lg shadow-emerald-200 relative overflow-hidden text-white">
                             <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-bl-full -mr-6 -mt-6 z-0"></div>
                             <div className="flex items-center gap-2 mb-1 z-10 relative">
                                 <Scale className="w-4 h-4 text-emerald-100" />
@@ -395,7 +395,7 @@ export default function ScrapGoldReportPage() {
                             <h3 className="text-2xl font-bold z-10 relative mt-2">
                                 {isLoadingReport ? "..." : formatNumber(summary.totalNetto)} <span className="text-sm font-normal text-emerald-100">Gr</span>
                             </h3>
-                        </div>
+                        </div> */}
                     </div>
 
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative min-h-[300px]">
