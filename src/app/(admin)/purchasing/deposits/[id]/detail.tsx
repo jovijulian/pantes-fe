@@ -9,12 +9,13 @@ import { httpGet, httpPut, httpPost, httpDelete, alertToast, endpointUrl } from 
 import ComponentCard from "@/components/common/ComponentCard";
 import {
     Loader2, User, Building, Calendar, Info, Check, X,
-    FileText, DollarSign, Scale, UserCheck, Truck, PackagePlus, Package, Edit, Trash2
+    FileText, DollarSign, Scale, UserCheck, Truck, PackagePlus, Package, Edit, Trash2, Download
 } from "lucide-react";
 import Badge from "@/components/ui/badge/Badge";
 import ChangeStatusDepositModal from "@/components/modal/ChangeStatusDepositModal";
 import SelectItemSetorModal from "@/components/modal/SelectItemSetorModal";
 import DeleteConfirmationModal from "@/components/modal/deactive/DeleteItemDepositConfirmationModal";
+import axios from "axios";
 interface IUserSimple {
     id: number;
     name: string;
@@ -71,7 +72,7 @@ export default function DepositDetailPage() {
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
+    const [isDownloadLoading, setIsDownloadLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedItem, setSelectedItem] = useState<IDepositDetail | null>(null);
     const [modalAction, setModalAction] = useState<ModalAction>(null);
@@ -217,6 +218,51 @@ export default function DepositDetailPage() {
             setIsSubmitting(false);
         }
     };
+
+
+    const handleExport = async () => {
+        if (!data) return;
+        setIsDownloadLoading(true);
+
+        try {
+            const response = await axios.get(endpointUrl(`deposit/${data.id}/export`), {
+                responseType: 'blob',
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+
+            const pdfBlob = response.data;
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            // window.open(blobUrl, '_blank');
+
+            const link = document.createElement('a');
+            const contentDisposition = response.headers['content-disposition'];
+
+            let filename = `purchase_order-${moment().format("YYYY-MM-DD")}.pdf`;
+
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+            link.href = blobUrl;
+
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        } catch (error) {
+            console.error("Error saat memproses PDF:", error);
+            toast.error("Failed to generate report. Please try again later.");
+        } finally {
+            setIsDownloadLoading(false);
+        }
+    };
+    
     if (isLoading) return (
         <div className="flex justify-center items-center h-screen">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -245,6 +291,18 @@ export default function DepositDetailPage() {
                     </div>
                     <div className="flex items-center gap-3">
                         {getStatusBadge(data.status)}
+                        <button
+                                type="button"
+                                disabled={isDownloadLoading}
+                                onClick={handleExport}
+                                className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
+                                bg-indigo-600 text-white text-sm font-medium shadow-sm 
+                                hover:bg-indigo-700 disabled:opacity-50
+                                transition-all duration-200"
+                            >
+                                <Download className="w-4 h-4" />
+                                <span>Export</span>
+                            </button>
                     </div>
                 </div>
 
