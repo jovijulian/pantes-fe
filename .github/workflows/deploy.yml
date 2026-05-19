@@ -1,0 +1,58 @@
+name: Deploy Next.js to cPanel -- Pantes FE
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.20.2'
+
+      - name: Install dependencies and Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Compress Build Files
+        run: |
+          # Zip folder .next, public, package.json, dan node_modules
+          zip -r build.zip .next public package.json node_modules
+
+      - name: Upload zip
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          key: ${{ secrets.CPANEL_SSH_KEY }}
+          passphrase: ${{ secrets.CPANEL_SSH_PASSPHRASE }}
+          port: ${{ secrets.CPANEL_PORT }}
+          source: "build.zip"
+          target: "/home/${{ secrets.CPANEL_USERNAME }}/pantes.padmanagara.my.id/pantes-fe" 
+
+      - name: Extract & Restart Node.js
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.CPANEL_HOST }}
+          username: ${{ secrets.CPANEL_USERNAME }}
+          key: ${{ secrets.CPANEL_SSH_KEY }}
+          passphrase: ${{ secrets.CPANEL_SSH_PASSPHRASE }}
+          port: ${{ secrets.CPANEL_PORT }}
+          script: |
+            cd /home/${{ secrets.CPANEL_USERNAME }}/pantes.padmanagara.my.id/pantes-fe
+
+            unzip -q -o build.zip
+            
+            rm build.zip
+            
+            mkdir -p tmp
+            touch tmp/restart.txt

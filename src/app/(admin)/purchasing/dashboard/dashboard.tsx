@@ -19,7 +19,7 @@ export default function Dashboard() {
             {/* Bagian Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">Dashboard </h1>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">dashboard </h1>
                 </div>
 
             </div>
