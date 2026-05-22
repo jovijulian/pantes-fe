@@ -8,13 +8,15 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import moment from "moment";
 import { toast } from "react-toastify";
 import {
-    FaEdit, FaEye, FaCheck, FaCheckCircle, FaDollarSign
+    FaEdit, FaEye, FaCheck, FaCheckCircle, FaDollarSign, FaTrash
 } from "react-icons/fa";
 import Select from '@/components/form/Select-custom';
 import _ from "lodash";
 import ChangeStatusDepositModal from "@/components/modal/ChangeStatusDepositModal";
 import { Loader2 } from "lucide-react";
 import { useTableFilters } from "@/hooks/useTableFilters";
+import DeactiveModal from "@/components/modal/deactive/Deactive";
+
 interface IDeposit {
     id: number;
     no_payment: string;
@@ -55,6 +57,8 @@ export default function DepositsPage() {
     const [employeeOptions, setEmployeeOptions] = useState<SelectOption[]>([]);
     const [supplierOptions, setSupplierOptions] = useState<SelectOption[]>([]);
     const [loadingOptions, setLoadingOptions] = useState(true);
+    const [selectedData, setSelectedData] = useState<any>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
@@ -106,7 +110,7 @@ export default function DepositsPage() {
             page: filters.page,
             ...(filters.supplier_id ? { supplier_id: filters.supplier_id } : {}),
             ...(filters.employee_id ? { employee_id: filters.employee_id } : {}),
-            
+
         };
         try {
             const response = await httpGet(endpointUrl("deposit"), true, params);
@@ -207,7 +211,7 @@ export default function DepositsPage() {
                 cell: ({ row }: { row: any }) => {
                     const status = row.status || "1";
                     return (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex items-center gap-3">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -219,7 +223,17 @@ export default function DepositsPage() {
                             >
                                 <FaEye className="w-4 h-4" />
                             </button>
-
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedData(row);
+                                    setIsDeleteModalOpen(true);
+                                }}
+                                title="Delete"
+                                className="p-3 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+                            >
+                                <FaTrash className="w-4 h-4" />
+                            </button>
                             {/* {status === '1' && (
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleOpenModal(row, 'Validasi'); }}
@@ -388,6 +402,19 @@ export default function DepositsPage() {
                 onConfirm={handleConfirmStatusChange}
                 paymentDate={paymentDate}
                 setPaymentDate={setPaymentDate}
+            />
+
+            <DeactiveModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setSelectedData(null);
+                }}
+                url={`deposit/${selectedData?.id}/deactive`}
+                itemName={selectedData?.no_order || ""}
+                selectedData={selectedData}
+                onSuccess={getData}
+                message="Deposit deleted successfully!"
             />
         </div>
     );

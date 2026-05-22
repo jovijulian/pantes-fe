@@ -8,7 +8,7 @@ import _ from "lodash";
 import axios from "axios";
 import {
     FaEdit, FaEye, FaFileExport, FaCheckCircle,
-    FaBoxOpen, FaClipboardCheck
+    FaBoxOpen, FaClipboardCheck, FaTrash
 } from "react-icons/fa";
 import { Loader2, X, Search, Plus, Info, Download } from "lucide-react";
 import Table from "@/components/tables/Table";
@@ -17,6 +17,7 @@ import { Modal } from '@/components/ui/modal';
 import SingleDatePicker from "@/components/common/SingleDatePicker";
 import { alertToast, endpointUrl, httpGet, httpPost } from "@/../helpers";
 import { useTableFilters } from "@/hooks/useTableFilters";
+import DeactiveModal from "@/components/modal/deactive/Deactive";
 
 interface IScrapSource {
     id: number;
@@ -69,6 +70,8 @@ export default function ScrapGoldsPage() {
     const [isExporting, setIsExporting] = useState(false);
     const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
     const [role, setRole] = useState<string | null>("null");
+    const [selectedData, setSelectedData] = useState<any>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
@@ -218,7 +221,7 @@ export default function ScrapGoldsPage() {
                 const isProcessed = row.status === "2";
 
                 return (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={(e) => {
                                 router.push(`/purchasing/scrap-golds/${row.id}`)
@@ -228,6 +231,17 @@ export default function ScrapGoldsPage() {
                             className="p-2 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
                         >
                             <FaEye className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedData(row);
+                                setIsDeleteModalOpen(true);
+                            }}
+                            title="Delete"
+                            className="p-3 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+                        >
+                            <FaTrash className="w-4 h-4" />
                         </button>
 
                         {/* {isNew && (
@@ -420,6 +434,19 @@ export default function ScrapGoldsPage() {
                 onDateChange={setProcessDate}
                 viewingMonthDate={viewingMonthDate}
                 onMonthChange={setViewingMonthDate}
+            />
+
+            <DeactiveModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setSelectedData(null);
+                }}
+                url={`purchase/scrap-gold/${selectedData?.id}/deactive`}
+                itemName={selectedData?.no_scrap_gold || ""}
+                selectedData={selectedData}
+                onSuccess={getData}
+                message="Rongsok deleted successfully!"
             />
         </div>
     );

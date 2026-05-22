@@ -10,13 +10,14 @@ import { toast } from "react-toastify";
 import ChangeStatusOrderModal from "@/components/modal/ChangeStatusOrderModal";
 import {
     FaEdit, FaEye, FaCheck,
-    FaCheckCircle, FaFileInvoiceDollar
+    FaCheckCircle, FaFileInvoiceDollar, FaTrash
 } from "react-icons/fa";
 import Select from '@/components/form/Select-custom';
 import _ from "lodash";
 import { DollarSign, Download, Loader2 } from "lucide-react";
 import axios from "axios";
 import { useTableFilters } from "@/hooks/useTableFilters";
+import DeactiveModal from "@/components/modal/deactive/Deactive";
 
 interface IPurchaseOrder {
     id: number;
@@ -63,6 +64,8 @@ export default function PurchaseOrdersPage() {
     const [staffOptions, setStaffOptions] = useState<SelectOption[]>([]);
     const [supplierOptions, setSupplierOptions] = useState<SelectOption[]>([]);
     const [loadingOptions, setLoadingOptions] = useState(true);
+    const [selectedData, setSelectedData] = useState<any>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
@@ -264,7 +267,7 @@ export default function PurchaseOrdersPage() {
                 cell: ({ row }: { row: any }) => {
                     const status = row.status;
                     return (
-                        <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex items-center gap-3">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -275,6 +278,17 @@ export default function PurchaseOrdersPage() {
                                 className="p-3 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
                             >
                                 <FaEye className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedData(row);
+                                    setIsDeleteModalOpen(true);
+                                }}
+                                title="Delete"
+                                className="p-3 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+                            >
+                                <FaTrash className="w-4 h-4" />
                             </button>
 
                             {/* {status === '1' && (
@@ -508,6 +522,18 @@ export default function PurchaseOrdersPage() {
                 onConfirm={handleConfirmStatusChange}
                 paymentDate={paymentDate}
                 setPaymentDate={setPaymentDate}
+            />
+            <DeactiveModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setSelectedData(null);
+                }}
+                url={`purchase/order/${selectedData?.id}/deactive`}
+                itemName={selectedData?.no_order || ""}
+                selectedData={selectedData}
+                onSuccess={getData}
+                message="Order deleted successfully!"
             />
         </div>
     );

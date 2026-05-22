@@ -9,7 +9,7 @@ import moment from "moment";
 import { toast } from "react-toastify";
 import {
     FaCheckCircle,
-    FaEdit, FaEye,
+    FaEdit, FaEye, FaTrash,
 } from "react-icons/fa";
 import Select from '@/components/form/Select-custom';
 import _ from "lodash";
@@ -17,6 +17,7 @@ import ChangeStatusWorkOrderModal from "@/components/modal/ChangeStatusWorkOrder
 import { Download, Loader2, PackagePlus } from "lucide-react";
 import axios from "axios";
 import { useTableFilters } from "@/hooks/useTableFilters";
+import DeactiveModal from "@/components/modal/deactive/Deactive";
 
 interface IWorkOrder {
     id: number;
@@ -57,6 +58,8 @@ export default function WorkOrdersPage() {
     const [staffOptions, setStaffOptions] = useState<SelectOption[]>([]);
     const [supplierOptions, setSupplierOptions] = useState<SelectOption[]>([]);
     const [loadingOptions, setLoadingOptions] = useState(true);
+    const [selectedData, setSelectedData] = useState<any>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
@@ -278,7 +281,7 @@ export default function WorkOrdersPage() {
                 cell: ({ row }: { row: any }) => {
                     const status = row.status;
                     return (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex items-center gap-3">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -289,6 +292,17 @@ export default function WorkOrdersPage() {
                                 className="p-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
                             >
                                 <FaEye className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedData(row);
+                                    setIsDeleteModalOpen(true);
+                                }}
+                                title="Delete"
+                                className="p-3 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+                            >
+                                <FaTrash className="w-4 h-4" />
                             </button>
 
                             {/* {status === '1' && (
@@ -517,6 +531,18 @@ export default function WorkOrdersPage() {
                 workOrder={selectedWorkOrder}
                 isSubmitting={isSubmitting}
                 onConfirm={handleConfirmReceipt}
+            />
+             <DeactiveModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setSelectedData(null);
+                }}
+                url={`work-order/${selectedData?.id}/deactive`}
+                itemName={selectedData?.no_work_order || ""}
+                selectedData={selectedData}
+                onSuccess={getData}
+                message="Work Order deleted successfully!"
             />
         </div>
     );

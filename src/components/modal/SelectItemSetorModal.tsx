@@ -3,8 +3,8 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { toast } from 'react-toastify';
-import { alertToast, endpointUrl, endpointUrlv2, httpGet } from '@/../helpers'; 
-import Input from '@/components/form/input/InputField'; 
+import { alertToast, endpointUrl, endpointUrlv2, httpGet } from '@/../helpers';
+import Input from '@/components/form/input/InputField';
 import { Loader2, Plus, Search } from 'lucide-react';
 import moment from 'moment';
 export interface ISetorItem {
@@ -12,11 +12,12 @@ export interface ISetorItem {
     item_id: number;
     code_item: string;
     jenis_barang: string;
-    scope: number;       
-    sg: number;          
-    xray: number;        
-    berat: number;       
-    kadar: number;       
+    scope: number;
+    sg: number;
+    xray: number;
+    berat: number;
+    kadar: number;
+    supplier: string;
 }
 
 interface SelectItemModalProps {
@@ -24,40 +25,46 @@ interface SelectItemModalProps {
     onClose: () => void;
     onConfirm: (selectedItems: ISetorItem[]) => void;
     supplierId: number | null;
-    existingItemIds: number[]; 
+    existingItemIds: number[];
 }
 
-const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({ 
-    isOpen, 
-    onClose, 
-    onConfirm, 
-    supplierId, 
-    existingItemIds 
+const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({
+    isOpen,
+    onClose,
+    onConfirm,
+    supplierId,
+    existingItemIds
 }) => {
-    
+
     const [availableItems, setAvailableItems] = useState<ISetorItem[]>([]);
     const [selectedItems, setSelectedItems] = useState<ISetorItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+
+    const formatNumber = (value: string | number | null): string => {
+        const num = Number(value || 0);
+        return num.toLocaleString('id-ID');
+    };
+
     const fetchAvailableItems = async () => {
-        if (!supplierId) return; 
-        
+        if (!supplierId) return;
+
         setIsLoading(true);
         try {
             const res = await httpGet(endpointUrl(`/deposit/item-by-supplier`), true, {
                 search: searchTerm,
             });
-            
             const mappedItems: ISetorItem[] = res.data.data.map((item: any) => ({
                 work_order_item_id: item.id,
                 item_id: item.item_id,
-                code_item: item.code_item || `CODE-${item.id}`, 
-                jenis_barang: item.item_type || item.item?.name || 'N/A', 
+                code_item: item.code_item || `CODE-${item.id}`,
+                jenis_barang: item.item_type || item.item?.name || 'N/A',
                 scope: Number(item.scope) || 0,
                 sg: Number(item.sg) || 0,
                 xray: Number(item.xray) || 0,
-                berat: Number(item.pcs) || 0, 
+                berat: Number(item.pcs) || 0,
                 kadar: Number(item.kadar) || 0,
+                supplier: item.supplier_name || 'N/A',
             }));
 
             setAvailableItems(mappedItems);
@@ -69,7 +76,7 @@ const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({
             setIsLoading(false);
         }
     };
-    
+
     useEffect(() => {
         if (isOpen) {
             fetchAvailableItems();
@@ -78,7 +85,7 @@ const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({
             setSelectedItems([]);
             setSearchTerm("");
         }
-    }, [isOpen, supplierId]); 
+    }, [isOpen, supplierId]);
 
     const handleSelectItem = (item: ISetorItem, checked: boolean) => {
         if (checked) {
@@ -97,9 +104,9 @@ const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({
         <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-99999" onClose={onClose}>
                 <Transition.Child as={Fragment} enter="ease-out duration-300" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in duration-200" leaveFrom="opacity-100" leaveTo="opacity-0">
-                    <div className="fixed inset-0 h-full w-full bg-black/30" /> 
+                    <div className="fixed inset-0 h-full w-full bg-black/30" />
                 </Transition.Child>
-                
+
                 <div className="fixed inset-0 overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4 text-center">
                         <Transition.Child
@@ -115,7 +122,7 @@ const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({
                                 <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900 border-b pb-3">
                                     Pilih Barang (dari Surat Jalan Diterima)
                                 </Dialog.Title>
-                                
+
                                 <form onSubmit={handleSearch} className="flex gap-2 justify-end my-4">
                                     <Input
                                         type="text"
@@ -134,10 +141,14 @@ const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({
                                         <thead className="bg-gray-50 sticky top-0 z-10">
                                             <tr>
                                                 <th className="px-4 py-3 text-left"></th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sumber</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis Barang</th>
                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode Barang</th>
                                                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Berat (gr)</th>
                                                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Kadar (%)</th>
+                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Scope</th>
+                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">SG</th>
+                                                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">X-Ray</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
@@ -149,12 +160,11 @@ const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({
                                             )}
                                             {availableItems.map(item => {
                                                 const isChecked = selectedItems.some(p => p.work_order_item_id === item.work_order_item_id);
-                                                const isDisabled = existingItemIds.includes(item.work_order_item_id); 
-                                                
+                                                const isDisabled = existingItemIds.includes(item.work_order_item_id);
                                                 return (
                                                     <tr key={item.work_order_item_id} className={`hover:bg-gray-50 ${isDisabled ? 'bg-gray-100 opacity-60 cursor-not-allowed' : ''}`}>
                                                         <td className="px-4 py-2">
-                                                            <input 
+                                                            <input
                                                                 type="checkbox"
                                                                 className="h-4 w-4 rounded"
                                                                 checked={isChecked || isDisabled}
@@ -162,17 +172,21 @@ const SelectItemSetorModal: React.FC<SelectItemModalProps> = ({
                                                                 onChange={(e) => handleSelectItem(item, e.target.checked)}
                                                             />
                                                         </td>
+                                                        <td className="px-4 py-2 font-medium">{item.supplier}</td>
                                                         <td className="px-4 py-2 font-medium">{item.jenis_barang}</td>
                                                         <td className="px-4 py-2">{item.code_item}</td>
                                                         <td className="px-4 py-2 text-right">{item.berat.toLocaleString('id-ID')}</td>
                                                         <td className="px-4 py-2 text-right">{item.kadar.toLocaleString('id-ID')}%</td>
+                                                        <td className="px-4 py-2 text-right">{formatNumber(item.scope)}</td>
+                                                        <td className="px-4 py-2 text-right">{formatNumber(item.sg)}</td>
+                                                        <td className="px-4 py-2 text-right">{formatNumber(item.xray)}</td>
                                                     </tr>
                                                 );
                                             })}
                                         </tbody>
                                     </table>
                                 </div>
-                                
+
                                 <div className="mt-6 flex justify-end gap-3">
                                     <button
                                         type="button"

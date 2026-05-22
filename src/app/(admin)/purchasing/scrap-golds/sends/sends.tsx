@@ -8,7 +8,7 @@ import _ from "lodash";
 import axios from "axios";
 import {
     FaEdit, FaEye, FaFileExport, FaCheckCircle,
-    FaBoxOpen, FaClipboardCheck, FaTruck, FaWarehouse, FaIndustry, FaStore, FaDolly, FaArrowRight
+    FaBoxOpen, FaClipboardCheck, FaTruck, FaWarehouse, FaIndustry, FaStore, FaDolly, FaArrowRight, FaTrash
 } from "react-icons/fa";
 import { Loader2, Calendar as CalendarIcon, X, Search, Plus, Info, Download } from "lucide-react";
 
@@ -19,6 +19,7 @@ import SingleDatePicker from "@/components/common/SingleDatePicker";
 import { alertToast, endpointUrl, httpGet, httpPost } from "@/../helpers";
 import { useTableFilters } from "@/hooks/useTableFilters";
 import Select from "@/components/form/Select-custom";
+import DeactiveModal from "@/components/modal/deactive/Deactive";
 
 interface IExpedition {
     id: number;
@@ -100,6 +101,8 @@ export default function ScrapGoldSendPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [role, setRole] = useState<string | null>("null");
+    const [selectedData, setSelectedData] = useState<any>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const { filters, setFilter } = useTableFilters({
         page: 1,
         per_page: 20,
@@ -323,7 +326,7 @@ export default function ScrapGoldSendPage() {
                 const currentStatus = row.status;
 
                 return (
-                    <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3">
                         {/* Detail */}
                         {/* <button
                             onClick={() => {
@@ -345,6 +348,17 @@ export default function ScrapGoldSendPage() {
                             className="p-3 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200"
                         >
                             <FaEye className="w-4 h-4" />
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedData(row);
+                                setIsDeleteModalOpen(true);
+                            }}
+                            title="Delete"
+                            className="p-3 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+                        >
+                            <FaTrash className="w-4 h-4" />
                         </button>
 
                         {/* Status 1 -> Kirim */}
@@ -627,6 +641,19 @@ export default function ScrapGoldSendPage() {
                 viewingMonthDate={viewingMonthDate}
                 onMonthChange={setViewingMonthDate}
                 nextStatus={nextStatus}
+            />
+
+            <DeactiveModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => {
+                    setIsDeleteModalOpen(false);
+                    setSelectedData(null);
+                }}
+                url={`purchase/scrap-gold/send/${selectedData?.id}/deactive`}
+                itemName={selectedData?.no_scrap_gold_send || ""}
+                selectedData={selectedData}
+                onSuccess={getData}
+                message="Dokumen deleted successfully!"
             />
         </div>
     );
