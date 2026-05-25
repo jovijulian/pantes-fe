@@ -132,6 +132,7 @@ export default function PurchaseOrderDetailPage() {
             // }));
             response.data.data.dpp_nominal = Number(response.data.data.dpp_nominal) + Number(response.data.data.pph)
             response.data.data.nominal = Number(response.data.data.nominal) - Number(response.data.data.disc)
+            // response.data.data.payment_types[0].payment_type = "Tunai"
             setData(response.data.data);
         } catch (error: any) {
             if (error.response?.status === 404 || error.response?.status === 403) {
@@ -341,10 +342,10 @@ export default function PurchaseOrderDetailPage() {
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Atas Nama</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{data.payment_types.some(p => p.payment_type !== "Tunai") ? "Atas Nama" : "Sumber Dana"}</th>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Info Bank</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Keterangan</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
@@ -354,12 +355,12 @@ export default function PurchaseOrderDetailPage() {
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm">
                                                     <div>
                                                         <p className="font-semibold">{payment.name || "-"}</p>
-                                                        <p className="text-xs text-gray-500">{payment.number}</p>
+                                                        <p className="text-xs text-gray-500">{payment.number || "-"}</p>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm">{payment.bank_id ? `${payment.bank?.bank_name}` : "-"}</td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(payment.nominal)}</td>
                                                 <td className="px-4 py-3 whitespace-nowrap text-right text-sm">{payment.notes || "-"}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium">{formatRupiah(payment.nominal)}</td>
                                             </tr>
                                         ))}
                                     </tbody>

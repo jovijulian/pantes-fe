@@ -429,9 +429,9 @@ export default function PurchaseOrderDetailPage() {
                                     <thead className="bg-gray-50 dark:bg-gray-800/50">
                                         <tr>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jenis</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Info Bank</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nominal</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{data.payment_types.some(p => p.payment_type !== "Tunai") ? "Info Bank" : "Sumber Dana"}</th>
                                             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Keterangan</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nominal</th>
                                             {isEditable && <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase w-16">Aksi</th>}
                                         </tr>
                                     </thead>
@@ -439,27 +439,36 @@ export default function PurchaseOrderDetailPage() {
                                         {data.payment_types && data.payment_types.length > 0 ? (
                                             data.payment_types.map((payment) => {
                                                 const isManual = payment.payment_type !== "BANK TRANSFER" && payment.payment_type !== "SETOR TUNAI";
+                                                const isTunai = payment.payment_type === "Tunai";
                                                 return (
                                                     <tr key={payment.id}>
                                                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">{payment.payment_type}</td>
                                                         <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-200">
-                                                            {isManual ? (
+                                                            {isTunai ? (
+                                                                <p>{payment.name}</p>
+                                                            ) : isManual ? (
                                                                 <div>
-                                                                    {/* <p className="font-semibold">{payment.bank?.bank_name || "-"}</p>
-                                                                    <p className="text-xs text-gray-500">{payment.account_number} - {payment.account_name}</p> */}
                                                                     <div>
-                                                                        <p className="font-semibold">{payment.bank?.bank_name || "-"}</p>
-                                                                        <p className="text-xs text-gray-500">{payment.number} - {payment.name}</p>
+                                                                        <p className="font-semibold">
+                                                                            {payment.bank?.bank_name || "-"}
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-500">
+                                                                            {payment.number} - {payment.name}
+                                                                        </p>
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <p>{payment.bank ? `${payment.bank.bank_name} - ${payment.name}` : "-"}</p>
+                                                                <p>
+                                                                    {payment.bank
+                                                                        ? `${payment.bank.bank_name} - ${payment.name}`
+                                                                        : "-"}
+                                                                </p>
                                                             )}
                                                         </td>
+                                                        <td className="px-4 py-3 text-right text-sm text-gray-800 dark:text-gray-200 break-words max-w-[150px]">{payment.notes || "-"}</td>
                                                         <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
                                                             {formatRupiah(payment.nominal)}
                                                         </td>
-                                                        <td className="px-4 py-3 text-right text-sm text-gray-800 dark:text-gray-200 break-words max-w-[150px]">{payment.notes || "-"}</td>
                                                         {isEditable && (
                                                             <td className="px-4 py-3 whitespace-nowrap text-center">
                                                                 <button onClick={() => setDeleteConfig({ type: 'payment', id: payment.id })} className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded-md transition-colors">
