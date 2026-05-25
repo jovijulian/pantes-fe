@@ -115,6 +115,7 @@ export default function PurchaseOrderDetailPage() {
         { value: "BANK TRANSFER", label: "Bank Transfer" },
         { value: "SETOR TUNAI", label: "Setor Tunai" },
         { value: "CV(FAKTUR)", label: "CV (Faktur)" },
+        { value: "Tunai", label: "Tunai" },
         { value: "LAINNYA", label: "Lainnya" },
     ];
 

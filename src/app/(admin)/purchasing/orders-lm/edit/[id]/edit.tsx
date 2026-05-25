@@ -108,6 +108,7 @@ const paymentMethodOptions: SelectOption[] = [
     { value: "BANK TRANSFER", label: "Bank Transfer" },
     { value: "SETOR TUNAI", label: "Setor Tunai" },
     { value: "CV(FAKTUR)", label: "CV (Faktur)" },
+    { value: "Tunai", label: "Tunai" },
     { value: "LAINNYA", label: "Lainnya" },
 ];
 
@@ -280,9 +281,14 @@ export default function EditPurchaseOrderPage() {
         return { totalPayment, remainingBalance };
     }, [totalNominal, formData.payment_type, formData.disc, formData.pph]);
 
-    const hasManualPayment = useMemo(() => {
+    const hasNonTunai = useMemo(() => {
+        if (formData.payment_type.length === 0) return true;
+        return formData.payment_type.some(p => p.payment_type !== "Tunai");
+    }, [formData.payment_type]);
+
+    const hasManualBank = useMemo(() => {
         return formData.payment_type.some(
-            p => p.payment_type !== "BANK TRANSFER" && p.payment_type !== "SETOR TUNAI"
+            p => p.payment_type !== "BANK TRANSFER" && p.payment_type !== "SETOR TUNAI" && p.payment_type !== "Tunai"
         );
     }, [formData.payment_type]);
 
@@ -407,6 +413,11 @@ export default function EditPurchaseOrderPage() {
             if (p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") {
                 if (!p.supplier_bank_id) {
                     toast.error("Untuk Bank Transfer / Setor Tunai, harap pilih Bank Supplier.");
+                    return false;
+                }
+            } else if (p.payment_type === "Tunai") {
+                if (!p.account_name) {
+                    toast.error("Untuk metode Tunai, harap isi Sumber Pembayaran.");
                     return false;
                 }
             } else {
@@ -728,25 +739,28 @@ export default function EditPurchaseOrderPage() {
                             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead className="bg-gray-50 dark:bg-gray-800">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jenis</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                                            {hasManualPayment ? "Bank" : "Bank Supplier"}
-                                        </th>
-                                        {hasManualPayment && (
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
+                                        {hasNonTunai ? (
                                             <>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No. Rekening</th>
-                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Atas Nama</th>
-
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                                    {hasManualBank ? "Bank" : "Bank Supplier"}
+                                                </th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Rekening</th>
+                                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Atas Nama</th>
                                             </>
+                                        ) : (
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sumber Dana</th>
                                         )}
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Notes</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nominal</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
+
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nominal</th>
+                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
                                     {formData.payment_type.map((payment, index) => {
                                         const isTransferOrSetor = payment.payment_type === "BANK TRANSFER" || payment.payment_type === "SETOR TUNAI";
+                                        const isTunai = payment.payment_type === "Tunai";
 
                                         return (
                                             <tr key={payment.id}>
@@ -757,61 +771,73 @@ export default function EditPurchaseOrderPage() {
                                                         onValueChange={(opt) => handlePaymentChange(index, 'payment_type', opt ? opt.value : '')}
                                                     />
                                                 </td>
-                                                <td className="px-4 py-2 whitespace-nowrap min-w-[300px]">
-                                                    {isTransferOrSetor ? (
-                                                        <Select
-                                                            options={bankOptions}
-                                                            value={_.find(bankOptions, { value: payment.supplier_bank_id?.toString() }) || null}
-                                                            onValueChange={(opt) => handlePaymentChange(index, 'supplier_bank_id', opt ? parseInt(opt.value) : null)}
-                                                            placeholder={
-                                                                !formData.supplier_id ? "Pilih supplier dulu..." :
-                                                                    isBankLoading ? "Memuat bank..." : "Pilih bank supplier..."
-                                                            }
-                                                            disabled={isBankLoading || !formData.supplier_id}
+                                                {isTunai ? (
+                                                    <td colSpan={hasNonTunai ? 3 : 1} className="px-4 py-2 whitespace-nowrap min-w-[300px]">
+                                                        <Input
+                                                            type="text"
+                                                            value={payment.account_name}
+                                                            onChange={(e) => handlePaymentChange(index, 'account_name', e.target.value)}
+                                                            placeholder="Input Sumber Dana (Tunai)"
                                                         />
-                                                    ) : (
-                                                        <Select
-                                                            options={masterBankOptions}
-                                                            value={_.find(masterBankOptions, { value: payment.bank_id?.toString() }) || null}
-                                                            onValueChange={(opt) => handlePaymentChange(index, 'bank_id', opt ? parseInt(opt.value) : null)}
-                                                            placeholder="Pilih Bank..."
-                                                        />
-                                                    )}
-                                                </td>
-
-                                                {hasManualPayment && (
-                                                    isTransferOrSetor ? (
-                                                        <td colSpan={3} className="px-4 py-2 text-center text-gray-400 dark:text-gray-500 bg-gray-50/50 dark:bg-gray-800/50 italic text-sm border-x border-gray-100 dark:border-gray-800">
-                                                            Detail rekening otomatis mengikuti Bank Supplier
+                                                    </td>
+                                                ) : (
+                                                    <>
+                                                        <td className="px-4 py-2 whitespace-nowrap min-w-[300px]">
+                                                            {isTransferOrSetor ? (
+                                                                <Select
+                                                                    options={bankOptions}
+                                                                    value={_.find(bankOptions, { value: payment.supplier_bank_id?.toString() }) || null}
+                                                                    onValueChange={(opt) => handlePaymentChange(index, 'supplier_bank_id', opt ? parseInt(opt.value) : null)}
+                                                                    placeholder={
+                                                                        !formData.supplier_id ? "Pilih supplier dulu..." :
+                                                                            isBankLoading ? "Memuat bank..." : "Pilih bank supplier..."
+                                                                    }
+                                                                    disabled={isBankLoading || !formData.supplier_id}
+                                                                />
+                                                            ) : (
+                                                                <Select
+                                                                    options={masterBankOptions}
+                                                                    value={_.find(masterBankOptions, { value: payment.bank_id?.toString() }) || null}
+                                                                    onValueChange={(opt) => handlePaymentChange(index, 'bank_id', opt ? parseInt(opt.value) : null)}
+                                                                    placeholder="Pilih Bank..."
+                                                                />
+                                                            )}
                                                         </td>
-                                                    ) : (
-                                                        <>
-                                                            <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
-                                                                <Input
-                                                                    type="text"
-                                                                    value={payment.account_number}
-                                                                    onChange={(e) => handlePaymentChange(index, 'account_number', e.target.value)}
-                                                                    placeholder="Input No. Rekening"
-                                                                />
+
+
+                                                        {isTransferOrSetor ? (
+                                                            <td colSpan={3} className="px-4 py-2 text-center text-gray-400 dark:text-gray-500 bg-gray-50/50 dark:bg-gray-800/50 italic text-sm border-x border-gray-100 dark:border-gray-800">
+                                                                Detail rekening otomatis mengikuti Bank Supplier
                                                             </td>
-                                                            <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
-                                                                <Input
-                                                                    type="text"
-                                                                    value={payment.account_name}
-                                                                    onChange={(e) => handlePaymentChange(index, 'account_name', e.target.value)}
-                                                                    placeholder="Input Atas Nama"
-                                                                />
-                                                            </td>
-                                                            <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
-                                                                <Input
-                                                                    type="text"
-                                                                    value={payment.notes}
-                                                                    onChange={(e) => handlePaymentChange(index, 'notes', e.target.value)}
-                                                                    placeholder="Catatan..."
-                                                                />
-                                                            </td>
-                                                        </>
-                                                    )
+                                                        ) : (
+                                                            <>
+                                                                <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
+                                                                    <Input
+                                                                        type="text"
+                                                                        value={payment.account_number}
+                                                                        onChange={(e) => handlePaymentChange(index, 'account_number', e.target.value)}
+                                                                        placeholder="Input No. Rekening"
+                                                                    />
+                                                                </td>
+                                                                <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
+                                                                    <Input
+                                                                        type="text"
+                                                                        value={payment.account_name}
+                                                                        onChange={(e) => handlePaymentChange(index, 'account_name', e.target.value)}
+                                                                        placeholder="Input Atas Nama"
+                                                                    />
+                                                                </td>
+                                                                <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
+                                                                    <Input
+                                                                        type="text"
+                                                                        value={payment.notes}
+                                                                        onChange={(e) => handlePaymentChange(index, 'notes', e.target.value)}
+                                                                        placeholder="Catatan..."
+                                                                    />
+                                                                </td>
+                                                            </>
+                                                        )}
+                                                    </>
                                                 )}
 
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[150px]">
