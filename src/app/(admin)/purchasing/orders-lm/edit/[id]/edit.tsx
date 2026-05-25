@@ -272,12 +272,15 @@ export default function EditPurchaseOrderPage() {
             nominal += (item.nominal || 0) * (item.pcs || 0);
         });
 
-        return { totalWeight: weight, totalPcs: pcs, totalNominal: nominal + formData.pph - formData.disc };
+        return { totalWeight: weight, totalPcs: pcs, totalNominal: Math.round(nominal + formData.pph - formData.disc) };
     }, [formData.items, formData.pph, formData.disc]);
 
     const { totalPayment, remainingBalance } = useMemo(() => {
         const totalPayment = formData.payment_type.reduce((acc, payment) => acc + (payment.nominal || 0), 0);
-        const remainingBalance = totalNominal - totalPayment
+        // const remainingBalance = totalNominal - totalPayment
+        let remainingBalance = Math.round(totalNominal - totalPayment);
+
+        if (remainingBalance === -0) remainingBalance = 0;
         return { totalPayment, remainingBalance };
     }, [totalNominal, formData.payment_type, formData.disc, formData.pph]);
 

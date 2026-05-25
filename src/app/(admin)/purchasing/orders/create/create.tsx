@@ -188,7 +188,7 @@ export default function CreatePurchaseOrderPage() {
         const cokim = formData.cokim || 0;
         const pph = formData.pph || 0;
         const disc = formData.disc || 0;
-        const formula = (weight * cokim) + pph;
+        const formula = Math.round((weight * cokim) + pph);
         setFormData(prev => ({ ...prev, nominal: formula }));
     }, [formData.weight, formData.cokim, formData.pph, formData.disc]);
 
@@ -196,12 +196,14 @@ export default function CreatePurchaseOrderPage() {
         const totalPayment = formData.payment_type.reduce((acc, payment) => {
             return acc + (payment.nominal || 0);
         }, 0);
-        const remainingBalance = (formData.nominal || 0) - totalPayment - (formData.disc || 0);
+        let remainingBalance = Math.round((formData.nominal || 0) - totalPayment - (formData.disc || 0));
+
+        if (remainingBalance === -0) remainingBalance = 0;
         return { totalPayment, remainingBalance };
     }, [formData.nominal, formData.payment_type, formData.disc]);
 
     const hasNonTunai = useMemo(() => {
-        if (formData.payment_type.length === 0) return true; 
+        if (formData.payment_type.length === 0) return true;
         return formData.payment_type.some(p => p.payment_type !== "Tunai");
     }, [formData.payment_type]);
 
