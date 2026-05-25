@@ -392,7 +392,6 @@ export default function EditPurchaseOrderPage() {
 
         const separatePromises = [];
 
-        // Hapus payment yang di-remove user
         for (const paymentIdToDelete of paymentsToDelete) {
             const payload = {
                 order_payment_type_id: paymentIdToDelete,
@@ -402,7 +401,6 @@ export default function EditPurchaseOrderPage() {
             );
         }
 
-        // Tambah payment baru yang baru di-add user di Edit Page
         const newPayments = formData.payment_type.filter(p => !p.order_payment_type_id);
         for (const newPayment of newPayments) {
             const addPayload = {
@@ -422,7 +420,6 @@ export default function EditPurchaseOrderPage() {
         try {
             await Promise.all(separatePromises);
 
-            // Cek payment yang sudah ada, lalu bandingkan. Jika berubah, jadikan payload update
             const existingPayments = formData.payment_type.filter(p => p.order_payment_type_id);
             const payloadExisintgPayments = [];
             for (const updatedPayment of existingPayments) {
@@ -442,7 +439,6 @@ export default function EditPurchaseOrderPage() {
                 }
             }
 
-            // Payload Utama Update Order
             const mainPayload = {
                 date: moment(formData.date).format('YYYY-MM-DD'),
                 staff_id: Number(formData.staff_id),

@@ -4,9 +4,9 @@ import React, { useState, useEffect, useMemo, Fragment, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import moment from 'moment';
-import _ from "lodash";
+import _, { set } from "lodash";
 
-import { endpointUrl, httpGet, httpPost, alertToast } from '@/../helpers';
+import { endpointUrl, httpGet, httpPost, alertToast, httpPut } from '@/../helpers';
 import ComponentCard from '@/components/common/ComponentCard';
 import Select from '@/components/form/Select-custom';
 import Input from '@/components/form/input/InputField';
@@ -121,13 +121,13 @@ export default function EditPurchaseOrderPage() {
     const [isFetchingDetail, setIsFetchingDetail] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const [paymentsToDelete, setPaymentsToDelete] = useState<number[]>([]);
     const [staffOptions, setStaffOptions] = useState<SelectOption[]>([]);
     const [supplierOptions, setSupplierOptions] = useState<SelectOption[]>([]);
     const [itemOptions, setItemOptions] = useState<SelectOption[]>([]);
     const [masterBankOptions, setMasterBankOptions] = useState<SelectOption[]>([]);
     const [bankOptions, setBankOptions] = useState<BankOption[]>([]);
-
+    const [originalPayments, setOriginalPayments] = useState<FormPaymentType[]>([]);
     const [isBankLoading, setIsBankLoading] = useState(false);
     const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
 
@@ -173,7 +173,17 @@ export default function EditPurchaseOrderPage() {
                 if (id) {
                     const detailRes = await httpGet(endpointUrl(`purchase/order/${id}`), true);
                     const d = detailRes.data.data;
-
+                    const mappedPayments: FormPaymentType[] = d.payment_types.map((p: any) => ({
+                        id: `payment-${p.id}`,
+                        order_payment_type_id: p.id,
+                        payment_type: p.payment_type,
+                        supplier_bank_id: p.supplier_bank_id ? Number(p.supplier_bank_id) : null,
+                        bank_id: p.bank_id ? Number(p.bank_id) : null,
+                        account_number: p.number || '',
+                        account_name: p.name || '',
+                        notes: p.notes || '',
+                        nominal: Number(p.nominal),
+                    }));
                     setFormData({
                         date: moment(d.date).format('YYYY-MM-DD'),
                         staff_id: d.staff_id,
@@ -208,6 +218,7 @@ export default function EditPurchaseOrderPage() {
                     });
 
                     setViewingMonthDate(new Date(d.date));
+                    setOriginalPayments(_.cloneDeep(mappedPayments));
                 }
 
             } catch (error) {
@@ -298,6 +309,13 @@ export default function EditPurchaseOrderPage() {
 
     const handleFieldChange = (field: keyof FormState, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+        setPaymentsToDelete(prev => [
+            ...prev,
+            ...formData.payment_type
+                .filter(p => p.order_payment_type_id)
+                .map(p => p.order_payment_type_id!)
+        ]);
+
     };
 
     const handleItemChange = (index: number, field: keyof FormItemType, value: any) => {
@@ -384,6 +402,10 @@ export default function EditPurchaseOrderPage() {
             ...prev,
             payment_type: formData.payment_type.filter((_, i) => i !== index)
         }));
+        const paymentToRemove = formData.payment_type[index];
+        if (paymentToRemove.order_payment_type_id) {
+            setPaymentsToDelete(prev => [...prev, paymentToRemove.order_payment_type_id!]);
+        }
     };
 
     const validateForm = (): boolean => {
@@ -444,53 +466,145 @@ export default function EditPurchaseOrderPage() {
         }
     };
 
+    // const handleConfirmSubmit = async () => {
+    //     setIsModalOpen(false);
+    //     setIsSubmitting(true);
+
+    //     const itemsPayload: ItemPayload[] = formData.items.map(i => ({
+    //         order_item_id: i.order_item_id ? Number(i.order_item_id) : undefined, // Include if exist
+    //         item_id: Number(i.item_id),
+    //         weight: i.weight,
+    //         pcs: i.pcs,
+    //         nominal: i.nominal,
+    //         total_nominal: i.nominal * i.pcs
+    //     }));
+
+    //     const paymentPayload: PaymentPayload[] = formData.payment_type.map(p => ({
+    //         order_payment_type_id: p.order_payment_type_id ? Number(p.order_payment_type_id) : undefined, // Include if exist
+    //         payment_type: p.payment_type,
+    //         supplier_bank_id: (p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") ? Number(p.supplier_bank_id) : null,
+    //         bank_id: Number(p.bank_id) || null,
+    //         account_number: p.account_number,
+    //         account_name: p.account_name,
+    //         notes: p.notes,
+    //         nominal: p.nominal
+    //     }));
+
+    //     const payload: PurchaseOrderUpdatePayload = {
+    //         date: moment(formData.date).format('YYYY-MM-DD'),
+    //         staff_id: Number(formData.staff_id),
+    //         supplier_id: Number(formData.supplier_id),
+    //         weight: totalWeight,
+    //         cokim: formData.cokim ? Number(formData.cokim) : null,
+    //         nominal: totalNominal + formData.disc,
+    //         payment_type: paymentPayload,
+    //         items: itemsPayload,
+    //         pph: formData.pph,
+    //         cashback: formData.cashback,
+    //         is_invoice: formData.is_invoice,
+    //         additional_key: formData.additional_key,
+    //         additional_value: formData.additional_value,
+    //         disc: formData.disc,
+    //     };
+
+    //     try {
+    //         await httpPost(endpointUrl(`/purchase/order/${id}/update`), payload, true);
+    //         toast.success("Purchase Order (PO) LM berhasil diperbarui!");
+    //         router.push(`/purchasing/orders-lm/${id}`);
+    //     } catch (error: any) {
+    //         toast.error(error.response?.data?.message);
+    //     } finally {
+    //         setIsSubmitting(false);
+    //     }
+    // };
+
     const handleConfirmSubmit = async () => {
         setIsModalOpen(false);
         setIsSubmitting(true);
 
-        const itemsPayload: ItemPayload[] = formData.items.map(i => ({
-            order_item_id: i.order_item_id ? Number(i.order_item_id) : undefined, // Include if exist
-            item_id: Number(i.item_id),
-            weight: i.weight,
-            pcs: i.pcs,
-            nominal: i.nominal,
-            total_nominal: i.nominal * i.pcs
-        }));
+        const separatePromises = [];
 
-        const paymentPayload: PaymentPayload[] = formData.payment_type.map(p => ({
-            order_payment_type_id: p.order_payment_type_id ? Number(p.order_payment_type_id) : undefined, // Include if exist
-            payment_type: p.payment_type,
-            supplier_bank_id: (p.payment_type === "BANK TRANSFER" || p.payment_type === "SETOR TUNAI") ? Number(p.supplier_bank_id) : null,
-            bank_id: Number(p.bank_id) || null,
-            account_number: p.account_number,
-            account_name: p.account_name,
-            notes: p.notes,
-            nominal: p.nominal
-        }));
+        for (const paymentIdToDelete of paymentsToDelete) {
+            const payload = {
+                order_payment_type_id: paymentIdToDelete,
+            };
+            separatePromises.push(
+                httpPut(endpointUrl(`/purchase/order/${id}/payment-type`), payload, true)
+            );
+        }
 
-        const payload: PurchaseOrderUpdatePayload = {
-            date: moment(formData.date).format('YYYY-MM-DD'),
-            staff_id: Number(formData.staff_id),
-            supplier_id: Number(formData.supplier_id),
-            weight: totalWeight,
-            cokim: formData.cokim ? Number(formData.cokim) : null,
-            nominal: totalNominal + formData.disc,
-            payment_type: paymentPayload,
-            items: itemsPayload,
-            pph: formData.pph,
-            cashback: formData.cashback,
-            is_invoice: formData.is_invoice,
-            additional_key: formData.additional_key,
-            additional_value: formData.additional_value,
-            disc: formData.disc,
-        };
+        const newPayments = formData.payment_type.filter(p => !p.order_payment_type_id);
+        for (const newPayment of newPayments) {
+            const addPayload = {
+                payment_type: newPayment.payment_type,
+                supplier_bank_id: (newPayment.payment_type === "BANK TRANSFER" || newPayment.payment_type === "SETOR TUNAI") ? Number(newPayment.supplier_bank_id) : null,
+                bank_id: Number(newPayment.bank_id) || null,
+                account_number: newPayment.account_number,
+                account_name: newPayment.account_name,
+                notes: newPayment.notes,
+                nominal: newPayment.nominal,
+            };
+            separatePromises.push(
+                httpPost(endpointUrl(`/purchase/order/${id}/payment-type`), addPayload, true)
+            );
+        }
 
         try {
-            await httpPost(endpointUrl(`/purchase/order/${id}/update`), payload, true);
+            await Promise.all(separatePromises);
+
+            const existingPayments = formData.payment_type.filter(p => p.order_payment_type_id);
+            const payloadExisintgPayments = [];
+
+            for (const updatedPayment of existingPayments) {
+                const original = originalPayments.find(o => o.order_payment_type_id === updatedPayment.order_payment_type_id);
+                if (original && !_.isEqual(original, updatedPayment)) {
+                    const updatePayload = {
+                        order_payment_type_id: updatedPayment.order_payment_type_id,
+                        payment_type: updatedPayment.payment_type,
+                        supplier_bank_id: (updatedPayment.payment_type === "BANK TRANSFER" || updatedPayment.payment_type === "SETOR TUNAI") ? Number(updatedPayment.supplier_bank_id) : null,
+                        bank_id: Number(updatedPayment.bank_id) || null,
+                        account_number: updatedPayment.account_number,
+                        account_name: updatedPayment.account_name,
+                        notes: updatedPayment.notes,
+                        nominal: updatedPayment.nominal,
+                    };
+                    payloadExisintgPayments.push(updatePayload);
+                }
+            }
+
+            const itemsPayload = formData.items.map(i => ({
+                order_item_id: i.order_item_id ? Number(i.order_item_id) : undefined,
+                item_id: Number(i.item_id),
+                weight: i.weight,
+                pcs: i.pcs,
+                nominal: i.nominal,
+                total_nominal: i.nominal * i.pcs
+            }));
+
+            const mainPayload = {
+                date: moment(formData.date).format('YYYY-MM-DD'),
+                staff_id: Number(formData.staff_id),
+                supplier_id: Number(formData.supplier_id),
+                weight: totalWeight,
+                cokim: formData.cokim ? Number(formData.cokim) : null,
+                nominal: totalNominal + formData.disc,
+                payment_type: payloadExisintgPayments,
+                items: itemsPayload,
+                pph: formData.pph,
+                cashback: formData.cashback,
+                is_invoice: formData.is_invoice,
+                additional_key: formData.additional_key,
+                additional_value: formData.additional_value,
+                disc: formData.disc,
+            };
+
+            await httpPost(endpointUrl(`/purchase/order/${id}/update`), mainPayload, true);
+
             toast.success("Purchase Order (PO) LM berhasil diperbarui!");
             router.push(`/purchasing/orders-lm/${id}`);
+
         } catch (error: any) {
-            toast.error(error.response?.data?.message);
+            toast.error(error.response?.data?.message || "Terjadi kesalahan saat mengupdate data.");
         } finally {
             setIsSubmitting(false);
         }
