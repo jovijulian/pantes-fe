@@ -127,6 +127,11 @@ export default function DepositsPage() {
         }
     };
 
+    const formatGram = (value: string | number | null): string => {
+        const num = Number(value || 0);
+        return num.toLocaleString('id-ID') + " gr";
+    };
+
     useEffect(() => {
         fetchInitialData();
     }, []);
@@ -285,6 +290,15 @@ export default function DepositsPage() {
                 header: "Supplier",
                 accessorKey: "supplier.name",
                 cell: ({ row }: any) => <span>{row.supplier?.name || 'N/A'}</span>,
+            },
+            {
+                id: "weight",
+                header: "Berat (gram)",
+                accessorKey: "details",
+                cell: ({ row }: any) => {
+                    const totalWeight = row.details.reduce((acc: any, item: any) => acc + Number(item.weight), 0);
+                    return <span>{formatGram(totalWeight)}</span>;
+                },
             },
             {
                 id: "employee",

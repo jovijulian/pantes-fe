@@ -923,7 +923,7 @@ export default function EditPurchaseOrderPage() {
 
 
                                                         {isTransferOrSetor ? (
-                                                            <td colSpan={3} className="px-4 py-2 text-center text-gray-400 dark:text-gray-500 bg-gray-50/50 dark:bg-gray-800/50 italic text-sm border-x border-gray-100 dark:border-gray-800">
+                                                            <td colSpan={2} className="px-4 py-2 text-center text-gray-400 dark:text-gray-500 bg-gray-50/50 dark:bg-gray-800/50 italic text-sm border-x border-gray-100 dark:border-gray-800">
                                                                 Detail rekening otomatis mengikuti Bank Supplier
                                                             </td>
                                                         ) : (
@@ -944,19 +944,19 @@ export default function EditPurchaseOrderPage() {
                                                                         placeholder="Input Atas Nama"
                                                                     />
                                                                 </td>
-                                                                <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
-                                                                    <Input
-                                                                        type="text"
-                                                                        value={payment.notes}
-                                                                        onChange={(e) => handlePaymentChange(index, 'notes', e.target.value)}
-                                                                        placeholder="Catatan..."
-                                                                    />
-                                                                </td>
+
                                                             </>
                                                         )}
                                                     </>
                                                 )}
-
+                                                <td className="px-4 py-2 whitespace-nowrap min-w-[200px]">
+                                                    <Input
+                                                        type="text"
+                                                        value={payment.notes}
+                                                        onChange={(e) => handlePaymentChange(index, 'notes', e.target.value)}
+                                                        placeholder="Catatan..."
+                                                    />
+                                                </td>
                                                 <td className="px-4 py-2 whitespace-nowrap min-w-[150px]">
                                                     <CurrencyInput
                                                         value={payment.nominal}
