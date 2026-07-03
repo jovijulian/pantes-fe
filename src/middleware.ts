@@ -79,6 +79,19 @@ const rolePermissions: Record<string, string[]> = {
         '/profile',
         '/admin-panel',
     ],
+    '9': [
+        '/purchasing/dashboard',
+        '/purchasing/master',
+        '/purchasing/deposits',
+        '/purchasing/work-orders',
+        '/purchasing/orders',
+        '/purchasing/scrap-golds',
+        '/purchasing/reports',
+        '/purchasing/report-directors',
+        '/purchasing/stock-global',
+        '/purchasing/stock-global-lm',
+        '/purchasing/invoices',
+    ],
     
 };
 
@@ -95,6 +108,16 @@ const homeRoutes: Record<string, string> = {
 
 const roleExceptions: Record<string, string[]> = {
     '3': [
+        '/purchasing/orders/create',
+        '/purchasing/orders-lm/create',
+        '/purchasing/work-orders/create',
+        '/purchasing/work-orders-lm/create',
+        '/purchasing/deposits/create',
+        '/purchasing/scrap-golds/create',
+        '/purchasing/scrap-golds/sends/create',
+        '/purchasing/invoices/create',
+    ],
+    '9': [
         '/purchasing/orders/create',
         '/purchasing/orders-lm/create',
         '/purchasing/work-orders/create',

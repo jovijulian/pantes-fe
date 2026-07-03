@@ -419,6 +419,7 @@ export default function PurchaseOrdersPage() {
         ];
     }, [router]);
 
+
     return (
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-end items-center gap-2">
@@ -431,7 +432,7 @@ export default function PurchaseOrdersPage() {
                     className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 
                 />
-                {role !== "3" && (
+                {(role !== "3" && role !== "9") && (
                     <button
                         onClick={() => router.push("/purchasing/orders/create")}
                         className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"

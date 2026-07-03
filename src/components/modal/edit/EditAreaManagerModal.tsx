@@ -91,7 +91,6 @@ const EditAreaManagerModal: React.FC<EditAreaManagerModalProps> = ({
         setPhone("");
         setEmail("");
     };
-
     if (!isOpen) return null;
 
     return (

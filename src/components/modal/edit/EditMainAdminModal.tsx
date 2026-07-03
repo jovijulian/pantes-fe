@@ -28,6 +28,7 @@ const EditMainAdminModal: React.FC<EditMainAdminModalProps> = ({
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
+    const [role, setRole] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
@@ -44,6 +45,7 @@ const EditMainAdminModal: React.FC<EditMainAdminModalProps> = ({
                 setName(userData.name || "");
                 setEmail(userData.email || "");
                 setPhone(userData.phone || "");
+                setRole(userData.role_id || "");
 
             } catch (err: any) {
                 toast.error(err?.response?.data?.message || "Gagal mengambil data akun admin.");
@@ -92,7 +94,10 @@ const EditMainAdminModal: React.FC<EditMainAdminModalProps> = ({
         setPhone("");
         setEmail("");
     };
-
+    const roleOptions = [
+        { label: "Admin Utama Sales", value: "8" },
+        { label: "Admin Utama Purchasing", value: "9" },
+    ];
 
     if (!isOpen) return null;
 
@@ -145,6 +150,17 @@ const EditMainAdminModal: React.FC<EditMainAdminModalProps> = ({
                                 defaultValue={phone}
                                 onChange={(e) => setPhone(e.target.value)}
                                 required
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="role">Role</Label>
+                            <Select
+                                onValueChange={(selectedOption) => {
+                                   setRole(selectedOption.value);
+                                }}
+                                placeholder={"Select role"}
+                                value={_.find(roleOptions, { value: role })}
+                                options={roleOptions}
                             />
                         </div>
                         {error && (

@@ -338,7 +338,7 @@ export default function DepositsPage() {
                     placeholder="Cari No. Pembayaran..."
                     className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                {role !== "3" && (
+                {(role !== "3" && role !== "9") && (
                     <button
                         onClick={() => router.push("/purchasing/deposits/create")}
                         className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"

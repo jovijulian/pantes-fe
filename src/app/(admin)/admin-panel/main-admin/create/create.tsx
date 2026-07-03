@@ -43,7 +43,7 @@ export default function CreateForm() {
             data.append("email", formData.email);
             data.append("password", formData.password);
             data.append("phone", formData.phone);
-            data.append("role_id", "8");
+            data.append("role_id", formData.role);
             if (formData.image) {
                 data.append("image", formData.image);
             }
@@ -61,7 +61,12 @@ export default function CreateForm() {
             setLoading(false);
         }
     };
+    const roleOptions = [
+        { label: "Admin Utama Sales", value: "8" },
+        { label: "Admin Utama Purchasing", value: "9" },
+    ];
 
+    const isPasswordValid = formData.password.length >= 6;
 
     return (
         <ComponentCard title="Data Admin">
@@ -105,6 +110,20 @@ export default function CreateForm() {
                 </div>
                 <div>
                     <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
+                        Role<span className="text-red-400 ml-1">*</span>
+                    </label>
+
+                    <Select
+                        onValueChange={(selectedOption) => {
+                            setFormData({ ...formData, role: selectedOption.value });
+                        }}
+                        placeholder={"Select role"}
+                        value={_.find(roleOptions, { value: formData.role })}
+                        options={roleOptions}
+                    />
+                </div>
+                <div>
+                    <label htmlFor="type" className="block font-medium mb-1 text-gray-700 dark:text-gray-300">
                         Password<span className="text-red-400 ml-1">*</span>
                     </label>
                     <Input
@@ -124,7 +143,7 @@ export default function CreateForm() {
                     </button>
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || !isPasswordValid}
                         className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                     >
                         {loading ? "Menambahkan..." : "Tambahkan"}

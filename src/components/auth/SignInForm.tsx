@@ -90,13 +90,15 @@ const SignIn: React.FC = () => {
         window.location.href = "/dashboard";
       } else if (user.role_id == "3" || user.role_id == "5") {
         window.location.href = "/purchasing/dashboard";
+      } else if (user.role_id == "9") {
+        window.location.href = "/purchasing/dashboard";
       }
 
     } catch (error) {
       console.log(error);
     }
   };
- 
+  const isPasswordValid = form.values.password.length >= 6;
 
   const renderAccountForm = () => (
     <div className="space-y-4">
@@ -140,7 +142,7 @@ const SignIn: React.FC = () => {
             )}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !isPasswordValid}
               className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 disabled:bg-blue-300"
             >
               {loading ? <Loader2 className="animate-spin w-5 h-5" /> : null}
