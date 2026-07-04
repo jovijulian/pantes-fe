@@ -87,6 +87,7 @@ export default function PurchaseOrderDetailPage() {
     const params = useParams();
     const id = Number(params.id);
     moment.locale('id');
+    const [role, setRole] = useState<string | null>("null");
     const [isDownloadLoading, setIsDownloadLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -200,6 +201,10 @@ export default function PurchaseOrderDetailPage() {
         getDetail();
         fetchItems();
         fetchMasterBanks();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [getDetail]);
 
     const handleDeleteConfirm = async () => {
@@ -391,7 +396,7 @@ export default function PurchaseOrderDetailPage() {
                     </div>
                     <div className="flex justify-end items-center gap-3">
                         {getStatusBadge(data.status)}
-                        {data.status == "1" && (
+                        {data.status == "1" && role !== '5' && (
                             <button
                                 type="button"
                                 onClick={() => router.push(`/purchasing/orders-lm/edit/${data.id}`)}
@@ -469,7 +474,7 @@ export default function PurchaseOrderDetailPage() {
                                                         <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
                                                             {formatRupiah(payment.nominal)}
                                                         </td>
-                                                        {isEditable && (
+                                                        {isEditable && role !== '5' && (
                                                             <td className="px-4 py-3 whitespace-nowrap text-center">
                                                                 <button onClick={() => setDeleteConfig({ type: 'payment', id: payment.id })} className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded-md transition-colors">
                                                                     <Trash2 className="w-4 h-4" />
@@ -528,7 +533,7 @@ export default function PurchaseOrderDetailPage() {
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200 text-right">{item.pcs}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200 text-right">{formatRupiah(item.nominal)}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white text-right">{formatRupiah(item.total_nominal)}</td>
-                                                    {isEditable && (
+                                                    {isEditable && role !== '5' &&(
                                                         <td className="px-4 py-3 whitespace-nowrap text-center">
                                                             <button onClick={() => setDeleteConfig({ type: 'item', id: item.id })} className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 p-1.5 rounded-md transition-colors">
                                                                 <Trash2 className="w-4 h-4" />
@@ -637,7 +642,7 @@ export default function PurchaseOrderDetailPage() {
                 </div>
 
                 <div className="flex justify-end gap-3 mt-8 pt-6 border-t dark:border-gray-700">
-                    {data.status === "1" && (
+                    {data.status === "1" && role !== '5' &&(
                         <button
                             className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-2"
                             onClick={() => handleOpenModal(data, 'Validasi')}
@@ -645,7 +650,7 @@ export default function PurchaseOrderDetailPage() {
                             <Check className="w-4 h-4" /> Validasi
                         </button>
                     )}
-                    {data.status === "2" && (
+                    {data.status === "2" && role !== '5' &&(
                         <button
                             className="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2"
                             onClick={() => handleOpenModal(data, 'Disetujui')}
@@ -653,7 +658,7 @@ export default function PurchaseOrderDetailPage() {
                             <Check className="w-4 h-4" /> Approve
                         </button>
                     )}
-                    {data.status === "3" && (
+                    {data.status === "3" && role !== '5' &&(
                         <button
                             className="px-5 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-colors flex items-center gap-2"
                             onClick={() => handleOpenModal(data, 'Bayar')}

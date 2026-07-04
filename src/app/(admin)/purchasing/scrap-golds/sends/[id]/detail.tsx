@@ -112,7 +112,7 @@ export default function ScrapGoldSendDetailPage() {
     const [isManageRongsokModalOpen, setIsManageRongsokModalOpen] = useState(false);
     const [isDeleteRongsokModalOpen, setIsDeleteRongsokModalOpen] = useState(false);
     const [selectedRongsok, setSelectedRongsok] = useState<ISendDetail | null>(null);
-
+    const [role, setRole] = useState<string | null>("null");
     const formatGram = (value: string | number | null): string => {
         const num = Number(value || 0);
         return num.toLocaleString('id-ID', { maximumFractionDigits: 3 }) + " Gr";
@@ -158,6 +158,10 @@ export default function ScrapGoldSendDetailPage() {
 
     useEffect(() => {
         getDetail();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [getDetail]);
 
 
@@ -464,84 +468,83 @@ export default function ScrapGoldSendDetailPage() {
                         {getStatusBadge(data.status)}
 
                         {data.status !== '1' && (
-                           
+
                             <div className="relative inline-block text-left">
-                            {/* Main Button */}
-                            <button
-                              type="button"
-                              disabled={isDownloadLoading}
-                              onClick={() => setIsOpen(!isOpen)}
-                              className="flex items-center gap-2 px-5 py-2.5 rounded-lg
+                                {/* Main Button */}
+                                <button
+                                    type="button"
+                                    disabled={isDownloadLoading}
+                                    onClick={() => setIsOpen(!isOpen)}
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-lg
                                 bg-blue-600 text-white text-sm font-medium shadow-md
                                 hover:bg-blue-700 active:scale-[0.98]
                                 disabled:opacity-50 disabled:cursor-not-allowed
                                 transition-all duration-200"
-                            >
-                              <Download className="w-4 h-4" />
-                              <span>Export</span>
-                              <svg
-                                className={`w-4 h-4 transition-transform duration-200 ${
-                                  isOpen ? "rotate-180" : ""
-                                }`}
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                              >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </button>
-                          
-                            {/* Dropdown */}
-                            {isOpen && (
-                              <div
-                                className="absolute right-0 mt-2 w-60 origin-top-right
+                                >
+                                    <Download className="w-4 h-4" />
+                                    <span>Export</span>
+                                    <svg
+                                        className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+                                            }`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                {/* Dropdown */}
+                                {isOpen && (
+                                    <div
+                                        className="absolute right-0 mt-2 w-60 origin-top-right
                                   rounded-xl bg-white shadow-xl ring-1 ring-black/5
                                   animate-in fade-in zoom-in-95 duration-150 z-50"
-                              >
-                                <div className="p-2">
-                                  {/* Export Surat Jalan: untuk status >= 2 */}
-                                  {parseInt(data.status) >= 2 && (
-                                    <button
-                                      onClick={() => {
-                                        handleExport();
-                                        setIsOpen(false);
-                                      }}
-                                      className="group flex items-center gap-3 w-full
+                                    >
+                                        <div className="p-2">
+                                            {/* Export Surat Jalan: untuk status >= 2 */}
+                                            {parseInt(data.status) >= 2 && (
+                                                <button
+                                                    onClick={() => {
+                                                        handleExport();
+                                                        setIsOpen(false);
+                                                    }}
+                                                    className="group flex items-center gap-3 w-full
                                         px-4 py-2.5 rounded-lg text-sm font-medium
                                         text-gray-700 hover:bg-blue-50 hover:text-blue-600
                                         transition-all duration-150"
-                                    >
-                                      <Download className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
-                                      Export Surat Jalan
-                                    </button>
-                                  )}
-                          
-                                  {/* Divider */}
-                                  {parseInt(data.status) >= 2 && parseInt(data.status) === 4 && (
-                                    <div className="my-2 border-t border-gray-100" />
-                                  )}
-                          
-                                  {/* Export Surat Terima: hanya status === 4 */}
-                                  {parseInt(data.status) === 4 && (
-                                    <button
-                                      onClick={() => {
-                                        handleExportReceipt();
-                                        setIsOpen(false);
-                                      }}
-                                      className="group flex items-center gap-3 w-full
+                                                >
+                                                    <Download className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                                                    Export Surat Jalan
+                                                </button>
+                                            )}
+
+                                            {/* Divider */}
+                                            {parseInt(data.status) >= 2 && parseInt(data.status) === 4 && (
+                                                <div className="my-2 border-t border-gray-100" />
+                                            )}
+
+                                            {/* Export Surat Terima: hanya status === 4 */}
+                                            {parseInt(data.status) === 4 && (
+                                                <button
+                                                    onClick={() => {
+                                                        handleExportReceipt();
+                                                        setIsOpen(false);
+                                                    }}
+                                                    className="group flex items-center gap-3 w-full
                                         px-4 py-2.5 rounded-lg text-sm font-medium
                                         text-gray-700 hover:bg-indigo-50 hover:text-indigo-600
                                         transition-all duration-150"
-                                    >
-                                      <Download className="w-4 h-4 text-gray-400 group-hover:text-indigo-600" />
-                                      Export Surat Terima Stock
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                                                >
+                                                    <Download className="w-4 h-4 text-gray-400 group-hover:text-indigo-600" />
+                                                    Export Surat Terima Stock
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>
@@ -586,7 +589,7 @@ export default function ScrapGoldSendDetailPage() {
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {data.details.map((item, index) => (
                                             <tr key={index}>
-                                                {(data.status === '1') && (
+                                                {(data.status === '1') && role !== '5' && (
                                                     <td className="px-4 py-3">
                                                         <div className="flex gap-2">
                                                             <button
@@ -675,24 +678,26 @@ export default function ScrapGoldSendDetailPage() {
                                             {data.items_finished_good && data.items_finished_good.length > 0 ? (
                                                 data.items_finished_good.map((fg, idx) => (
                                                     <tr key={idx}>
-                                                        <td className="px-4 py-3">
-                                                            <div className="flex justify-center items-center gap-2">
-                                                                <button
-                                                                    onClick={() => openEditModal(fg)}
-                                                                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
-                                                                    title="Edit Item"
-                                                                >
-                                                                    <Edit className="w-4 h-4" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => openDeleteModal(fg)}
-                                                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded"
-                                                                    title="Hapus Item"
-                                                                >
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </button>
-                                                            </div>
-                                                        </td>
+                                                        {role !== '5' && (
+                                                            <td className="px-4 py-3">
+                                                                <div className="flex justify-center items-center gap-2">
+                                                                    <button
+                                                                        onClick={() => openEditModal(fg)}
+                                                                        className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                                                                        title="Edit Item"
+                                                                    >
+                                                                        <Edit className="w-4 h-4" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => openDeleteModal(fg)}
+                                                                        className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+                                                                        title="Hapus Item"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        )}
                                                         <td className="px-4 py-3 text-sm font-medium text-gray-800">{fg.item_type}</td>
                                                         {data.status == '4' ? (
                                                             <td className="px-4 py-3 text-sm font-medium text-gray-800">{fg.code_item}</td>
@@ -754,7 +759,7 @@ export default function ScrapGoldSendDetailPage() {
                             </div>
 
                             <div className="mt-6 pt-4 border-t space-y-3">
-                                {data.status === "1" && (
+                                {data.status === "1" && role !== '5' && (
                                     <button
                                         onClick={() => handleOpenProcessModal(2)}
                                         className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 shadow-sm transition-all"
@@ -762,7 +767,7 @@ export default function ScrapGoldSendDetailPage() {
                                         Proses Kirim Barang
                                     </button>
                                 )}
-                                {data.status === "2" && (
+                                {data.status === "2" && role !== '5' && (
                                     <button
                                         onClick={() => handleOpenProcessModal(3)}
                                         className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 shadow-sm transition-all"
@@ -770,7 +775,7 @@ export default function ScrapGoldSendDetailPage() {
                                         Proses Terima Barang
                                     </button>
                                 )}
-                                {data.status === "3" && (data.items_finished_good?.length ?? 0) > 0 && (
+                                {data.status === "3" && (data.items_finished_good?.length ?? 0) > 0 && role !== '5' && (
                                     <button
                                         onClick={() => handleOpenProcessModal(4)}
                                         className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-purple-600 text-white font-medium hover:bg-purple-700 shadow-sm transition-all"

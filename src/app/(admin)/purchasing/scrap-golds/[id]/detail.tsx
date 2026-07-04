@@ -62,6 +62,7 @@ export default function ScrapGoldDetailPage() {
     const [isDownloadLoading, setIsDownloadLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [processDate, setProcessDate] = useState(moment().format('YYYY-MM-DD'));
+    const [role, setRole] = useState<string | null>("null");
     const [viewingMonthDate, setViewingMonthDate] = useState(new Date());
     const [isProcessing, setIsProcessing] = useState(false);
     const formatGram = (value: string | number | null): string => {
@@ -109,6 +110,10 @@ export default function ScrapGoldDetailPage() {
 
     useEffect(() => {
         getDetail();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [getDetail]);
 
 
@@ -196,7 +201,7 @@ export default function ScrapGoldDetailPage() {
                     </div>
                     <div className="flex justify-end items-center gap-3">
                         {getStatusBadge(data.status)}
-                        {data.status === '2' && (
+                        {data.status === '2' && role !== '5' && (
                             <button
                                 type="button"
                                 disabled={isDownloadLoading}
@@ -288,7 +293,7 @@ export default function ScrapGoldDetailPage() {
                         Kembali
                     </button>
 
-                    {data.status === "1" && (
+                    {data.status === "1" && role !== '5' && (
                         <button
                             className="px-5 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-md flex items-center gap-2"
                             onClick={() => {

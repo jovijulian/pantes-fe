@@ -232,17 +232,19 @@ export default function ScrapGoldsPage() {
                         >
                             <FaEye className="w-4 h-4" />
                         </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedData(row);
-                                setIsDeleteModalOpen(true);
-                            }}
-                            title="Delete"
-                            className="p-3 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
-                        >
-                            <FaTrash className="w-4 h-4" />
-                        </button>
+                        {role !== "5" && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedData(row);
+                                    setIsDeleteModalOpen(true);
+                                }}
+                                title="Delete"
+                                className="p-3 rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+                            >
+                                <FaTrash className="w-4 h-4" />
+                            </button>
+                        )}
 
                         {/* {isNew && (
                             <>
@@ -353,7 +355,7 @@ export default function ScrapGoldsPage() {
             accessorKey: "updated_at",
             cell: ({ row }: any) => <span>{moment(row.updated_at).format("DD-MMM-YYYY, HH:mm")}</span>,
         },
-    ], [isExporting]);
+    ], [isExporting, role]);
 
     return (
         <div className="space-y-6">

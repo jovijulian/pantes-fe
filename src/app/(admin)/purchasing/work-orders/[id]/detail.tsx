@@ -98,6 +98,7 @@ export default function WorkOrderDetailPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<IWorkOrderItem | null>(null);
     const [isDownloadLoading, setIsDownloadLoading] = useState(false);
+    const [role, setRole] = useState<string | null>("null");
     const formatRupiah = (value: string | number | null): string => {
         const num = Number(value || 0);
         return "Rp " + num.toLocaleString('id-ID');
@@ -162,6 +163,10 @@ export default function WorkOrderDetailPage() {
 
     useEffect(() => {
         getDetail();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [getDetail]);
 
     const handleOpenReceiptModal = () => {
@@ -552,20 +557,22 @@ export default function WorkOrderDetailPage() {
                                             return (
                                                 <tr key={item.id}>
                                                     {/* Kolom Aksi Baru */}
-                                                    <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                                        <div className="flex items-center gap-1">
-                                                            <button
-                                                                onClick={() => handleOpenEditModal(item)}
-                                                                className="p-1 text-blue-600 hover:bg-blue-100 rounded" title="Edit">
-                                                                <Edit className="w-4 h-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleOpenDeleteModal(item)}
-                                                                className="p-1 text-red-600 hover:bg-red-100 rounded" title="Hapus">
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </button>
-                                                        </div>
-                                                    </td>
+                                                    {role !== "5" && (
+                                                        <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                                            <div className="flex items-center gap-1">
+                                                                <button
+                                                                    onClick={() => handleOpenEditModal(item)}
+                                                                    className="p-1 text-blue-600 hover:bg-blue-100 rounded" title="Edit">
+                                                                    <Edit className="w-4 h-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleOpenDeleteModal(item)}
+                                                                    className="p-1 text-red-600 hover:bg-red-100 rounded" title="Hapus">
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    )}
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{item.no_order}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">{item.item_type}</td>
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm text-right">{formatGram(item.bruto)}</td>

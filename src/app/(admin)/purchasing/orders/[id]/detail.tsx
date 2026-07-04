@@ -80,6 +80,7 @@ export default function PurchaseOrderDetailPage() {
     const params = useParams();
     const id = Number(params.id);
     moment.locale('id');
+    const [role, setRole] = useState<string | null>("null");
     const [isDownloadLoading, setIsDownloadLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalAction, setModalAction] = useState<ModalAction | null>(null);
@@ -149,6 +150,10 @@ export default function PurchaseOrderDetailPage() {
 
     useEffect(() => {
         getDetail();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [getDetail]);
 
     const handleOpenModal = (order: IPurchaseOrderData, action: ModalAction) => {
@@ -282,7 +287,7 @@ export default function PurchaseOrderDetailPage() {
                     <div className="flex justify-end items-center gap-3">
                         {getStatusBadge(data.status)}
                         <>
-                            {data.status == "1" && (
+                            {data.status == "1" && role !== '5' && (
                                 <button
                                     type="button"
                                     onClick={() => router.push(`/purchasing/orders/edit/${data.id}`)}
@@ -387,7 +392,7 @@ export default function PurchaseOrderDetailPage() {
                 </div>
 
                 <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
-                    {data.status === "1" && (
+                    {data.status === "1" && role !== '5' &&(
                         <>
                             <button
                                 className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
@@ -398,7 +403,7 @@ export default function PurchaseOrderDetailPage() {
                             </button>
                         </>
                     )}
-                    {data.status === "2" && (
+                    {data.status === "2" && role !== '5' &&(
                         <>
                             <button
                                 className="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
@@ -409,7 +414,7 @@ export default function PurchaseOrderDetailPage() {
                             </button>
                         </>
                     )}
-                    {data.status === "3" && (
+                    {data.status === "3" && role !== '5' &&(
                         <>
                             <button
                                 className="px-5 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"

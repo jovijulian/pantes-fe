@@ -126,7 +126,17 @@ const roleExceptions: Record<string, string[]> = {
         '/purchasing/scrap-golds/create',
         '/purchasing/scrap-golds/sends/create',
         '/purchasing/invoices/create',
-    ]
+    ],
+    '5': [
+        '/purchasing/orders/edit',
+        '/purchasing/orders-lm/edit',
+        '/purchasing/work-orders/edit',
+        '/purchasing/work-orders-lm/edit',
+        '/purchasing/deposits/edit',
+        '/purchasing/scrap-golds/edit',
+        '/purchasing/scrap-golds/sends/edit',
+        '/purchasing/invoices/edit',
+    ],
 };
 
 

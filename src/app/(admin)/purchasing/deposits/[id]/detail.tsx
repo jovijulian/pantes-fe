@@ -76,6 +76,7 @@ export default function DepositDetailPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedItem, setSelectedItem] = useState<IDepositDetail | null>(null);
     const [modalAction, setModalAction] = useState<ModalAction>(null);
+    const [role, setRole] = useState<string | null>("null");
     const formatGram = (value: string | number | null): string => {
         const num = Number(value || 0);
         return num.toLocaleString('id-ID') + " gr";
@@ -132,6 +133,10 @@ export default function DepositDetailPage() {
 
     useEffect(() => {
         getDetail();
+        const storedRole = localStorage.getItem("role");
+        if (storedRole) {
+            setRole(storedRole);
+        }
     }, [getDetail]);
 
     const totalWeightDiterima = useMemo(() => {
@@ -188,7 +193,7 @@ export default function DepositDetailPage() {
             setIsAddItemModalOpen(false);
             getDetail();
         } catch (error: any) {
-           toast.error(error.response?.data?.message);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }
@@ -213,7 +218,7 @@ export default function DepositDetailPage() {
             setSelectedItem(null);
             getDetail();
         } catch (error: any) {
-           toast.error(error.response?.data?.message);
+            toast.error(error.response?.data?.message);
         } finally {
             setIsSubmitting(false);
         }
@@ -262,7 +267,7 @@ export default function DepositDetailPage() {
             setIsDownloadLoading(false);
         }
     };
-    
+
     if (isLoading) return (
         <div className="flex justify-center items-center h-screen">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -292,17 +297,17 @@ export default function DepositDetailPage() {
                     <div className="flex items-center gap-3">
                         {getStatusBadge(data.status)}
                         <button
-                                type="button"
-                                disabled={isDownloadLoading}
-                                onClick={handleExport}
-                                className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
+                            type="button"
+                            disabled={isDownloadLoading}
+                            onClick={handleExport}
+                            className="flex items-center gap-1.5 px-5 py-2.5 rounded-md 
                                 bg-indigo-600 text-white text-sm font-medium shadow-sm 
                                 hover:bg-indigo-700 disabled:opacity-50
                                 transition-all duration-200"
-                            >
-                                <Download className="w-4 h-4" />
-                                <span>Export</span>
-                            </button>
+                        >
+                            <Download className="w-4 h-4" />
+                            <span>Export</span>
+                        </button>
                     </div>
                 </div>
 
@@ -353,7 +358,7 @@ export default function DepositDetailPage() {
                                         )}
                                         {data.details.map((item) => (
                                             <tr key={item.id}>
-                                                {currentStatus !== "4" && (
+                                                {currentStatus !== "4" && role !== '5' && (
                                                     <td className="px-4 py-3 whitespace-nowrap text-sm">
                                                         <div className="flex items-center gap-1">
                                                             <button
@@ -405,7 +410,7 @@ export default function DepositDetailPage() {
                 </div>
 
                 <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
-                    {currentStatus === "1" && (
+                    {currentStatus === "1" && role !== '5' &&(
                         <button
                             className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
                             onClick={() => handleOpenStatusModal('Validasi')}
@@ -414,7 +419,7 @@ export default function DepositDetailPage() {
                             Validasi
                         </button>
                     )}
-                    {currentStatus === "2" && (
+                    {currentStatus === "2" && role !== '5' &&(
                         <button
                             className="px-5 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
                             onClick={() => handleOpenStatusModal('Setor')}
@@ -423,7 +428,7 @@ export default function DepositDetailPage() {
                             Tandai Setor
                         </button>
                     )}
-                    {currentStatus === "3" && (
+                    {currentStatus === "3" && role !== '5' &&(
                         <button
                             className="px-5 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"
                             onClick={() => handleOpenStatusModal('Lunas')}
