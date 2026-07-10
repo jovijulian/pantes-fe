@@ -18,7 +18,8 @@ import {
     Diamond,
     FileClock,
     Check,
-    X
+    X,
+    Wallet
 } from "lucide-react";
 import Table from "@/components/tables/Table";
 import { endpointUrl, httpGet } from "@/../helpers";
@@ -724,11 +725,11 @@ export default function CTReportPage() {
                                 <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-xl shadow-lg shadow-emerald-200 relative overflow-hidden text-white">
                                     <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-bl-full -mr-6 -mt-6 z-0"></div>
                                     <div className="flex items-center gap-2 mb-1 z-10 relative">
-                                        <Diamond className="w-4 h-4 text-emerald-100" />
-                                        <p className="text-xs font-medium text-emerald-100 uppercase">Total Cokim</p>
+                                        <Banknote className="w-4 h-4 text-emerald-100" />
+                                        <p className="text-xs font-medium text-emerald-100 uppercase">Total Nominal</p>
                                     </div>
                                     <h3 className="text-2xl font-bold z-10 relative mt-2">
-                                        {isLoadingReport ? "..." : formatNumber(summary.totalCokim)}
+                                        {isLoadingReport ? "..." : formatNumber(summary.totalNominal)}
                                     </h3>
                                 </div>
                             )}
