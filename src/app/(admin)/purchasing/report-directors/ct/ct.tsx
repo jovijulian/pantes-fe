@@ -50,11 +50,13 @@ interface ICTReport {
     work_order_id?: number | null;
     deposit_date?: string;
     purpose?: string;
+    qty?: number;
 }
 
 
 export default function CTReportPage() {
     const [activeTab, setActiveTab] = useState<"1" | "2" | "3" | "4" | null>(null);
+    const [subTabStock, setSubTabStock] = useState<"all" | "summary">("all");
     const [reportData, setReportData] = useState<ICTReport[]>([]);
     const [isLoadingReport, setIsLoadingReport] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
@@ -74,7 +76,7 @@ export default function CTReportPage() {
         if (activeTab) {
             fetchData(activeTab);
         }
-    }, [activeTab, filters]);
+    }, [activeTab, subTabStock, filters]);
 
     const fetchData = async (status: string) => {
         setIsLoadingReport(true);
@@ -99,6 +101,11 @@ export default function CTReportPage() {
                     page: filters.page,
                     type: 1,
                 }
+            } else if (status === "3" && subTabStock === "summary") {
+                params = {
+                    type: 1,
+                    group: 1,
+                };
             } else {
                 params = {
                     type: 1,
@@ -148,6 +155,11 @@ export default function CTReportPage() {
                     is_invoice: 0,
                     type: 1,
                 }
+            } else if (activeTab === "3" && subTabStock === "summary") {
+                params = {
+                    type: 1,
+                    group: 1,
+                };
             } else {
                 params = {
                     type: 1,
@@ -157,6 +169,7 @@ export default function CTReportPage() {
                 endpointUrl(url),
                 params,
                 {
+                    params: params,
                     responseType: 'blob',
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -195,7 +208,16 @@ export default function CTReportPage() {
 
     const summary = useMemo(() => {
         if (!reportData || reportData.length === 0) {
-            return { totalData: 0, totalWeight: 0, totalNominal: 0, totalCokim: 0 };
+            return { totalData: 0, totalWeight: 0, totalNominal: 0, totalCokim: 0, totalQty: 0 };
+        }
+        if (activeTab === "3" && subTabStock === "summary") {
+            return {
+                totalData: reportData.length,
+                totalWeight: _.sumBy(reportData, (item) => Number(item.weight || 0)),
+                totalQty: _.sumBy(reportData, (item) => Number(item.qty || 0)),
+                totalCokim: 0,
+                totalNominal: 0
+            };
         }
         return {
             totalData: reportData.length,
@@ -204,9 +226,10 @@ export default function CTReportPage() {
             totalNominal: _.sumBy(reportData, (item) => {
                 if (item.nominal) return Number(item.nominal);
                 return Number(item.weight || 0) * Number(item.cokim || 0);
-            })
+            }),
+            totalQty: 0
         };
-    }, [reportData]);
+    }, [reportData, activeTab, subTabStock]);
 
     const formatNumber = (val: string | number) => Number(val).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const formatRupiah = (val: string | number) => "Rp " + Number(val).toLocaleString('id-ID');
@@ -412,6 +435,28 @@ export default function CTReportPage() {
         }
 
         if (activeTab === "3") {
+            if (subTabStock === "summary") {
+                return [
+                    {
+                        id: "item_type",
+                        header: "Jenis Barang",
+                        accessorKey: "item_type",
+                        cell: ({ row }: { row: any }) => <div className="text-sm capitalize font-semibold text-gray-800">{row.item_type || "-"}</div>
+                    },
+                    {
+                        id: "qty",
+                        header: "QTY",
+                        accessorKey: "qty",
+                        cell: ({ row }: { row: any }) => <div className="text-sm font-bold text-gray-800">{row.qty !== undefined && row.qty !== null ? Number(row.qty).toLocaleString('id-ID') : "0"}</div>
+                    },
+                    {
+                        id: "weight",
+                        header: "Berat (Gr)",
+                        accessorKey: "weight",
+                        cell: ({ row }: { row: any }) => <div className="text-sm font-bold text-gray-800">{row.weight ? formatNumber(row.weight) : "0"}</div>
+                    }
+                ];
+            }
             return [
                 {
                     id: "code_item",
@@ -484,7 +529,6 @@ export default function CTReportPage() {
                 {
                     id: "setor",
                     header: "Setor",
-                    // Asumsi key: setor_weight atau weight_deposit
                     accessorKey: "weight_deposit",
                     cell: ({ row }: { row: any }) => <div className="text-sm">{row.weight_deposit ? formatNumber(row.weight_deposit) : "-"}</div>
                 },
@@ -609,7 +653,7 @@ export default function CTReportPage() {
         }
 
         return [];
-    }, [activeTab, router]);
+    }, [activeTab, subTabStock, router]);
 
     const handlePageChange = (page: number) => {
         setFilter("page", page);
@@ -654,6 +698,7 @@ export default function CTReportPage() {
                             key={tab.id}
                             onClick={() => {
                                 setActiveTab(tab.id as "1" | "2" | "3" | "4");
+                                setSubTabStock("all");
                                 clearFilters();
                             }}
                             disabled={isLoadingReport}
@@ -709,29 +754,61 @@ export default function CTReportPage() {
                                 </h3>
                             </div>
 
-                            <div className="bg-white p-4 rounded-xl border border-orange-100 shadow-sm relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-16 h-16 bg-orange-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
-                                <div className="flex items-center gap-2 mb-1 z-10 relative">
-                                    <div className="p-1 bg-orange-100 text-orange-600 rounded-full">
-                                        <Package className="w-4 h-4" />
+                            {activeTab === "3" && subTabStock === "summary" ? (
+                                <>
+                                    <div className="bg-white p-4 rounded-xl border border-emerald-100 shadow-sm relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
+                                        <div className="flex items-center gap-2 mb-1 z-10 relative">
+                                            <div className="p-1 bg-emerald-100 text-emerald-600 rounded-full">
+                                                <Package className="w-4 h-4" />
+                                            </div>
+                                            <p className="text-xs font-medium text-emerald-600 uppercase">Total QTY</p>
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-emerald-700 z-10 relative mt-2">
+                                            {isLoadingReport ? "..." : Number(summary.totalQty).toLocaleString('id-ID')} <span className="text-sm font-normal text-emerald-500">Pcs</span>
+                                        </h3>
                                     </div>
-                                    <p className="text-xs font-medium text-orange-600 uppercase">Total Berat</p>
-                                </div>
-                                <h3 className="text-2xl font-bold text-orange-700 z-10 relative mt-2">
-                                    {isLoadingReport ? "..." : formatNumber(summary.totalWeight)} <span className="text-sm font-normal text-orange-500">Gr</span>
-                                </h3>
-                            </div>
-                            {activeTab !== "2" && (
-                                <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-xl shadow-lg shadow-emerald-200 relative overflow-hidden text-white">
-                                    <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-bl-full -mr-6 -mt-6 z-0"></div>
-                                    <div className="flex items-center gap-2 mb-1 z-10 relative">
-                                        <Banknote className="w-4 h-4 text-emerald-100" />
-                                        <p className="text-xs font-medium text-emerald-100 uppercase">Total Nominal</p>
+
+                                    <div className="bg-white p-4 rounded-xl border border-orange-100 shadow-sm relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-16 h-16 bg-orange-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
+                                        <div className="flex items-center gap-2 mb-1 z-10 relative">
+                                            <div className="p-1 bg-orange-100 text-orange-600 rounded-full">
+                                                <Diamond className="w-4 h-4" />
+                                            </div>
+                                            <p className="text-xs font-medium text-orange-600 uppercase">Total Berat</p>
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-orange-700 z-10 relative mt-2">
+                                            {isLoadingReport ? "..." : formatNumber(summary.totalWeight)} <span className="text-sm font-normal text-orange-500">Gr</span>
+                                        </h3>
                                     </div>
-                                    <h3 className="text-2xl font-bold z-10 relative mt-2">
-                                        {isLoadingReport ? "..." : formatNumber(summary.totalNominal)}
-                                    </h3>
-                                </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="bg-white p-4 rounded-xl border border-orange-100 shadow-sm relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-16 h-16 bg-orange-50 rounded-bl-full -mr-4 -mt-4 z-0"></div>
+                                        <div className="flex items-center gap-2 mb-1 z-10 relative">
+                                            <div className="p-1 bg-orange-100 text-orange-600 rounded-full">
+                                                <Package className="w-4 h-4" />
+                                            </div>
+                                            <p className="text-xs font-medium text-orange-600 uppercase">Total Berat</p>
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-orange-700 z-10 relative mt-2">
+                                            {isLoadingReport ? "..." : formatNumber(summary.totalWeight)} <span className="text-sm font-normal text-orange-500">Gr</span>
+                                        </h3>
+                                    </div>
+                                    {activeTab !== "2" && (
+                                        <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 rounded-xl shadow-lg shadow-emerald-200 relative overflow-hidden text-white">
+                                            <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-bl-full -mr-6 -mt-6 z-0"></div>
+                                            <div className="flex items-center gap-2 mb-1 z-10 relative">
+                                                <Banknote className="w-4 h-4 text-emerald-100" />
+                                                <p className="text-xs font-medium text-emerald-100 uppercase">Total Nominal</p>
+                                            </div>
+                                            <h3 className="text-2xl font-bold z-10 relative mt-2">
+                                                {isLoadingReport ? "..." : formatNumber(summary.totalNominal)}
+                                            </h3>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     )}
@@ -751,6 +828,33 @@ export default function CTReportPage() {
                                 <h3 className="text-2xl font-bold text-blue-700 z-10 relative mt-2">
                                     {isLoadingReport ? "..." : notInvoice} <span className="text-sm font-normal text-blue-500">Data</span>
                                 </h3>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === "3" && (
+                        <div className="flex justify-start items-center">
+                            <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
+                                <button
+                                    onClick={() => setSubTabStock("all")}
+                                    className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all cursor-pointer ${
+                                        subTabStock === "all"
+                                            ? "bg-white text-blue-600 shadow-sm"
+                                            : "text-gray-500 hover:text-gray-700"
+                                    }`}
+                                >
+                                    All
+                                </button>
+                                <button
+                                    onClick={() => setSubTabStock("summary")}
+                                    className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all cursor-pointer ${
+                                        subTabStock === "summary"
+                                            ? "bg-white text-blue-600 shadow-sm"
+                                            : "text-gray-500 hover:text-gray-700"
+                                    }`}
+                                >
+                                    Summary
+                                </button>
                             </div>
                         </div>
                     )}
