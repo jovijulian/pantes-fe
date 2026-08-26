@@ -208,15 +208,13 @@ export default function SalesCreateFollowUp() {
                             }
                         ]
                     });
-
                     const labelKey = generateKey(detail.label);
-
                     if (labelKey.includes('tanggal') || labelKey.includes('transactiondate') || labelKey.includes('date')) {
                         if (!labelKey.includes('birth') && !labelKey.includes('anniv')) {
                             rootDate = finalValue;
                         }
                     }
-                    if (labelKey === 'judul' || labelKey === 'title' || labelKey === 'name') {
+                    if (detail.id == 3 || labelKey === 'judul' || labelKey === 'title' || labelKey === 'name') {
                         rootName = finalValue;
                     }
                     if (labelKey === 'catatan' || labelKey === 'description' || labelKey === 'notes') {
