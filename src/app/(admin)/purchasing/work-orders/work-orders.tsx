@@ -38,6 +38,7 @@ interface IWorkOrder {
 const statusOptions = [
     { value: "1", label: "WO Aktif" },
     { value: "2", label: "Diterima" },
+    { value: "3", label: "Selesai" },
 ];
 
 interface SelectOption { value: string; label: string; }
@@ -79,11 +80,12 @@ export default function WorkOrdersPage() {
     };
 
     const getStatusBadge = (status: string) => {
-        let color: "success" | "warning" | "info";
+        let color: "success" | "warning" | "info" | "primary";
         let label = "Unknown";
         switch (status) {
             case '1': color = 'warning'; label = 'WO Aktif'; break;
             case '2': color = 'success'; label = 'Diterima'; break;
+            case '3': color = 'primary'; label = 'Selesai'; break;
             default: color = 'warning'; break;
         }
         return <Badge color={color}>{label}</Badge>;
@@ -402,6 +404,12 @@ export default function WorkOrdersPage() {
                 header: "Tgl. Terima",
                 accessorKey: "tanggal_terima",
                 cell: ({ row }: any) => <span>{row.receipt_date ? moment(row.receipt_date).format("DD MMM YYYY") : "-"}</span>,
+            },
+            {
+                id: "completed_date",
+                header: "Tgl. Selesai",
+                accessorKey: "completed_date",
+                cell: ({ row }: any) => <span>{row.completed_date ? moment(row.completed_date).format("DD MMM YYYY") : "-"}</span>,
             },
             {
                 id: "supplier",

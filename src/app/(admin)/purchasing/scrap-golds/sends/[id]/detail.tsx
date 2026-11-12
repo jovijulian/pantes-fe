@@ -132,7 +132,7 @@ export default function ScrapGoldSendDetailPage() {
         switch (status) {
             case '1': return <Badge color="warning">New</Badge>;
             case '2': return <Badge color="info">Dikirim</Badge>;
-            case '3': return <Badge color="success">Diterima</Badge>;
+            case '3': return <Badge color="success">Proses</Badge>;
             case '4': return <Badge color="primary">Stock</Badge>;
             default: return <Badge color="info">Unknown</Badge>;
         }
@@ -651,14 +651,14 @@ export default function ScrapGoldSendDetailPage() {
                                         <PackageCheck className="text-blue-600" />
                                         Hasil Produksi / Barang Jadi
                                     </h4>
-                                    {data.status == '3' && (
+                                    {/* {data.status == '3' && (
                                         <button
                                             onClick={() => setIsFGModalOpen(true)}
                                             className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 text-sm hover:bg-blue-700 shadow-sm transition-all"
                                         >
                                             <Plus className="w-4 h-4" /> Tambah Barang Jadi
                                         </button>
-                                    )}
+                                    )} */}
                                 </div>
 
                                 <div className="bg-white border rounded-lg overflow-hidden shadow-sm">
@@ -747,7 +747,7 @@ export default function ScrapGoldSendDetailPage() {
                                 <InfoRow label="Dibuat Pada" value={formatDateTime(data.created_at)} />
                                 <InfoRow label="Terakhir Update" value={formatDateTime(data.updated_at)} />
                                 {data.receipt_date && (
-                                    <InfoRow label="Tanggal Diterima" value={formatDate(data.receipt_date)} />
+                                    <InfoRow label="Tanggal Proses" value={formatDate(data.receipt_date)} />
                                 )}
                             </div>
 

@@ -489,7 +489,7 @@ export default function ScrapGoldSendPage() {
             cell: ({ row }: { row: ISendTransaction }) => {
                 if (row.status === "1") return <Badge color="warning">New</Badge>;
                 if (row.status === "2") return <Badge color="info">Dikirim</Badge>;
-                if (row.status === "3") return <Badge color="success">Diterima</Badge>;
+                if (row.status === "3") return <Badge color="success">Proses</Badge>;
                 if (row.status === "4") return <Badge color="primary">Stock</Badge>;
                 return <Badge color="info">Unknown</Badge>;
             }
@@ -533,7 +533,7 @@ export default function ScrapGoldSendPage() {
                     icon={<FaTruck className="w-5 h-5" />}
                 />
                 <FilterCard
-                    label=" Terima"
+                    label=" Proses"
                     count={stats.receipt}
                     isActive={filters.status === '3'}
                     onClick={() => handleFilterStatus('3')}

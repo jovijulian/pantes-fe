@@ -115,6 +115,7 @@ const roleExceptions: Record<string, string[]> = {
         '/purchasing/deposits/create',
         '/purchasing/scrap-golds/create',
         '/purchasing/scrap-golds/sends/create',
+        '/purchasing/scrap-golds/refining/create',
         '/purchasing/invoices/create',
     ],
     '9': [
@@ -125,6 +126,7 @@ const roleExceptions: Record<string, string[]> = {
         '/purchasing/deposits/create',
         '/purchasing/scrap-golds/create',
         '/purchasing/scrap-golds/sends/create',
+        '/purchasing/scrap-golds/refining/create',
         '/purchasing/invoices/create',
     ],
     '5': [
@@ -135,6 +137,7 @@ const roleExceptions: Record<string, string[]> = {
         '/purchasing/deposits/edit',
         '/purchasing/scrap-golds/edit',
         '/purchasing/scrap-golds/sends/edit',
+        '/purchasing/scrap-golds/refining/edit',
         '/purchasing/invoices/edit',
     ],
 };

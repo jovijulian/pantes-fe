@@ -17,6 +17,7 @@ import AddItemWorkOrderModal from "@/components/modal/AddItemWorkOrderModal";
 import EditItemWorkOrderModal from "@/components/modal/edit/EditItemWorkOrderModal";
 import DeleteConfirmationModal from "@/components/modal/deactive/DeleteItemWorkOrderConfirmationModal";
 import axios from "axios";
+import ChangeStatusWorkOrderDoneModal from "@/components/modal/ChangeStatusWorkOrderDoneModal";
 
 interface IUserSimple {
     id: number;
@@ -61,6 +62,7 @@ interface IWorkOrderData {
     expedition: IExpedition;
     orders: IPurchaseOrderSimple[];
     items: IWorkOrderItem[];
+    completed_date: string;
 }
 
 interface IWorkOrderItem {
@@ -92,6 +94,7 @@ export default function WorkOrderDetailPage() {
     moment.locale('id');
     const [isOpen, setIsOpen] = useState(false);
     const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+    const [isDoneModalOpen, setIsDoneModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -125,11 +128,12 @@ export default function WorkOrderDetailPage() {
     };
 
     const getStatusBadge = (status: string) => {
-        let color: "success" | "warning";
+        let color: "success" | "warning" | "primary";
         let label = "Unknown";
         switch (status) {
             case '1': color = 'warning'; label = 'WO Aktif'; break;
             case '2': color = 'success'; label = 'Diterima'; break;
+            case '3': color = 'primary'; label = 'Selesai'; break;
             default: color = 'warning'; break;
         }
         return <Badge color={color}>{label}</Badge>;
@@ -192,6 +196,32 @@ export default function WorkOrderDetailPage() {
             setIsSubmitting(false);
         }
     };
+
+
+    const handleDoneModal = () => {
+        setIsDoneModalOpen(true);
+    };
+
+    const handleConfirmDone = async (completeDate: string) => {
+        if (!data) return;
+
+        setIsSubmitting(true);
+        const payload = {
+            completed_date: completeDate,
+        };
+
+        try {
+            await httpPost(endpointUrl(`work-order/${data.id}/complete`), payload, true);
+            toast.success("Surat Jalan berhasil ditandai 'Selesai'!");
+            setIsReceiptModalOpen(false);
+            getDetail();
+        } catch (error: any) {
+            alertToast(error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const calculateModalNetto = useCallback((item: IWorkOrderItem): number => {
         const bruto = Number(item.bruto) || 0;
         const kadar = Number(item.kadar) || 0;
@@ -565,11 +595,14 @@ export default function WorkOrderDetailPage() {
                                                                     className="p-1 text-blue-600 hover:bg-blue-100 rounded" title="Edit">
                                                                     <Edit className="w-4 h-4" />
                                                                 </button>
-                                                                <button
-                                                                    onClick={() => handleOpenDeleteModal(item)}
-                                                                    className="p-1 text-red-600 hover:bg-red-100 rounded" title="Hapus">
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </button>
+                                                                {data.status !== "3" && (
+                                                                    <button
+                                                                        onClick={() => handleOpenDeleteModal(item)}
+                                                                        className="p-1 text-red-600 hover:bg-red-100 rounded" title="Hapus">
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                )}
+
                                                             </div>
                                                         </td>
                                                     )}
@@ -613,6 +646,7 @@ export default function WorkOrderDetailPage() {
                                 <InfoRow label="Dibuat" value={formatDate(data.created_at)} />
                                 <InfoRow label="Tanggal Surat Jalan" value={formatDate(data.date)} />
                                 <InfoRow label="Tanggal Diterima" value={formatDate(data.receipt_date)} />
+                                <InfoRow label="Tanggal Surat Jalan Selesai" value={formatDate(data.completed_date)} />
                             </div>
                         </div>
                     </div>
@@ -630,6 +664,7 @@ export default function WorkOrderDetailPage() {
                             </button>
                         </>
                     )}
+
                     {data.status === "2" && (
                         <>
                             <button
@@ -639,6 +674,17 @@ export default function WorkOrderDetailPage() {
                             >
                                 <PackagePlus className="w-4 h-4 inline-block -mt-1 mr-1" />
                                 Tambahkan Barang
+                            </button>
+                        </>
+                    )}
+                    {data.status === "2" && (
+                        <>
+                            <button
+                                className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                                onClick={handleDoneModal}
+                            >
+                                <Check className="w-4 h-4 inline-block -mt-1 mr-1" />
+                                Surat Jalan Selesai
                             </button>
                         </>
                     )}
@@ -654,6 +700,17 @@ export default function WorkOrderDetailPage() {
                     onConfirm={handleConfirmReceipt}
                 />
             )}
+
+            {data && data.status === "2" && (
+                <ChangeStatusWorkOrderDoneModal
+                    isOpen={isDoneModalOpen}
+                    onClose={() => setIsDoneModalOpen(false)}
+                    workOrder={{ id: data.id, no_work_order: data.no_work_order, status: data.status }}
+                    isSubmitting={isSubmitting}
+                    onConfirm={handleConfirmDone}
+                />
+            )}
+
             {data && data.status === "2" && (
                 <AddItemWorkOrderModal
                     isOpen={isAddItemModalOpen}
@@ -682,6 +739,7 @@ export default function WorkOrderDetailPage() {
                         getDetail();
                     }}
                     type="1"
+                    status={data.status}
                 />
             )}
 

@@ -59,6 +59,7 @@ interface EditItemModalProps {
     baseNominal: number;
     onSuccess: () => void;
     type: string;
+    status: string;
 }
 
 const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
@@ -69,6 +70,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
     baseNominal,
     onSuccess,
     type,
+    status,
 }) => {
     const [itemOptions, setItemOptions] = useState<SelectOption[]>([]);
     const [itemPOOptions, setItemPOOptions] = useState<SelectOption[]>([]);
@@ -147,7 +149,7 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
             }
         }
         setCalculatedBayarNett(finalBayar);
-        console.log("Recalculating: ", { "pcs": pcs, "bruto": bruto, "kadar":kadar, "disc":disc, "nominal":nominal, "netto":netto, "finalBayar":finalBayar });
+        console.log("Recalculating: ", { "pcs": pcs, "bruto": bruto, "kadar": kadar, "disc": disc, "nominal": nominal, "netto": netto, "finalBayar": finalBayar });
 
     }, [form.weight, form.bruto, form.kadar, form.disc, baseNominal]);
 
@@ -251,21 +253,22 @@ const EditItemWorkOrderModal: React.FC<EditItemModalProps> = ({
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block font-medium mb-1">Bruto (gr)<span className="text-red-400">*</span></label>
-                                                <CurrencyInput value={form.bruto} onValueChange={v => handleFormChange('bruto', v)} placeholder="0" />
+                                                <CurrencyInput value={form.bruto} onValueChange={v => handleFormChange('bruto', v)} placeholder="0" disabled={status == "3" ? true : false} />
                                             </div>
                                             <div>
                                                 <label className="block font-medium mb-1">Berat Terima (gr)<span className="text-red-400">*</span></label>
-                                                <CurrencyInput value={form.weight} onValueChange={v => handleFormChange('weight', v)} placeholder="0" />
+                                                <CurrencyInput value={form.weight} onValueChange={v => handleFormChange('weight', v)} placeholder="0"
+                                                    disabled={status == "3" ? true : false} />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <label className="block font-medium mb-1">Kadar (%)<span className="text-red-400">*</span></label>
-                                                <CurrencyInput value={form.kadar} onValueChange={v => handleFormChange('kadar', v)} placeholder="0" />
+                                                <CurrencyInput value={form.kadar} onValueChange={v => handleFormChange('kadar', v)} placeholder="0" disabled={status == "3" ? true : false} />
                                             </div>
                                             <div>
                                                 <label className="block font-medium mb-1">Discount (%)</label>
-                                                <CurrencyInput value={form.disc} onValueChange={v => handleFormChange('disc', v)} placeholder="0" />
+                                                <CurrencyInput value={form.disc} onValueChange={v => handleFormChange('disc', v)} placeholder="0" disabled={status == "3" ? true : false} />
                                             </div>
                                         </div>
 

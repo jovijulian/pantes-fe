@@ -179,6 +179,7 @@ export const menuConfig: Record<string, NavItem[]> = {
       subItems: [
         { name: 'Rongsok', path: '/purchasing/scrap-golds', roles: [1, 3, 5, 9] },
         { name: 'Kirim Rongsok', path: '/purchasing/scrap-golds/sends', roles: [1, 3, 5, 9] },
+        { name: 'Surat Jalan Refining', path: '/purchasing/scrap-golds/refining', roles: [1, 3, 5, 9] },
       ]
     },
     {
