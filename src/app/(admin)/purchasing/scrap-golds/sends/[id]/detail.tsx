@@ -699,11 +699,11 @@ export default function ScrapGoldSendDetailPage() {
                                                             </td>
                                                         )}
                                                         <td className="px-4 py-3 text-sm font-medium text-gray-800">{fg.item_type}</td>
-                                                        {data.status == '4' ? (
-                                                            <td className="px-4 py-3 text-sm font-medium text-gray-800">{fg.code_item}</td>
-                                                        ) : (
-                                                            <td className="px-4 py-3 text-sm font-medium text-gray-400 italic">-</td>
-                                                        )}
+                                                        {/* {data.status == '4' ? ( */}
+                                                        <td className="px-4 py-3 text-sm font-medium text-gray-800">{fg.code_item}</td>
+                                                        {/* ) : ( */}
+                                                        {/* <td className="px-4 py-3 text-sm font-medium text-gray-400 italic">-</td> */}
+                                                        {/* )} */}
 
                                                         <td className="px-4 py-3 text-sm text-right">{formatGram(fg.netto)}</td>
                                                         <td className="px-4 py-3 text-sm text-right">{fg.sg}</td>
