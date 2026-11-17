@@ -203,7 +203,6 @@ export default function RefiningCreatePage() {
                                     onClearFilter={() => null}
                                     viewingMonthDate={viewingMonthDate}
                                     onMonthChange={setViewingMonthDate}
-                                    disabled
                                 />
                                 {/* <Input type="text" value={moment(new Date(formData.date)).format("YYYY-MM-DD")} onChange={(date: any) => handleFieldChange('date', moment(date).format('YYYY-MM-DD'))} disabled /> */}
                             </div>
