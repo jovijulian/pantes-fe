@@ -481,7 +481,7 @@ export default function WorkOrderDetailPage() {
                                             )}
 
                                             {/* Item 2 */}
-                                            {data.status === "2" && (
+                                            {data.status === "2"  || data.status === "3" && (
                                                 <button
                                                     onClick={() => {
                                                         handleExportReceiptItem();
